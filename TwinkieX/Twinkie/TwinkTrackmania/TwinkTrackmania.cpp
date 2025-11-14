@@ -1,14 +1,13 @@
 // Precompiled headers.
 #include "pch.h"
-#include "../../pch.h"
 
 // Offsets for various things
-#include "../../Utils/Offsets.h"
+#include <Utils/Offsets.h>
 
 // Class definition for the TwinkTrackmania class.
-#include "TwinkTrackmania.h"
+#include <Twinkie/TwinkTrackmania/TwinkTrackmania.h>
 
-// Behv
+// Behaviours
 
 TwinkTrackmania::TwinkTrackmania()
 {
@@ -19,7 +18,7 @@ TwinkTrackmania::~TwinkTrackmania()
 {
 }
 
-// END Behv
+// END Behaviours
 
 // Getters
 

@@ -2,15 +2,19 @@
 #include "pch.h"
 
 // Class definition for the Twinkie class used by (Twinkie gTwinkie).
-#include "Twinkie/Twinkie.h"
+#include <Twinkie/Twinkie.h>
 
 // The global Twinkie object, used to manage all other managers.
 Twinkie gTwinkie;
 
 // MainThread is a separate thread that runs when the DLL is attached.
 // It is used to initialize all hooks for the global Twinkie object (Twinkie gTwinkie).
-static DWORD WINAPI MainThread(LPVOID lpParameter)
+static DWORD WINAPI InitializerThread(LPVOID lpParameter)
 {
+    if (lpParameter != NULL)
+    {
+        return FALSE;
+    }
     // The return value indicates the success/failure of the thread. TRUE is successful.
     return TRUE;
 }
@@ -26,7 +30,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, LPVOID lpReserved)
         DisableThreadLibraryCalls(hModule);
 
         // Create the main thread and start it immediately.
-        CreateThread(NULL, 0, MainThread, NULL, 0, 0);
+        CreateThread(NULL, 0, InitializerThread, NULL, 0, 0);
 		break;
     
     // These are disabled via (DisableThreadLibraryCalls) in (case DLL_PROCESS_ATTACH:), so it is okay for them to be wired to (DLL_PROCESS_DETACH) as well.
@@ -37,6 +41,6 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, LPVOID lpReserved)
     case DLL_PROCESS_DETACH:
         break;
     }
-    return TRUE;
+    return lpReserved ? TRUE : TRUE;
 }
 

@@ -1,11 +1,10 @@
 // Precompiled headers.
 #include "pch.h"
-#include "../pch.h"
 
 // Includes class definitions for the Twinkie class, used by (Twinkie gTwinkie).
-#include "Twinkie.h"
+#include <Twinkie/Twinkie.h>
 
-// Behv
+// Behaviours
 
 Twinkie::Twinkie()
 {
@@ -17,4 +16,4 @@ Twinkie::~Twinkie()
 
 }
 
-// END Behv
+// END Behaviours

@@ -1,20 +1,17 @@
 #pragma once
 
-// Precompiled headers, but this is for Intellisense.
-#include "../../pch.h"
-
 // The Trackmania manager class, used by (TwinkTrackmania gTwinkie.TrackmaniaMgr).
 class TwinkTrackmania
 {
 	uintptr_t ExeBaseAddr = 0;
 
 public:
-	// Behv
+	// Behaviours
 
 	// Ctor
-	TwinkTrackmania();
+	__declspec(noinline) TwinkTrackmania();
 	// Dtor
-	~TwinkTrackmania();
+	__declspec(noinline) ~TwinkTrackmania();
 
 
 	// Getters
