@@ -21,10 +21,16 @@
     <ClInclude Include="pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Arch.h">
+    <ClInclude Include="Utils\Arch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Twinkie\Twinkie.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Twinkie\TwinkTrackmania\TwinkTrackmania.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\Offsets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -36,6 +42,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Twinkie\Twinkie.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Twinkie\TwinkTrackmania\TwinkTrackmania.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

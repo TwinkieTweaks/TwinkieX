@@ -1,8 +1,8 @@
 // Precompiled headers.
 #include "pch.h"
+#include "../pch.h"
 
-
-// Includes class definitions for the Twinkie class.
+// Includes class definitions for the Twinkie class, used by (Twinkie gTwinkie).
 #include "Twinkie.h"
 
 // Behv

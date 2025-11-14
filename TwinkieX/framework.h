@@ -6,4 +6,4 @@
 #include <windows.h>
 
 // Architecture detection header file
-#include "Arch.h"
+#include "Utils/Arch.h"

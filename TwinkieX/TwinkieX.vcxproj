@@ -603,10 +603,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Arch.h" />
+    <ClInclude Include="Utils\Arch.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Utils\Offsets.h" />
     <ClInclude Include="Twinkie\Twinkie.h" />
+    <ClInclude Include="Twinkie\TwinkTrackmania\TwinkTrackmania.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -629,6 +631,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='TMCN|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Twinkie\Twinkie.cpp" />
+    <ClCompile Include="Twinkie\TwinkTrackmania\TwinkTrackmania.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
