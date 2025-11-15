@@ -13,29 +13,81 @@
 #define Virtual(n, obj) (*(uintptr_t**)(obj))[n]
 
 // Offsets
+// Unset values must be zero, unless stated that they are set
 
 #if defined(TMCN)
 
-#	define O_APP 0x1C7AB90
+// Globals
+#define O_APP 0x1C7AB90
+#define O_D3DDEVICE 0x1C7AB20
+
+// Exclusive to TMCN
+#define O_D3DCONTEXT 0x1C7AB18
+
+// Offsets to members
+#define O_M_CTRACKMANIA_VIEWPORT 96
+
+// Vtable indices
+#define O_V_MWCLASSINFO 2
 
 #elif defined(TM1)
 
-#	define O_APP 0x0
+// Globals
+#define O_APP 0x0
+#define O_D3DDEVICE 0x0
+
+// Offsets to members
+#define O_M_CTRACKMANIA_VIEWPORT 0
+
+// Vtable indices
+#define O_V_MWCLASSINFO 0
 
 #elif defined(TMS)
 
-#	define O_APP 0x0
+// Globals
+#define O_APP 0x0
+#define O_D3DDEVICE 0x0
+
+// Offsets to members
+#define O_M_CTRACKMANIA_VIEWPORT 0
+
+// Vtable indices
+#define O_V_MWCLASSINFO 0
 
 #elif defined(TMSX)
 
-#	define O_APP 0x0
+// Globals
+#define O_APP 0x0
+#define O_D3DDEVICE 0x0
+
+// Offsets to members
+#define O_M_CTRACKMANIA_VIEWPORT 0
+
+// Vtable indices
+#define O_V_MWCLASSINFO 0
 
 #elif defined(TMO)
 
-#	define O_APP 0x0
+// Globals
+#define O_APP 0x7C8084
+#define O_D3DDEVICE 0x7A4AAC
+
+// Offsets to members
+#define O_M_CTRACKMANIA_VIEWPORT 80
+
+// Vtable indices
+#define O_V_MWCLASSINFO 1
 
 #elif defined(ESWC)
 
-#	define O_APP 0x0
+// Globals
+#define O_APP 0x8AEE50
+#define O_D3DDEVICE 0x8B0DCC
+
+// Offsets to members
+#define O_M_CTRACKMANIA_VIEWPORT 0
+
+// Vtable indices
+#define O_V_MWCLASSINFO 1
 
 #endif

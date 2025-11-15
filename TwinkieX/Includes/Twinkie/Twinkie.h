@@ -10,8 +10,9 @@ public:
 
 	TwinkTrackmania TrackmaniaMgr;
 
-	// Behaviours
+	// Behaviors
 
+	// (__declspec(noinline)) is to prevent the compiler from potentially promoting the function to be inline, raising a warning that promotes to an error
 	__declspec(noinline) Twinkie();
 	__declspec(noinline) ~Twinkie();
 };

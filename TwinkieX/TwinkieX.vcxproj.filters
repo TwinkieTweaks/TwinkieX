@@ -33,6 +33,9 @@
     <ClInclude Include="Includes\Utils\Offsets.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Trackmania\TMTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -45,6 +48,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Twinkie\TwinkTrackmania\TwinkTrackmania.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Trackmania\TMTypes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

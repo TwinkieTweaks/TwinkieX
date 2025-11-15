@@ -4,7 +4,7 @@
 // Includes class definitions for the Twinkie class, used by (Twinkie gTwinkie).
 #include <Twinkie/Twinkie.h>
 
-// Behaviours
+// Behaviors
 
 Twinkie::Twinkie()
 {
@@ -16,4 +16,4 @@ Twinkie::~Twinkie()
 
 }
 
-// END Behaviours
+// END Behaviors
