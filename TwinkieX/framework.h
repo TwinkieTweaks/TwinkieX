@@ -12,9 +12,39 @@
 // Architecture detection header file
 #include <Utils/Arch.h>
 
+// Disable all warnings emmitted by DirectX11
+#pragma warning(disable : 4061 4365 4820 4365)
+
 // DirectX (11 for TMCN, 9 otherwise)
 #ifdef MANIAPLANET
+
 #include <d3d11.h>
+#include <dxgi.h>
+
 #else
+
 #include <d3d9.h>
+
 #endif
+
+// dear ImGui
+// No idea why this define is needed
+#define IMGUI_DEFINE_MATH_OPERATORS
+
+// Disable all warnings emmitted by dear ImGui
+#pragma warning(disable : 4820 26819 28182 4191 4365 4582 4774 5219 5045 4738 4710 5262)
+
+#include <imgui/imgui.h>
+
+#ifdef GAMEBOX
+#include <imgui/imgui_impl_dx9.h>
+#else
+#include <imgui/imgui_impl_dx11.h>
+#endif
+
+#include <imgui/imgui_impl_win32.h>
+
+// Included for debugging
+#pragma warning(disable : 4710)
+#pragma warning(disable : 4711)
+#include <iostream>

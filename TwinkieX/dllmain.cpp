@@ -4,11 +4,6 @@
 // Class definition for the Twinkie class used by (Twinkie gTwinkie).
 #include <Twinkie/Twinkie.h>
 
-// Included for debugging
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4711)
-#include <iostream>
-
 // The global Twinkie object, used to manage all other managers.
 Twinkie gTwinkie;
 
@@ -19,6 +14,15 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
     // Debugging code
     AllocConsole();
     freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);
+
+    // While the game is not initialized, wait
+    while (!gTwinkie.IsGameInit())
+    {
+        Sleep(1);
+    }
+
+    // After knowing that everything is initialized, we update everything
+    gTwinkie.Update();
 
     // This is just to use the unused (lpParameter) parameter. It is expected to be (NULL).
     if (lpParameter != NULL)
@@ -45,13 +49,9 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
         AppClassInfo = *pAppClassInfo;
     }
 
-    std::cout << "Viewport: " << gTwinkie.TrackmaniaMgr.GetViewport() << "\n";
+    std::cout << "Viewport: " << std::hex << gTwinkie.TrackmaniaMgr.GetViewport() << "\n";
 
-	std::cout << "DirectX Device: " << std::hex << gTwinkie.TrackmaniaMgr.GetDirectXDevice() << "\n";
-
-#ifdef MANIAPLANET
-	std::cout << "DirectX Context: " << std::hex << gTwinkie.TrackmaniaMgr.GetDirectXContext() << "\n";
-#endif
+	std::cout << "DirectX Device: " << std::hex << TwinkUiState::Device << "\n";
 
     // The return value indicates the success/failure of the thread. TRUE is successful.
     return TRUE;

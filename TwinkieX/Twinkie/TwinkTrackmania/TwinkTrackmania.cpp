@@ -35,9 +35,9 @@ uintptr_t TwinkTrackmania::GetDirectXDevice()
 }
 
 #ifdef MANIAPLANET
-uintptr_t TwinkTrackmania::GetDirectXContext()
+uintptr_t TwinkTrackmania::GetDirectXSwapChain()
 {
-	return Read(uintptr_t, this->ExeBaseAddr + O_D3DCONTEXT);
+	return Read(uintptr_t, this->GetViewport() + O_M_CDX11VIEWPORT_D3DSWAPCHAIN);
 }
 #endif
 

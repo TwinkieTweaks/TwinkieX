@@ -329,6 +329,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>false</TreatWarningAsError>
       <AdditionalIncludeDirectories>K:\Dev\CPlusPlus\TwinkieX\TwinkieX\TwinkieX\Includes;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -635,7 +636,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Includes\imgui\imconfig.h" />
+    <ClInclude Include="Includes\imgui\imgui.h" />
+    <ClInclude Include="Includes\imgui\imgui_impl_dx11.h" />
+    <ClInclude Include="Includes\imgui\imgui_impl_dx9.h" />
+    <ClInclude Include="Includes\imgui\imgui_impl_win32.h" />
+    <ClInclude Include="Includes\imgui\imgui_internal.h" />
+    <ClInclude Include="Includes\imgui\imstb_rectpack.h" />
+    <ClInclude Include="Includes\imgui\imstb_textedit.h" />
+    <ClInclude Include="Includes\imgui\imstb_truetype.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkUi\TwinkUi.h" />
     <ClInclude Include="Includes\Utils\Arch.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
@@ -645,6 +656,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Includes\imgui\imgui.cpp" />
+    <ClCompile Include="Includes\imgui\imgui_demo.cpp" />
+    <ClCompile Include="Includes\imgui\imgui_draw.cpp" />
+    <ClCompile Include="Includes\imgui\imgui_impl_dx11.cpp" />
+    <ClCompile Include="Includes\imgui\imgui_impl_dx9.cpp" />
+    <ClCompile Include="Includes\imgui\imgui_impl_win32.cpp" />
+    <ClCompile Include="Includes\imgui\imgui_tables.cpp" />
+    <ClCompile Include="Includes\imgui\imgui_widgets.cpp" />
+    <ClCompile Include="Includes\Utils\Offsets.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -666,6 +686,7 @@
     <ClCompile Include="Trackmania\TMTypes.cpp" />
     <ClCompile Include="Twinkie\Twinkie.cpp" />
     <ClCompile Include="Twinkie\TwinkTrackmania\TwinkTrackmania.cpp" />
+    <ClCompile Include="Twinkie\TwinkUi\TwinkUi.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Includes\README.md" />
