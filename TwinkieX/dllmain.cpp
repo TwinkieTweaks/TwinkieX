@@ -21,6 +21,11 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
         Sleep(1);
     }
 
+    std::cout << "Before\n";
+    std::cout << "DirectX Device: " << std::hex << TwinkUiState::Device << "\n";
+    std::cout << "Vtable: " << std::hex << *reinterpret_cast<uintptr_t*>(TwinkUiState::Device) << "\n";
+    std::cout << "PresentFn: " << std::hex << (*reinterpret_cast<uintptr_t**>(TwinkUiState::Device))[O_V_PRESENT] << "\n";
+
     // After knowing that everything is initialized, we update everything
     gTwinkie.Update();
 
@@ -34,7 +39,12 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
 
     std::cout << "Viewport: " << std::hex << gTwinkie.TrackmaniaMgr.GetViewport() << "\n";
 
+    std::cout << "After\n";
+
 	std::cout << "DirectX Device: " << std::hex << TwinkUiState::Device << "\n";
+    std::cout << "Vtable: " << std::hex << *reinterpret_cast<uintptr_t*>(TwinkUiState::Device) << "\n";
+    std::cout << "PresentFn: " << std::hex << (*reinterpret_cast<uintptr_t**>(TwinkUiState::Device))[O_V_PRESENT] << "\n";
+
 
     // The return value indicates the success/failure of the thread. TRUE is successful.
     return TRUE;

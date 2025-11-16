@@ -34,11 +34,12 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 96
 
-// Exclusive to TMCN, the others have the device as a global
+// Exclusive to TMCN, the other games have the device as a global
 #define O_M_CDX11VIEWPORT_D3DSWAPCHAIN 8808
 
 // Vtable indices
 #define O_V_MWCLASSINFO 2
+#define O_V_PRESENT 8
 
 #elif defined(TM1)
 
@@ -51,6 +52,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Vtable indices
 #define O_V_MWCLASSINFO 0
+#define O_V_PRESENT 17
 
 #elif defined(TMS)
 
@@ -63,6 +65,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Vtable indices
 #define O_V_MWCLASSINFO 0
+#define O_V_PRESENT 17
 
 #elif defined(TMSX)
 
@@ -75,6 +78,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Vtable indices
 #define O_V_MWCLASSINFO 1
+#define O_V_PRESENT 17
 
 #elif defined(TMO)
 
@@ -87,6 +91,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Vtable indices
 #define O_V_MWCLASSINFO 1
+#define O_V_PRESENT 17
 
 #elif defined(ESWC)
 
@@ -99,5 +104,6 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Vtable indices
 #define O_V_MWCLASSINFO 1
+#define O_V_PRESENT 17
 
 #endif

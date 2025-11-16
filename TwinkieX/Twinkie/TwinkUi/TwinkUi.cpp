@@ -70,10 +70,10 @@ __declspec(noinline) void TwinkUi::Update()
 	// The window is later gotten in the present hook itself, so we don't need to implement it
 
 	// Before hooking, make sure that our memory is writable
-	Unprotect(VirtualPtr(8, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain()), sizeof(uintptr_t));
+	Unprotect(VirtualPtr(O_V_PRESENT, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain()), sizeof(uintptr_t));
 
 	// Hook present
-	TwinkUiState::oPresent = reinterpret_cast<PresentFn>(VirtualWrite(8, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain(), (uintptr_t)hkPresent));
+	TwinkUiState::oPresent = reinterpret_cast<PresentFn>(VirtualWrite(O_V_PRESENT, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain(), (uintptr_t)hkPresent));
 
 	// Everything else
 #else
@@ -95,10 +95,10 @@ __declspec(noinline) void TwinkUi::Update()
 	TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
 	// Before hooking, make sure that our memory is writable
-	Unprotect(VirtualPtr(17, (uintptr_t)TwinkUiState::Device), sizeof(uintptr_t));
+	Unprotect(VirtualPtr(O_V_PRESENT, (uintptr_t)TwinkUiState::Device), sizeof(uintptr_t));
 
 	// Hook present
-	TwinkUiState::oPresent = reinterpret_cast<PresentFn>(VirtualWrite(17, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkPresent));
+	TwinkUiState::oPresent = reinterpret_cast<PresentFn>(VirtualWrite(O_V_PRESENT, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkPresent));
 #endif
 }
 
