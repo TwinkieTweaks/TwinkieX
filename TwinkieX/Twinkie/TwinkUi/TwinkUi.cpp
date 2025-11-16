@@ -156,47 +156,64 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 	static ID3D11RenderTargetView* mainRenderTargetView = nullptr;
 
-	// 
+	// If we haven't initialized ImGui yet...
 	if (!TwinkUiState::ImGuiInit)
 	{
+		// ...then try to get the DX11 device
 		if (SUCCEEDED(pSwapChain->GetDevice(__uuidof(ID3D11Device), (void**)&TwinkUiState::Device)))
 		{
+			// Get the context from the device
 			TwinkUiState::Device->GetImmediateContext(&TwinkUiState::Context);
 
+			// Get the swap chain description,
 			DXGI_SWAP_CHAIN_DESC sd;
 			pSwapChain->GetDesc(&sd);
 
+			// so we can get the window out of it
 			TwinkUiState::Window = sd.OutputWindow;
 
+			// Get the 2D back buffer of the swap chain
 			ID3D11Texture2D* pBackBuffer;
 			pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+
+			// Create a target view using the buffer we got to render our UI on
 			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, NULL, &mainRenderTargetView);
+
+			// Release the buffer so that the game can use it later
 			pBackBuffer->Release();
 
+			// Hook the window process
 			TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
+			// Initialize ImGui
 			InitImGui(TwinkUiState::Context, TwinkUiState::Device);
-
 			TwinkUiState::ImGuiInit = true;
 		}
 
+		// If we couldn't get the device, then fallback to original behavior
 		else
 		{
 			return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
 		}
 	}
 
+	// Create a new frame
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	// Dummy rendering code
 	ImGui::ShowDemoWindow();
 
 	ImGui::Render();
 
+	// Set the render target for the draw data rendering
 	TwinkUiState::Context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
+
+	// Draw from the draw data
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 
+	// Continue as if nothing happened
 	return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
 }
 

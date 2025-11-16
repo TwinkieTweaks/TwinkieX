@@ -35,7 +35,7 @@ public:
 	__declspec(noinline) uintptr_t GetDirectXDevice();
 
 #ifdef MANIAPLANET
-	// Gets the game's DirectX context, only for TMCN/D3D11
+	// Gets the game's DirectX swap chain, only for TMCN/D3D11
 	__declspec(noinline) uintptr_t GetDirectXSwapChain();
 #endif
 };
