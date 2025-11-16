@@ -31,23 +31,6 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
     }
 
     // Debugging code.
-    CMwClassInfo* pAppClassInfo = gTwinkie.TrackmaniaMgr.GetNodClassInfo(gTwinkie.TrackmaniaMgr.GetApp());
-    CMwClassInfo AppClassInfo = *pAppClassInfo;
-
-    while (pAppClassInfo)
-    {
-        std::cout << AppClassInfo.ClassName << "\n";
-        for (CMwMemberInfo* Member : AppClassInfo)
-        {
-            std::cout << "\t" << Member->MemberName << " " << Member->MemberOffset << "\n";
-        }
-        pAppClassInfo = AppClassInfo.ParentClassInfo;
-        if (!pAppClassInfo)
-        {
-            break;
-        }
-        AppClassInfo = *pAppClassInfo;
-    }
 
     std::cout << "Viewport: " << std::hex << gTwinkie.TrackmaniaMgr.GetViewport() << "\n";
 

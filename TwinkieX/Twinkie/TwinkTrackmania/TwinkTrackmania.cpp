@@ -41,11 +41,4 @@ uintptr_t TwinkTrackmania::GetDirectXSwapChain()
 }
 #endif
 
-CMwClassInfo* TwinkTrackmania::GetNodClassInfo(uintptr_t Nod)
-{
-	if (Nod == 0) return nullptr;
-	using GetClassInfoFn = CMwClassInfo*(__stdcall*)();
-	return reinterpret_cast<GetClassInfoFn>(Virtual(O_V_MWCLASSINFO, Nod))();
-}
-
 // END Getters
