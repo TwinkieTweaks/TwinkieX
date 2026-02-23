@@ -31,18 +31,4 @@ void Twinkie::Update()
 	this->UiMgr.Update();
 }
 
-bool Twinkie::IsGameInit()
-{
-#ifdef GAMEBOX
-	TwinkUiState::Device = (DirectXDevice*)this->TrackmaniaMgr.GetDirectXDevice();
-#endif
-	return this->TrackmaniaMgr.GetApp()
-#ifdef MANIAPLANET
-		&& this->TrackmaniaMgr.GetViewport() && this->TrackmaniaMgr.GetDirectXSwapChain()
-#else
-		&& this->TrackmaniaMgr.GetDirectXDevice()
-#endif
-	;
-}
-
 // END Methods

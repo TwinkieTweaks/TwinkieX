@@ -66,6 +66,24 @@
     <ClInclude Include="Includes\imgui\imgui_impl_dx11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Modules\IModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\GlyphTable\IconsForkAwesome.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\GlyphTable\IconsKenney.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Utils\Stdlibs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Modules\ExampleModule\ExampleModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Modules\AnotherModule\AnotherModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -111,6 +129,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\imgui\imgui_impl_dx11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Modules\ExampleModule\ExampleModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Modules\AnotherModule\AnotherModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

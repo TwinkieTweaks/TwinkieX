@@ -1,0 +1,45 @@
+#pragma once
+
+#include <Twinkie/TwinkTrackmania/TwinkTrackmania.h>
+
+// The module interface base-class.
+class IModule
+{
+	public:
+	// Members
+
+	// Is module enabled
+	bool Enabled = true;
+
+	// A unique identifier for each module
+	const char* ID = "UnnamedModule";
+	// A name that can be displayed to the user as-is
+	const char* Name = "Unnamed module";
+
+	// A reference to the TrackmaniaMgr
+	TwinkTrackmania* Twinkie = nullptr;
+
+	// Behaviors
+
+	// Ctor
+	IModule(TwinkTrackmania& Twinkie, const char*, const char*) : Twinkie(&Twinkie) {};
+	// Virtual Dtor
+	virtual ~IModule() = default;
+	
+	// Methods
+
+	// Called every frame
+	virtual void Render() {};
+
+	// Called every frame, but only when the Twinkie interface is visible
+	virtual void RenderInterface() {};
+
+	// Called every frame to render the module's menu item (under Twinkie > Modules)
+	virtual void RenderMenu() {};
+
+	// Called every frame to render the module's menu item (alongside Twinkie, Modules, Debug)
+	virtual void RenderMenuMain() {};
+
+	// Called every frame when the module's settings menu is open
+	virtual void RenderSettings() {};
+};

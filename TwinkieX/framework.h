@@ -6,6 +6,9 @@
 // This warning always fires when including Windows.h for some reason
 #pragma warning(disable : 5039)
 
+// "relative include path contains '..'"
+#pragma warning(disable : 4464)
+
 // Windows Header Files
 #include <windows.h>
 
@@ -13,7 +16,7 @@
 #include <Utils/Arch.h>
 
 // Disable all warnings emmitted by DirectX11
-#pragma warning(disable : 4061 4365 4820 4365)
+#pragma warning(disable : 4061 4365 4820 4365 4865)
 
 // DirectX (11 for TMCN, 9 otherwise)
 #ifdef MANIAPLANET
@@ -32,7 +35,7 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 // Disable all warnings emmitted by dear ImGui
-#pragma warning(disable : 4820 26819 28182 4191 4365 4582 4774 5219 5045 4738 4710 5262)
+#pragma warning(disable : 4820 26819 28182 4191 4365 4582 4774 5219 5045 4738 4710 5262 4711)
 
 #include <imgui/imgui.h>
 
@@ -44,7 +47,7 @@
 
 #include <imgui/imgui_impl_win32.h>
 
-// Included for debugging
-#pragma warning(disable : 4710)
-#pragma warning(disable : 4711)
-#include <iostream>
+#include <GlyphTable/IconsForkAwesome.h>
+#include <GlyphTable/IconsKenney.h>
+
+#include <vector>

@@ -15,23 +15,29 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 namespace TwinkUiState
 {
 	// The original present function definition for the device.
-	PresentFn oPresent = 0;
+	volatile PresentFn oPresent = 0;
 
 	// The original window process definition for the window.
-	WNDPROC oWndProc = 0;
+	volatile WNDPROC oWndProc = 0;
 
 	// Handle to the game window.
-	HWND Window = 0;
+	volatile HWND Window = 0;
 
 	// Check if dear ImGui has been initialized yet
-	bool ImGuiInit = false;
+	volatile bool ImGuiInit = false;
+
+	// Draw the UI
+	volatile bool RenderUi = true;
 
 	// The device, since it's not given by any function
 	DirectXDevice* Device = 0;
 
+	// The UiMgr
+	TwinkUi* UiMgr = nullptr;
+
 #ifdef MANIAPLANET
 	// The DirectX11 context.
-	DirectXContext* Context;
+	volatile DirectXContext* Context;
 #endif
 }
 
@@ -43,6 +49,11 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 {
 	// Set the trackmania manager reference for later use
 	this->TrackmaniaMgr = &TrackmaniaMgr;
+
+	this->Modules = {
+		new ExampleModule(TrackmaniaMgr),
+		new AnotherModule(TrackmaniaMgr)
+	};
 }
 
 // END Behaviors
@@ -104,12 +115,23 @@ __declspec(noinline) void TwinkUi::Update()
 
 static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (!TwinkUiState::ImGuiInit)
+	{
+		return CallWindowProcA(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);
+	}
+
+	// TODO: Document
 	auto& ImIo = ImGui::GetIO();
 
 	auto ImWndProcResult = ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
 	if (ImWndProcResult)
 	{
 		return ImWndProcResult;
+	}
+	if (uMsg == WM_KEYDOWN)
+	{
+		if (wParam == VK_F3 and !(lParam & 0xFF000000))
+			TwinkUiState::RenderUi = !TwinkUiState::RenderUi;
 	}
 
 	if ((uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST && ImIo.WantCaptureKeyboard) || (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST && ImIo.WantCaptureMouse))
@@ -141,7 +163,7 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImGui::ShowDemoWindow();
+	TwinkUiState::UiMgr->Render();
 
 	ImGui::EndFrame();
 	ImGui::Render();
@@ -149,11 +171,18 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 
 	return TwinkUiState::oPresent(pDevice, A, B, C, D);
 }
-#else
+#elif defined(MANIAPLANET)
+void InitImGui(DirectXContext* Context, DirectXDevice* Device)
+{
+	ImGui::CreateContext();
+
+	ImGui_ImplWin32_Init(TwinkUiState::Window);
+	ImGui_ImplDX11_Init(Device, Context);
+}
+
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 {
 	// TODO: Move this to TwinkUiState
-
 	static ID3D11RenderTargetView* mainRenderTargetView = nullptr;
 
 	// If we haven't initialized ImGui yet...
@@ -176,8 +205,23 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			ID3D11Texture2D* pBackBuffer;
 			pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 
+			// Get the color format from the swap chain's back buffer for use with the render target view
+			DXGI_FORMAT BackBufferColorFmt;
+			{
+				D3D11_TEXTURE2D_DESC desc;
+				pBackBuffer->GetDesc(&desc);
+				BackBufferColorFmt = desc.Format;
+			}
+
+			// Use the new render target view description with the new color format
+			D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
+			RenderTargetViewDesc.Format = BackBufferColorFmt;
+			RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+			std::cout << "Fmt: " << BackBufferColorFmt << "\n";
+
 			// Create a target view using the buffer we got to render our UI on
-			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, NULL, &mainRenderTargetView);
+			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &mainRenderTargetView);
 
 			// Release the buffer so that the game can use it later
 			pBackBuffer->Release();
@@ -202,8 +246,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	// Dummy rendering code
-	ImGui::ShowDemoWindow();
+	TwinkUiState::UiMgr->Render();
 
 	ImGui::Render();
 
@@ -216,14 +259,55 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	// Continue as if nothing happened
 	return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
 }
-
-void InitImGui(DirectXContext* Context, DirectXDevice* Device)
-{
-	ImGui::CreateContext();
-
-	ImGui_ImplWin32_Init(TwinkUiState::Window);
-	ImGui_ImplDX11_Init(Device, Context);
-}
 #endif
+
+void TwinkUi::Render()
+{
+	using namespace ImGui;
+
+	if (TwinkUiState::RenderUi)
+	{
+		if (BeginMainMenuBar())
+		{
+			PushStyleColor(ImGuiCol_Text, ColorConvertFloat4ToU32({ 1.f, 0.f, 1.f, 1.f }));
+			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
+			if (BeginMenu("Twinkie##Twinkie"))
+			{
+				PopStyleColor();
+
+				ImGui::EndMenu();
+			}
+			else PopStyleColor();
+
+			for (auto& Module : this->Modules)
+			{
+				if (!Module->Enabled) continue;
+				Module->RenderMenuMain();
+			}
+
+			if (BeginMenu("Modules##Twinkie"))
+			{
+				for (auto& Module : this->Modules)
+				{
+					if (!Module->Enabled) continue;
+					Module->RenderMenu();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			PopItemFlag();
+
+			EndMainMenuBar();
+		}
+	}
+
+	for (auto& Module : this->Modules)
+	{
+		if (!Module->Enabled) continue;
+		Module->Render();
+		if (TwinkUiState::RenderUi) Module->RenderInterface();
+	}
+}
 
 // END Methods

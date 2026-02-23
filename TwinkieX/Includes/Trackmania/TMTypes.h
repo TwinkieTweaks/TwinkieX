@@ -17,8 +17,6 @@ struct CFastBuffer
 #ifdef TMCN
 	T* Ptr = nullptr;
 	size_t Size = 0;
-
-	// GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #elif defined(GAMEBOX)
 	size_t Size = 0;
 	T* Ptr = nullptr;

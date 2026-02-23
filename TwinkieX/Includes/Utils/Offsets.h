@@ -1,5 +1,6 @@
 #pragma once
 #include "Arch.h"
+#include "Stdlibs.h"
 
 extern DWORD ProtFlags;
 

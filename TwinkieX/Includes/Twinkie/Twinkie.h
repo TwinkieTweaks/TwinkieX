@@ -12,27 +12,19 @@ class Twinkie
 public:
 	// The trackmania manager.
 	TwinkTrackmania TrackmaniaMgr;
-#ifdef GAMEBOX
-	// Usable space
-	int pad;
-#endif
+
 	// The UI manager.
 	TwinkUi UiMgr = TwinkUi(TrackmaniaMgr);
 
 	// Behaviors
 
-	// (__declspec(noinline)) is to prevent the compiler from potentially promoting the function to be inline, raising a warning
-
 	// Ctor
-	__declspec(noinline) Twinkie();
+	Twinkie();
 	// Dtor
-	__declspec(noinline) ~Twinkie();
+	~Twinkie();
 
 	// Methods
 
 	// Updates all children
-	__declspec(noinline) void Update();
-
-	// Checks if the game is initialized yet
-	__declspec(noinline) bool IsGameInit();
+	void Update();
 };
