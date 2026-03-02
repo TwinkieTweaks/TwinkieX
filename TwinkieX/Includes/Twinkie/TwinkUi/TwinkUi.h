@@ -28,19 +28,19 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 namespace TwinkUiState
 {
 	// The original present function definition for the device.
-	extern volatile PresentFn oPresent;
+	extern PresentFn oPresent;
 
 	// The original window process definition for the window.
-	extern volatile WNDPROC oWndProc;
+	extern WNDPROC oWndProc;
 
 	// Handle to the game window.
-	extern volatile HWND Window;
+	extern HWND Window;
 
 	// Check if dear ImGui has been initialized yet
-	extern volatile bool ImGuiInit;
+	extern bool ImGuiInit;
 
 	// Draw the UI
-	extern volatile bool RenderUi;
+	extern bool RenderUi;
 
 	// The device, since it's not given by any function
 	extern DirectXDevice* Device;
@@ -50,7 +50,7 @@ namespace TwinkUiState
 
 #ifdef MANIAPLANET
 	// The DirectX11 context.
-	extern volatile DirectXContext* Context;
+	extern DirectXContext* Context;
 #endif
 }
 

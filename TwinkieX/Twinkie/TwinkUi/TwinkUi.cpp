@@ -15,19 +15,19 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 namespace TwinkUiState
 {
 	// The original present function definition for the device.
-	volatile PresentFn oPresent = 0;
+	PresentFn oPresent = 0;
 
 	// The original window process definition for the window.
-	volatile WNDPROC oWndProc = 0;
+	WNDPROC oWndProc = 0;
 
 	// Handle to the game window.
-	volatile HWND Window = 0;
+	HWND Window = 0;
 
 	// Check if dear ImGui has been initialized yet
-	volatile bool ImGuiInit = false;
+	bool ImGuiInit = false;
 
 	// Draw the UI
-	volatile bool RenderUi = true;
+	bool RenderUi = true;
 
 	// The device, since it's not given by any function
 	DirectXDevice* Device = 0;
@@ -37,7 +37,7 @@ namespace TwinkUiState
 
 #ifdef MANIAPLANET
 	// The DirectX11 context.
-	volatile DirectXContext* Context;
+	DirectXContext* Context;
 #endif
 }
 
@@ -217,8 +217,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
 			RenderTargetViewDesc.Format = BackBufferColorFmt;
 			RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
-			std::cout << "Fmt: " << BackBufferColorFmt << "\n";
 
 			// Create a target view using the buffer we got to render our UI on
 			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &mainRenderTargetView);

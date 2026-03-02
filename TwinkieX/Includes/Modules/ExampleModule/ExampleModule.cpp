@@ -37,6 +37,8 @@ void ExampleModule::RenderInterface()
 
 		Button("Button");
 
+		Text("Hello, world!");
+
 		End();
 	}
 }
