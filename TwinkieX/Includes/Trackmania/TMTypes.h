@@ -186,8 +186,7 @@ struct CMwClassInfo
 {
 	int Pad1;
 
-	// Class ID
-	unsigned int ClassID;
+	unsigned int Pad2;
 
 	// Class name
 	char* ClassName;
@@ -196,7 +195,7 @@ struct CMwClassInfo
 	int unknown1;
 
 	// Class ID
-	int Pad2;
+	int ClassID;
 
 	int unknown2;
 
