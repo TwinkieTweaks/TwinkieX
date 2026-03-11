@@ -34,11 +34,11 @@ template <typename T>
 struct CFastArray
 {
 #ifdef GAMEBOX
-	size_t Size = 0;
+	unsigned int Size = 0;
 	T* Ptr = nullptr;
 #else
 	T* Ptr = nullptr;
-	size_t Size = 0;
+	unsigned int Size = 0;
 #endif
 	T* begin() { return Ptr; }
 	T* end() { return Ptr + Size; }
