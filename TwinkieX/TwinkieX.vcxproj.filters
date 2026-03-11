@@ -78,10 +78,10 @@
     <ClInclude Include="Includes\Utils\Stdlibs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\Modules\ExampleModule\ExampleModule.h">
+    <ClInclude Include="Includes\Modules\AnotherModule\AnotherModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\Modules\AnotherModule\AnotherModule.h">
+    <ClInclude Include="Includes\Modules\AppExplorerModule\AppExplorerModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -131,10 +131,10 @@
     <ClCompile Include="Includes\imgui\imgui_impl_dx11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Includes\Modules\ExampleModule\ExampleModule.cpp">
+    <ClCompile Include="Includes\Modules\AnotherModule\AnotherModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Includes\Modules\AnotherModule\AnotherModule.cpp">
+    <ClCompile Include="Includes\Modules\AppExplorerModule\AppExplorerModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

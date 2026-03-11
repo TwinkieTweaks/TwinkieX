@@ -1,8 +1,10 @@
 #pragma once
 
 // Modules
-#include <Modules/ExampleModule/ExampleModule.h>
+#include <Modules/AppExplorerModule/AppExplorerModule.h>
 #include <Modules/AnotherModule/AnotherModule.h>
+
+#include <vector>
 
 class TwinkUi;
 

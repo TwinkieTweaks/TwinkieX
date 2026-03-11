@@ -1,15 +1,13 @@
 #pragma once
 
 #include <Twinkie/TwinkTrackmania/TwinkTrackmania.h>
+#include <imgui/imgui.h>
 
 // The module interface base-class.
 class IModule
 {
-	public:
+public:
 	// Members
-
-	// Is module enabled
-	bool Enabled = true;
 
 	// A unique identifier for each module
 	const char* ID = "UnnamedModule";

@@ -7,10 +7,10 @@ extern DWORD ProtFlags;
 // Useful definitions
 
 // Used to read from an address
-#define Read(type, addr) (*(type*)((addr)))
+#define ReadAddr(type, addr) (*(type*)((addr)))
 
 // Used to write to an address
-#define Write(type, addr, value) *(type*)((addr)) = (value)
+#define WriteAddr(type, addr, value) *(type*)((addr)) = (value)
 
 // Used to get the n-th virtual function from an object ptr
 #define Virtual(n, obj) (*(uintptr_t**)(obj))[n]
@@ -34,6 +34,9 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 96
+#define O_M_CTRACKMANIA_INPUTPORT 0x70
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0x178
 
 // Exclusive to TMCN, the other games have the device as a global
 #define O_M_CDX11VIEWPORT_D3DSWAPCHAIN 8808
@@ -50,6 +53,9 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 0
+#define O_M_CTRACKMANIA_INPUTPORT 0
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0
 
 // Vtable indices
 #define O_V_MWCLASSINFO 0
@@ -63,10 +69,13 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 0
+#define O_M_CTRACKMANIA_INPUTPORT 0
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0
 
 // Vtable indices
 #define O_V_MWCLASSINFO 0
-#define O_V_PRESENT 17
+#define O_V_PRESENT 0
 
 #elif defined(TMSX)
 
@@ -76,6 +85,9 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 80
+#define O_M_CTRACKMANIA_INPUTPORT 0x58
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
 
 // Vtable indices
 #define O_V_MWCLASSINFO 1
@@ -89,6 +101,9 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 80
+#define O_M_CTRACKMANIA_INPUTPORT 0x58
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
 
 // Vtable indices
 #define O_V_MWCLASSINFO 1
@@ -102,6 +117,9 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 0
+#define O_M_CTRACKMANIA_INPUTPORT 0x58
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
 
 // Vtable indices
 #define O_V_MWCLASSINFO 1

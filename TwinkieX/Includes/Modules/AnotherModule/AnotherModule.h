@@ -1,5 +1,5 @@
 #pragma once
-#include "../IModule.h"
+#include <Modules/IModule.h>
 
 class AnotherModule : public IModule
 {

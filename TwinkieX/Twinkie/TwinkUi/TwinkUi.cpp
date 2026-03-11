@@ -51,7 +51,7 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 	this->TrackmaniaMgr = &TrackmaniaMgr;
 
 	this->Modules = {
-		new ExampleModule(TrackmaniaMgr),
+		new AppExplorerModule(TrackmaniaMgr),
 		new AnotherModule(TrackmaniaMgr)
 	};
 }
@@ -279,7 +279,6 @@ void TwinkUi::Render()
 
 			for (auto& Module : this->Modules)
 			{
-				if (!Module->Enabled) continue;
 				Module->RenderMenuMain();
 			}
 
@@ -287,7 +286,6 @@ void TwinkUi::Render()
 			{
 				for (auto& Module : this->Modules)
 				{
-					if (!Module->Enabled) continue;
 					Module->RenderMenu();
 				}
 
@@ -302,7 +300,6 @@ void TwinkUi::Render()
 
 	for (auto& Module : this->Modules)
 	{
-		if (!Module->Enabled) continue;
 		Module->Render();
 		if (TwinkUiState::RenderUi) Module->RenderInterface();
 	}

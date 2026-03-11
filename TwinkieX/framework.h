@@ -16,7 +16,7 @@
 #include <Utils/Arch.h>
 
 // Disable all warnings emmitted by DirectX11
-#pragma warning(disable : 4061 4365 4820 4365 4865)
+#pragma warning(disable : 4061 4365 4820 4365)
 
 // DirectX (11 for TMCN, 9 otherwise)
 #ifdef MANIAPLANET

@@ -1,7 +1,5 @@
 // This file is for checking that the current build configuration is valid for the target game.
-#pragma once
-
-#define NoGameWarning "No target game defined. Please define one of the following: TMCN, TM1, TMO, TMS, TMSX, ESWC."
+#pragma once''
 
 // _M_X64 is defined for x64
 #ifdef _M_X64
@@ -23,8 +21,6 @@
 #elif defined(TMCN)
 // MANIAPLANET is for TMCN
 #define MANIAPLANET
-#else
-#warning NoGameWarning
 #endif
 
 // TM1, TMO, TMS, TMSX and ESWC are x86 games
@@ -33,5 +29,5 @@
 #endif
 
 #if !defined(TMCN) && !defined(TM1) && !defined(TMO) && !defined(TMS) && !defined(TMSX) && !defined(ESWC)
-#error NoGameWarning
+#error "No target game defined. Please define one of the following: TMCN, TM1, TMO, TMS, TMSX, ESWC."
 #endif

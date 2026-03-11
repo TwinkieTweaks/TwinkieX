@@ -1,14 +1,7 @@
+#include <Utils/Offsets.h>
 #pragma once
 
-typedef int Integer;
-typedef unsigned int Bool;
-typedef unsigned char Nat8;
-typedef unsigned short Nat16;
-typedef unsigned int Natural, Nat32;
-typedef unsigned __int64 Nat64;
-typedef float Real, Real32;
-
-typedef void(*pFun)(void*);
+using ActionFn = void(__thiscall*)(uintptr_t);
 
 // Resizable array type used by the game
 template <typename T>
@@ -16,19 +9,37 @@ struct CFastBuffer
 {
 #ifdef TMCN
 	T* Ptr = nullptr;
-	size_t Size = 0;
+	unsigned int Size = 0;
+	unsigned int Capacity = 0;
 #elif defined(GAMEBOX)
-	size_t Size = 0;
+	unsigned int Size = 0;
+	unsigned int Capacity = 0;
 	T* Ptr = nullptr;
 #endif
-
-	size_t Capacity = 0;
 
 	T* operator[](size_t Idx)
 	{
 		return Ptr + Idx;
 	}
 
+	T* begin() { return Ptr; }
+	T* end() { return Ptr + Size; }
+
+	const T* begin() const { return Ptr; }
+	const T* end() const { return Ptr + Size; }
+};
+
+// Single-size array type used by the game
+template <typename T>
+struct CFastArray
+{
+#ifdef GAMEBOX
+	size_t Size = 0;
+	T* Ptr = nullptr;
+#else
+	T* Ptr = nullptr;
+	size_t Size = 0;
+#endif
 	T* begin() { return Ptr; }
 	T* end() { return Ptr + Size; }
 
@@ -46,12 +57,12 @@ struct CMwParam
 struct CMwNod 
 {
 public:
-	pFun* vftable;
-	Natural ReferenceCount;
+	ActionFn* vftable;
+	unsigned int ReferenceCount;
 	unsigned int Pad0;
 	uintptr_t SystemFid;
 	CFastBuffer<CMwNod*>* Dependants;
-	Natural unknown1;
+	unsigned int unknown1;
 	unsigned int Pad1;
 };
 
@@ -60,85 +71,73 @@ public:
 // This class is exclusive to TMCN
 struct CMwMemberInfo
 {
+	// ARRAYBASE => https://openplanet.dev/docs/api/global/MwSArray
+	// [TYPE]1 and [TYPE]2 are DIFFERENT. Do NOT ignore them.
 	enum eType
 	{
-		ACTION,          // Method that takes no arguments and has no return value; CMwMethodInfo
-		BOOL,
-		BOOLARRAY,
-		BOOLBUFFER,
-		BOOLBUFFERCAT,
-		CLASS,           // CMwClassMemberInfo
-		CLASSARRAY,      // CMwClassArrayMemberInfo
-		CLASSBUFFER,     // CMwClassArrayMemberInfo
-		CLASSBUFFERCAT,  // CMwClassArrayMemberInfo
-		COLOR,           // Color struct
-		COLORARRAY,
-		COLORBUFFER,
-		COLORBUFFERCAT,
-		ENUM,            // CMwEnumInfo
-		ENUMARRAY,
-		ENUMBUFFER,
-		ENUMBUFFERCAT,
-		INT,
-		INTARRAY,
-		INTBUFFER,
-		INTBUFFERCAT,
-		INTRANGE,
-		ISO4,            // Iso4
-		ISO4ARRAY,
-		ISO4BUFFER,
-		ISO4BUFFERCAT,
-		ISO3,            // Iso3
-		ISO3ARRAY,
-		ISO3BUFFER,
-		ISO3BUFFERCAT,
-		ID,              // Id
-		IDARRAY,
-		IDBUFFER,
-		IDBUFFERCAT,
-		NATURAL,         // unsigned int
-		NATURALARRAY,
-		NATURALBUFFER,
-		NATURALBUFFERCAT,
-		NATURALRANGE,
-		REAL,            // float
-		REALARRAY,
-		REALBUFFER,
-		REALBUFFERCAT,
-		REALRANGE,
-		STRING,          // String
-		STRINGARRAY,
-		STRINGBUFFER,
-		STRINGBUFFERCAT,
-		STRINGINT,       // StringInt
-		STRINGINTARRAY,
-		STRINGINTBUFFER,
-		STRINGINTBUFFERCAT,
-		VEC2,            // Vec2
-		VEC2ARRAY,
-		VEC2BUFFER,
-		VEC2BUFFERCAT,
-		VEC3,            // Vec3
-		VEC3ARRAY,
-		VEC3BUFFER,
-		VEC3BUFFERCAT,
-		VEC4,            // Vec4
-		VEC4ARRAY,
-		VEC4BUFFER,
-		VEC4BUFFERCAT,
-		INT3,            // Int3
-		INT3ARRAY,
-		INT3BUFFER,
-		INT3BUFFERCAT,
-		NAT3,            // Nat3
-		NAT3ARRAY,
-		NAT3BUFFER,
-		NAT3BUFFERCAT,
-		QUAT,            // Quaternion
-		QUATARRAY,
-		QUATBUFFER,
-		QUATBUFFERCAT,
-		PROC             // Method with arguments and/or a return value; CMwMethodInfo
+		ACTION = 0,
+
+		BOOL = 1,
+		BOOLARRAY = 2, // EXTRAPOLATED
+		BOOLBUFFER = 3, // EXTRAPOLATED
+		BOOLBUFFERCAT = 4, // EXTRAPOLATED
+		BOOLARRAYBASE = 5, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+
+		CLASS = 10,
+		CLASSARRAY = 11,
+		CLASSBUFFER = 12,
+		CLASSBUFFERCAT = 13, // EXTRAPOLATED
+		CLASSARRAYBASE = 14, // https://openplanet.dev/docs/api/global/MwSArray
+
+		COLOR = 19, // EXTRAPOLATED
+		COLORARRAY = 20,
+		COLORBUFFER = 21, // EXTRAPOLATED
+		COLORBUFFERCAT = 22,
+		COLORARRAYBASE = 23, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+
+		ENUM = 28,
+
+		INT1 = 37,
+		INT1ARRAY = 38,
+		INT1BUFFER = 39, // EXTRAPOLATED
+		INT1BUFFERCAT = 40, // EXTRAPOLATED
+		INT1ARRAYBASE = 41, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+
+		INT2 = 46,
+
+		ID = 65,
+		
+		NATURAL = 74,
+		NATURALARRAY = 75, // EXTRAPOLATED
+		NATURALBUFFER = 76, // EXTRAPOLATED
+		NATURALBUFFERCAT = 77, // EXTRAPOLATED
+		NATURALARRAYBASE = 78, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+		
+		REAL1 = 84,
+		REAL1ARRAY = 85,
+		REAL1BUFFER = 86, // EXTRAPOLATED
+		REAL1BUFFERCAT = 87, // EXTRAPOLATED
+		REAL1ARRAYBASE = 88, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+		
+		REAL2 = 93,
+
+		STRING = 94,
+		STRINGARRAY = 95, // EXTRAPOLATED
+		STRINGBUFFER = 96,
+		STRINGBUFFERCAT = 97, // EXTRAPOLATED
+		STRINGARRAYBASE = 98,  // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+		
+		STRINGINT = 103,
+		STRINGINTARRAY = 104,
+		STRINGINTBUFFER = 105,
+		STRINGINTBUFFERCAT = 106, // EXTRAPOLATED
+		STRINGINTARRAYBASE = 107,  // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+		
+		VEC3 = 121,
+		
+		PROC = 184,
+		
+		CLASSNOTPERSISTENT = 186 // https://next.openplanet.dev/MetaNotPersistent
 	};
 
 	enum eFlags 
@@ -153,6 +152,7 @@ struct CMwMemberInfo
 		VIRTUAL_SUB = 0b10000000,
 	};
 
+	// TODO: Fully reverse this enum type
 	// Type of the member
 	eType MemberType;
 
@@ -174,9 +174,9 @@ struct CMwMemberInfo
 	void* p;
 
 	// Flags for the member, see (eFlags)
-	int flags;
+	int MemberFlags;
 	// Secondary flags for the member, see (eFlags)
-	int flags2;
+	int MemberFlags2;
 };
 
 
@@ -184,8 +184,10 @@ struct CMwMemberInfo
 // This class is exclusive to TMCN
 struct CMwClassInfo
 {
-	// Virtual function table pointer
-	pFun* vftable;
+	int Pad1;
+
+	// Class ID
+	unsigned int ClassID;
 
 	// Class name
 	char* ClassName;
@@ -194,7 +196,7 @@ struct CMwClassInfo
 	int unknown1;
 
 	// Class ID
-	int ClassID;
+	int Pad2;
 
 	int unknown2;
 
@@ -204,7 +206,7 @@ struct CMwClassInfo
 	// Next class info, usually has nothing to do with this class
 	CMwClassInfo* NextClassInfo;
 	// Pointer to the class' constructor
-	pFun CtorFn;
+	ActionFn CtorFn;
 
 	// Padding for unknown data
 	unsigned long long Padding[18];
@@ -333,9 +335,9 @@ struct CMwMemberInfo
 	const char* MemberName;
 
 	// Flags for the member, see (eFlags)
-	int flags;
+	int MemberFlags;
 	// Secondary flags for the member, see (eFlags)
-	int flags2;
+	int MemberFlags2;
 };
 
 // Information about a class' member
@@ -343,7 +345,7 @@ struct CMwMemberInfo
 struct CMwClassInfo
 {
 	// Virtual function table pointer
-	pFun* vftable;
+	ActionFn* vftable;
 
 	// Class ID
 	int ClassID;
@@ -360,7 +362,7 @@ struct CMwClassInfo
 	// Next class info, usually has nothing to do with this class
 	CMwClassInfo* NextClassInfo;
 	// Pointer to the class' constructor
-	pFun CtorFn;
+	ActionFn CtorFn;
 
 	// List of member infos
 	CMwMemberInfo** Members;
@@ -378,3 +380,25 @@ struct CMwClassInfo
 	CMwMemberInfo** end() const;
 };
 #endif
+
+// Info of an ACTION type member
+struct CMwMemberInfoAction : CMwMemberInfo
+{
+	char Padding[8];
+
+	// The action function itself
+	ActionFn Action;
+};
+
+// Info of a CLASS type member
+struct CMwMemberInfoClass : CMwMemberInfo
+{
+
+};
+
+// The class used by the app's input port (CTrackMania.InputPort)
+struct CInputPort
+{
+	char Padding[O_M_CINPUTPORT_CONNECTEDDEVICES];
+	CFastArray<uintptr_t> ConnectedDevices;
+};
