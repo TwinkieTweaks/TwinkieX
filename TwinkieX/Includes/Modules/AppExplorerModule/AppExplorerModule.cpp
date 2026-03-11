@@ -33,6 +33,8 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 	{
 		while (ClassInfo)
 		{
+			PushID(ClassInfo);
+
 			for (auto& MemberInfo : *ClassInfo)
 			{
 				bool IsMemberVirtual = MemberInfo->MemberOffset == 0xFFFFFFFFU;
@@ -43,12 +45,8 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 					{
 						if (!IsMemberVirtual)
 						{
-							PushID(MemberInfo);
-
 							uintptr_t ChildNod = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
 							RenderNod(ChildNod, MemberInfo->MemberName, MemberInfo);
-
-							PopID();
 							break;
 						}
 					}
@@ -132,6 +130,8 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 				SeparatorText(ClassInfo->ParentClassInfo->ClassName);
 			}
 			ClassInfo = ClassInfo->ParentClassInfo;
+
+			PopID();
 		}
 		TreePop();
 	}
