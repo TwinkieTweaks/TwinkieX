@@ -89,6 +89,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 								EndDisabled();
 							}
 						}
+						break;
 					}
 					case CMwMemberInfo::CLASSARRAY:
 					{
@@ -115,6 +116,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 								EndDisabled();
 							}
 						}
+						break;
 					}
 
 					default:
