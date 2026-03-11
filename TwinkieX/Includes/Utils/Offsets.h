@@ -38,6 +38,11 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x178
 
+#define O_M_CINPUTDEVICEMOUSE_INPUTNOTAVAILABLE 0xDC
+#define O_M_CINPUTDEVICEKEYBOARD_INPUTNOTAVAILABLE 0xDC
+
+#define O_M_CINPUTDEVICE_MUSTBEPOLLED 0xE0
+
 // Exclusive to TMCN, the other games have the device as a global
 #define O_M_CDX11VIEWPORT_D3DSWAPCHAIN 8808
 
@@ -57,6 +62,11 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0
 
+#define O_M_CINPUTDEVICEMOUSE_INPUTNOTAVAILABLE 0
+#define O_M_CINPUTDEVICEKEYBOARD_INPUTNOTAVAILABLE 0
+
+#define O_M_CINPUTDEVICE_MUSTBEPOLLED 0
+
 // Vtable indices
 #define O_V_MWCLASSINFO 0
 #define O_V_PRESENT 17
@@ -72,6 +82,11 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0
+
+#define O_M_CINPUTDEVICEMOUSE_INPUTNOTAVAILABLE 0
+#define O_M_CINPUTDEVICEKEYBOARD_INPUTNOTAVAILABLE 0
+
+#define O_M_CINPUTDEVICE_MUSTBEPOLLED 0
 
 // Vtable indices
 #define O_V_MWCLASSINFO 0
@@ -89,6 +104,11 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
 
+#define O_M_CINPUTDEVICEMOUSE_INPUTNOTAVAILABLE 0x1c
+#define O_M_CINPUTDEVICEKEYBOARD_INPUTNOTAVAILABLE 0x1c
+
+#define O_M_CINPUTDEVICE_MUSTBEPOLLED 0x18
+
 // Vtable indices
 #define O_V_MWCLASSINFO 1
 #define O_V_PRESENT 17
@@ -105,6 +125,11 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
 
+#define O_M_CINPUTDEVICEMOUSE_INPUTNOTAVAILABLE 0x14
+#define O_M_CINPUTDEVICEKEYBOARD_INPUTNOTAVAILABLE 0x14
+
+#define O_M_CINPUTDEVICE_MUSTBEPOLLED 0x18
+
 // Vtable indices
 #define O_V_MWCLASSINFO 1
 #define O_V_PRESENT 17
@@ -120,6 +145,11 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0x58
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
+
+#define O_M_CINPUTDEVICEMOUSE_INPUTNOTAVAILABLE 0x14
+#define O_M_CINPUTDEVICEKEYBOARD_INPUTNOTAVAILABLE 0x14
+
+#define O_M_CINPUTDEVICE_MUSTBEPOLLED 0x18
 
 // Vtable indices
 #define O_V_MWCLASSINFO 1

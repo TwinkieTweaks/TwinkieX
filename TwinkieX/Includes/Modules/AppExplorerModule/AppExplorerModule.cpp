@@ -47,8 +47,8 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 						{
 							uintptr_t ChildNod = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
 							RenderNod(ChildNod, MemberInfo->MemberName, MemberInfo);
-							break;
 						}
+						break;
 					}
 
 					case CMwMemberInfo::ACTION:
@@ -58,7 +58,6 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 						{
 							MemberInfoAction->Action(Nod);
 						}
-
 						break;
 					}
 
@@ -83,7 +82,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 							else
 							{
 								BeginDisabled();
-								Text("%s CLASSBUFFER/ARRAY (0x%llx)", MemberInfo);
+								Text("%s CLASSBUFFER (0x%llx)", MemberInfo);
 								EndDisabled();
 							}
 						}
@@ -110,9 +109,29 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 							else
 							{
 								BeginDisabled();
-								Text("%s CLASSBUFFER/ARRAY (0x%llx)", MemberInfo);
+								Text("%s CLASSARRAY (0x%llx)", MemberInfo);
 								EndDisabled();
 							}
+						}
+						break;
+					}
+
+					case CMwMemberInfo::REAL:
+					{
+						if (!IsMemberVirtual)
+						{
+							float* Float = (float*)(Nod + MemberInfo->MemberOffset);
+							InputFloat(MemberInfo->MemberName, Float);
+						}
+						break;
+					}
+
+					case CMwMemberInfo::BOOL:
+					{
+						if (!IsMemberVirtual)
+						{
+							bool* Bool = (bool*)(Nod + MemberInfo->MemberOffset);
+							Checkbox(MemberInfo->MemberName, Bool);
 						}
 						break;
 					}

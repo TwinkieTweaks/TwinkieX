@@ -120,7 +120,6 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		return CallWindowProcA(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);
 	}
 
-	// TODO: Document
 	auto& ImIo = ImGui::GetIO();
 
 	auto ImWndProcResult = ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
@@ -263,6 +262,19 @@ void TwinkUi::Render()
 {
 	using namespace ImGui;
 
+	constexpr auto CInputDeviceMouseClassID = 0x1300a000;
+	constexpr auto CInputDeviceKeyboardClassID = 0x1300b000;
+
+	auto InputPort = TrackmaniaMgr->GetInputPort();
+
+	auto& TheImGuiIO = GetIO();
+
+	for (auto& ConnectedDevice : InputPort->ConnectedDevices)
+	{
+		auto ClassInfo = TrackmaniaMgr->GetNodClassInfo(ConnectedDevice);
+		// TODO
+	}
+
 	if (TwinkUiState::RenderUi)
 	{
 		if (BeginMainMenuBar())
@@ -303,6 +315,8 @@ void TwinkUi::Render()
 		Module->Render();
 		if (TwinkUiState::RenderUi) Module->RenderInterface();
 	}
+
+	ImGui::ShowDemoWindow();
 }
 
 // END Methods

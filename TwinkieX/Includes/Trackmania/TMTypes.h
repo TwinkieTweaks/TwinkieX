@@ -13,8 +13,8 @@ struct CFastBuffer
 	unsigned int Capacity = 0;
 #elif defined(GAMEBOX)
 	unsigned int Size = 0;
-	unsigned int Capacity = 0;
 	T* Ptr = nullptr;
+	unsigned int Capacity = 0;
 #endif
 
 	T* operator[](size_t Idx)
@@ -33,13 +33,16 @@ struct CFastBuffer
 template <typename T>
 struct CFastArray
 {
-#ifdef GAMEBOX
-	unsigned int Size = 0;
+#ifdef MANIAPLANET
 	T* Ptr = nullptr;
+	unsigned int Size = 0;
 #else
-	T* Ptr = nullptr;
+	uintptr_t vf;
 	unsigned int Size = 0;
+	T* Ptr = nullptr;
 #endif
+
+
 	T* begin() { return Ptr; }
 	T* end() { return Ptr + Size; }
 
@@ -113,11 +116,11 @@ struct CMwMemberInfo
 		NATURALBUFFERCAT = 77, // EXTRAPOLATED
 		NATURALARRAYBASE = 78, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 		
-		REAL1 = 84,
-		REAL1ARRAY = 85,
-		REAL1BUFFER = 86, // EXTRAPOLATED
-		REAL1BUFFERCAT = 87, // EXTRAPOLATED
-		REAL1ARRAYBASE = 88, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
+		REAL = 84,
+		REALARRAY = 85,
+		REALBUFFER = 86, // EXTRAPOLATED
+		REALBUFFERCAT = 87, // EXTRAPOLATED
+		REALARRAYBASE = 88, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 		
 		REAL2 = 93,
 
