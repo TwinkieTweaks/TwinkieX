@@ -212,6 +212,16 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 				BackBufferColorFmt = desc.Format;
 			}
 
+			// Remove sRGB from the backbuffer color format, since imgui already uses sRGB
+			if (BackBufferColorFmt == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+			{
+				BackBufferColorFmt = DXGI_FORMAT_R8G8B8A8_UNORM;
+			}
+			else if (BackBufferColorFmt == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB)
+			{
+				BackBufferColorFmt = DXGI_FORMAT_B8G8R8A8_UNORM;
+			}
+
 			// Use the new render target view description with the new color format
 			D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
 			RenderTargetViewDesc.Format = BackBufferColorFmt;
