@@ -1,24 +1,31 @@
 #pragma once
 #include <Modules/IModule.h>
+#include <string>
 
 // Contains info about a nod. This info is used whenever a nod is right-clicked and a popup shows up
 struct PopupNodInfo
 {
-	const char* Name;
+	const std::string Name;
 	CMwClassInfo* ClassInfo;
 	uintptr_t Nod;
+
+	PopupNodInfo() = delete;
+	PopupNodInfo(const std::string Name) : Name(Name) {}
 };
 
 // Contains info about a nod's member. This info is used whenever a member is right-clicked and a popup shows up
 struct PopupMemberInfo
 {
-	const char* Name;
+	const std::string Name;
 	CMwMemberInfo* MemberInfo;
 	CMwClassInfo* ParentClassInfo;
 	uintptr_t ParentNod;
 
 	// When the member is CLASS-adjacent, this value is non-null and it will be the member itself
 	uintptr_t MemberNodItself;
+
+	PopupMemberInfo() = delete;
+	PopupMemberInfo(const std::string Name) : Name(Name) {}
 };
 
 class AppExplorerModule : public IModule
@@ -33,7 +40,7 @@ class AppExplorerModule : public IModule
 	bool NodInfoPopup = false;
 
 	// Last right-clicked member's info
-	PopupMemberInfo* MemberInfo = nullptr;
+	PopupMemberInfo* ChildInfo = nullptr;
 
 	// Member info popup is visible
 	bool MemberInfoPopup = false;
@@ -51,10 +58,12 @@ public:
 	virtual void RenderInterface() override;
 	virtual void RenderMenu() override;
 
-	void RenderNod(uintptr_t Nod, const char* const Name, CMwMemberInfo* NodMemberInfo);
+	void RenderNod(uintptr_t Nod, const std::string Name, CMwMemberInfo* NodMemberInfo);
 	void RenderNodInfoClassInfo(CMwClassInfo* ClassInfo);
 	void RenderNodInfoMemberInfo();
 
-	void SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const char* NodName, uintptr_t Nod, CMwClassInfo* ClassInfo);
-	void SetClassInfoPopup(CMwClassInfo* ClassInfo, const char* NodName, uintptr_t Nod);
+	void SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, uintptr_t Nod, CMwClassInfo* ClassInfo);
+	void SetClassInfoPopup(CMwClassInfo* ClassInfo, const std::string NodName, uintptr_t Nod);
+
+	std::string GetFancyMemberName(CMwMemberInfo* MemberInfo);
 };

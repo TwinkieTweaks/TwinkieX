@@ -166,7 +166,7 @@ struct CMwMemberInfo
 	CMwParam* pParam;
 
 	// Offset of the member in the class instance, -1 for methods and virtual members
-	int MemberOffset;
+	unsigned int MemberOffset;
 
 	int Pad0;
 

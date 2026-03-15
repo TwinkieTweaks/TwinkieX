@@ -1,21 +1,20 @@
 #include "pch.h"
 #include "AppExplorerModule.h"
-#include <string>
 #include <format>
 
 #define HasRightClickedOnItem() IsMouseClicked(ImGuiMouseButton_Right) and IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)
 
 using namespace ImGui;
 
-void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const char* NodName, uintptr_t Nod, CMwClassInfo* ClassInfo)
+void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, uintptr_t Nod, CMwClassInfo* ClassInfo)
 {
 	bool IsMemberVirtual = MemberInfo->MemberOffset == 0xFFFFFFFFU;
 	
 	// Fix memory leak incase of user clicking on another member while pop-up is still active
-	if (this->MemberInfo)
+	if (ChildInfo)
 	{
-		delete this->MemberInfo;
-		this->MemberInfo = nullptr;
+		delete ChildInfo;
+		ChildInfo = nullptr;
 	}
 
 	if (NodInfo)
@@ -26,26 +25,25 @@ void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const char
 	}
 
 	this->MemberInfoPopup = true;
-	this->MemberInfo = new PopupMemberInfo;
-	this->MemberInfo->MemberInfo = MemberInfo;
-	this->MemberInfo->Name = NodName;
-	this->MemberInfo->ParentNod = Nod;
-	this->MemberInfo->ParentClassInfo = ClassInfo;
+	ChildInfo = new PopupMemberInfo{NodName};
+	ChildInfo->MemberInfo = MemberInfo;
+	ChildInfo->ParentNod = Nod;
+	ChildInfo->ParentClassInfo = ClassInfo;
 
 	// TODO: Fix for other CLASS-adjacent types and for virtual members
 	if (MemberInfo->MemberType == CMwMemberInfo::CLASS and !IsMemberVirtual)
 	{
-		this->MemberInfo->MemberNodItself = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
+		ChildInfo->MemberNodItself = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
 	}
 	else
 	{
-		this->MemberInfo->MemberNodItself = 0;
+		ChildInfo->MemberNodItself = 0;
 	}
 
 	HasSetWindowPositionForPopup = false;
 }
 
-void AppExplorerModule::SetClassInfoPopup(CMwClassInfo* ClassInfo, const char* NodName, uintptr_t Nod)
+void AppExplorerModule::SetClassInfoPopup(CMwClassInfo* ClassInfo, const std::string NodName, uintptr_t Nod)
 {
 	// Fix memory leak incase of user clicking on another nod while pop-up is still active
 	if (NodInfo)
@@ -54,33 +52,48 @@ void AppExplorerModule::SetClassInfoPopup(CMwClassInfo* ClassInfo, const char* N
 		NodInfo = nullptr;
 	}
 
-	if (MemberInfo)
+	if (ChildInfo)
 	{
-		delete MemberInfo;
-		MemberInfo = nullptr;
+		delete ChildInfo;
+		ChildInfo = nullptr;
 		MemberInfoPopup = false;
 	}
 
 	NodInfoPopup = true;
-	NodInfo = new PopupNodInfo;
+	NodInfo = new PopupNodInfo{NodName};
 	NodInfo->ClassInfo = ClassInfo;
-	NodInfo->Name = NodName;
 	NodInfo->Nod = Nod;
 
 	HasSetWindowPositionForPopup = false;
 }
 
-void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwMemberInfo* NodMemberInfo = nullptr)
+std::string AppExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 {
-	bool IsMemberOpen = false;
+	std::string MemberNameFallback = MemberInfo->MemberName;
 
+	if (MemberNameFallback == "")
+	{
+		MemberNameFallback = std::format("__0x{:08x}", MemberInfo->MemberID);
+	}
+
+	std::string FancyMemberName = std::format("{} (+0x{:x}) ({})",
+		MemberNameFallback,
+		(uint32_t)MemberInfo->MemberOffset,
+		(unsigned int)MemberInfo->MemberType
+	);
+
+	return FancyMemberName;
+}
+
+void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwMemberInfo* NodMemberInfo = nullptr)
+{
 	// TODO: Compare intended nod info (NodMemberInfo) with nod's actual info (ClassInfo below)
 	if (!NodMemberInfo) NodMemberInfo = nullptr;
 
 	if (Nod == 0)
 	{
 		BeginDisabled();
-		Text(NodName);
+		Text(NodName.c_str());
 		EndDisabled();
 
 		return;
@@ -111,6 +124,8 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 
 			for (auto& MemberInfo : *ClassInfo)
 			{
+				std::string FancyMemberName = GetFancyMemberName(MemberInfo);
+
 				bool IsMemberVirtual = MemberInfo->MemberOffset == 0xFFFFFFFFU;
 
 				switch (MemberInfo->MemberType)
@@ -128,7 +143,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 					case CMwMemberInfo::ACTION:
 					{
 						const auto* MemberInfoAction = static_cast<const CMwMemberInfoAction*>(MemberInfo);
-						if (Button(MemberInfo->MemberName))
+						if (Button(FancyMemberName.c_str()))
 						{
 							MemberInfoAction->Action(Nod);
 						}
@@ -143,7 +158,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 							if (Array)
 							{
 								PushID((void*)Array);
-								bool ArrayTreeNodeOpened = TreeNode(MemberInfo->MemberName);
+								bool ArrayTreeNodeOpened = TreeNode(FancyMemberName.c_str());
 
 								if (HasRightClickedOnItem())
 								{
@@ -177,7 +192,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 							if (Array)
 							{
 								PushID((void*)Array);
-								bool ArrayTreeNodOpened = TreeNode(MemberInfo->MemberName);
+								bool ArrayTreeNodOpened = TreeNode(FancyMemberName.c_str());
 
 								if (HasRightClickedOnItem())
 								{
@@ -209,7 +224,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 						if (!IsMemberVirtual)
 						{
 							float* Float = (float*)(Nod + MemberInfo->MemberOffset);
-							InputFloat(MemberInfo->MemberName, Float);
+							InputFloat(FancyMemberName.c_str(), Float);
 						}
 						break;
 					}
@@ -219,14 +234,14 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const char* const NodName, CMwM
 						if (!IsMemberVirtual)
 						{
 							bool* Bool = (bool*)(Nod + MemberInfo->MemberOffset);
-							Checkbox(MemberInfo->MemberName, Bool);
+							Checkbox(FancyMemberName.c_str(), Bool);
 						}
 						break;
 					}
 
 					default:
 					{
-						Text("%s (+0x%x) (%d)", MemberInfo->MemberName, MemberInfo->MemberOffset, MemberInfo->MemberType);
+						Text("%s", FancyMemberName.c_str());
 						break;
 					}
 				}
@@ -302,7 +317,7 @@ void AppExplorerModule::RenderNodInfoClassInfo(CMwClassInfo* ClassInfo)
 
 void AppExplorerModule::RenderNodInfoMemberInfo()
 {
-	CMwMemberInfo* MemberInfo = this->MemberInfo->MemberInfo;
+	CMwMemberInfo* MemberInfo = ChildInfo->MemberInfo;
 	{
 		std::string Copyable = MemberInfo->MemberName;
 		if (Selectable((std::string("Copy: ") + Copyable).c_str()))
@@ -328,11 +343,11 @@ void AppExplorerModule::RenderNodInfoMemberInfo()
 			NodInfoPopup = false;
 		}
 	}
-	if (this->MemberInfo->MemberNodItself)
+	if (ChildInfo->MemberNodItself)
 	{
 		Separator();
 
-		RenderNodInfoClassInfo(Twinkie->GetNodClassInfo(this->MemberInfo->MemberNodItself));
+		RenderNodInfoClassInfo(Twinkie->GetNodClassInfo(ChildInfo->MemberNodItself));
 	}
 }
 
@@ -384,8 +399,6 @@ void AppExplorerModule::RenderInterface()
 				NodInfoPopup = false;
 			}
 		}
-
-		Separator();
 		
 		RenderNodInfoClassInfo(NodInfo->ClassInfo);
 
@@ -398,10 +411,10 @@ void AppExplorerModule::RenderInterface()
 		if (!IsWindowFocused())
 		{
 			MemberInfoPopup = false;
-			if (MemberInfo)
+			if (ChildInfo)
 			{
-				delete MemberInfo;
-				MemberInfo = nullptr;
+				delete ChildInfo;
+				ChildInfo = nullptr;
 
 				End();
 				goto ContinueAfterRender;
@@ -412,25 +425,6 @@ void AppExplorerModule::RenderInterface()
 			HasSetWindowPositionForPopup = true;
 			SetWindowPos(GetMousePos());
 		}
-
-		{
-			std::string Copyable = MemberInfo->Name;
-			if (Selectable((std::string("Copy: ") + Copyable).c_str()))
-			{
-				SetClipboardText(Copyable.c_str());
-				MemberInfoPopup = false;
-			}
-		}
-		{
-			std::string Copyable = std::format("{:p}", (void*)MemberInfo->ParentNod);
-			if (Selectable((std::string("Copy: ") + Copyable + " (nod ptr)").c_str()))
-			{
-				SetClipboardText(Copyable.c_str());
-				MemberInfoPopup = false;
-			}
-		}
-
-		Separator();
 
 		RenderNodInfoMemberInfo();
 
