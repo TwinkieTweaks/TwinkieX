@@ -9,9 +9,9 @@
 // The Trackmania manager class, used by (TwinkTrackmania gTwinkie.TrackmaniaMgr).
 class TwinkTrackmania
 {
+public:
 	uintptr_t ExeBaseAddr = 0;
 
-public:
 	// Behaviors
 
 	// Ctor

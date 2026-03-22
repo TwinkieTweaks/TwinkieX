@@ -135,7 +135,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 						if (!IsMemberVirtual)
 						{
 							uintptr_t ChildNod = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
-							RenderNod(ChildNod, MemberInfo->MemberName, MemberInfo);
+							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
 						}
 						break;
 					}
