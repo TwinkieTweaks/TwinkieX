@@ -1,5 +1,6 @@
 // Precompiled headers.
 #include "pch.h"
+#include "../pch.h"
 
 // External dear ImGui WndProc handler declaration
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -38,6 +39,11 @@ namespace TwinkUiState
 #ifdef MANIAPLANET
 	// The DirectX11 context.
 	DirectXContext* Context;
+
+	// The main render target view.
+	ID3D11RenderTargetView* mainRenderTargetView = nullptr;
+
+	ResizeBuffersFn oResizeBuffers = nullptr;
 #endif
 }
 
@@ -82,17 +88,21 @@ __declspec(noinline) void TwinkUi::Update()
 
 	// Before hooking, make sure that our memory is writable
 	Unprotect(VirtualPtr(O_V_PRESENT, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain()), sizeof(uintptr_t));
+	Unprotect(VirtualPtr(O_V_RESIZEBUFFERS, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain()), sizeof(uintptr_t));
 
 	// Hook present
 	TwinkUiState::oPresent = reinterpret_cast<PresentFn>(VirtualWrite(O_V_PRESENT, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain(), (uintptr_t)hkPresent));
 
+	// Hook ResizeBuffers
+	TwinkUiState::oResizeBuffers = reinterpret_cast<ResizeBuffersFn>(VirtualWrite(O_V_RESIZEBUFFERS, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain(), (uintptr_t)hkResizeBuffers));
+		
 	// Everything else
 #else
 
 	// Create a creation parameters struct to hold the result
 	D3DDEVICE_CREATION_PARAMETERS D3DCreationParams = {};
 
-	// While (      we could not get the creation parameters successfully      ) or (the parameters have no window,)
+	// While (          we could not get the creation parameters successfully          ) or (the parameters have no window,)
 	while (  (TwinkUiState::Device->GetCreationParameters(&D3DCreationParams) != D3D_OK) or !D3DCreationParams.hFocusWindow)
 	{
 		// Wait
@@ -196,9 +206,6 @@ void InitImGui(DirectXContext* Context, DirectXDevice* Device)
 
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 {
-	// TODO: Move this to TwinkUiState
-	static ID3D11RenderTargetView* mainRenderTargetView = nullptr;
-
 	// If we haven't initialized ImGui yet...
 	if (!TwinkUiState::ImGuiInit)
 	{
@@ -241,9 +248,9 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
 			RenderTargetViewDesc.Format = BackBufferColorFmt;
 			RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
+			
 			// Create a target view using the buffer we got to render our UI on
-			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &mainRenderTargetView);
+			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::mainRenderTargetView);
 
 			// Release the buffer so that the game can use it later
 			pBackBuffer->Release();
@@ -273,7 +280,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui::Render();
 
 	// Set the render target for the draw data rendering
-	TwinkUiState::Context->OMSetRenderTargets(1, &mainRenderTargetView, NULL);
+	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::mainRenderTargetView, NULL);
 
 	// Draw from the draw data
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -281,14 +288,77 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	// Continue as if nothing happened
 	return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
 }
+
+// https://github.com/GHFear/Universal-ImGui-D3D11-Hook-WithResize/blob/8bcad6865e4e579ab841ebe9ff16be09000251c4/DX11HookWithResize_Kiero_ImGui/DX11.h
+HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
+{
+	if (TwinkUiState::mainRenderTargetView)
+	{
+		TwinkUiState::Context->OMSetRenderTargets(0, 0, 0);
+		TwinkUiState::mainRenderTargetView->Release();
+		TwinkUiState::mainRenderTargetView = nullptr; // Good practice to null it out
+	}
+
+	HRESULT resizeBuffers = TwinkUiState::oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+
+	ID3D11Texture2D* pBuffer;
+
+	HRESULT pSwapChainBuffer = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBuffer);
+	if (pSwapChainBuffer != S_OK)
+	{
+		// TODO: Perform error handling here!
+	}
+
+	// --- STRIP sRGB SUFFIX ---
+	D3D11_TEXTURE2D_DESC desc;
+	pBuffer->GetDesc(&desc);
+	DXGI_FORMAT BackBufferColorFmt = desc.Format;
+
+	if (BackBufferColorFmt == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+	{
+		BackBufferColorFmt = DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
+	else if (BackBufferColorFmt == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB)
+	{
+		BackBufferColorFmt = DXGI_FORMAT_B8G8R8A8_UNORM;
+	}
+
+	D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
+	RenderTargetViewDesc.Format = BackBufferColorFmt;
+	RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+	// -------------------------
+
+	// Pass our explicit descriptor instead of NULL
+	HRESULT pDeviceRenderTarget = TwinkUiState::Device->CreateRenderTargetView(pBuffer, &RenderTargetViewDesc, &TwinkUiState::mainRenderTargetView);
+	if (pDeviceRenderTarget != S_OK)
+	{
+		// TODO: Perform error handling here!
+	}
+
+	// Release buffer
+	pBuffer->Release();
+
+	// Set Rendertarget
+	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::mainRenderTargetView, NULL);
+
+	// Set up the viewport.
+	D3D11_VIEWPORT vp;
+	vp.Width = (FLOAT)Width;   // Cast to FLOAT to satisfy the struct and avoid warnings
+	vp.Height = (FLOAT)Height;
+	vp.MinDepth = 0.0f;
+	vp.MaxDepth = 1.0f;
+	vp.TopLeftX = 0;
+	vp.TopLeftY = 0;
+	TwinkUiState::Context->RSSetViewports(1, &vp);
+
+	// Return resizeBuffers
+	return resizeBuffers;
+}
 #endif
 
 void TwinkUi::Render()
 {
 	using namespace ImGui;
-
-	constexpr auto CInputDeviceMouseClassID = 0x1300a000;
-	constexpr auto CInputDeviceKeyboardClassID = 0x1300b000;
 
 	auto InputPort = TrackmaniaMgr->GetInputPort();
 
@@ -341,7 +411,7 @@ void TwinkUi::Render()
 		if (TwinkUiState::RenderUi) Module->RenderInterface();
 	}
 
-	ImGui::ShowDemoWindow();
+	if (TwinkUiState::RenderUi) ImGui::ShowDemoWindow();
 }
 
 // END Methods

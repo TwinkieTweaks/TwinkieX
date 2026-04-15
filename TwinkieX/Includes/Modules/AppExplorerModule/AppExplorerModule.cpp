@@ -76,10 +76,9 @@ std::string AppExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 		MemberNameFallback = std::format("__0x{:08x}", MemberInfo->MemberID);
 	}
 
-	std::string FancyMemberName = std::format("{} (+0x{:x}) ({})",
+	std::string FancyMemberName = std::format("{} (+0x{:x})",
 		MemberNameFallback,
-		(uint32_t)MemberInfo->MemberOffset,
-		(unsigned int)MemberInfo->MemberType
+		(uint32_t)MemberInfo->MemberOffset
 	);
 
 	return FancyMemberName;
@@ -241,7 +240,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 
 					default:
 					{
-						Text("%s", FancyMemberName.c_str());
+						Text("%s (%s)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType]);
 						break;
 					}
 				}

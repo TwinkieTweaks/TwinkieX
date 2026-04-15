@@ -13,8 +13,11 @@ using DirectXDevice = ID3D11Device;
 using DirectXContext = ID3D11DeviceContext;
 
 using PresentFn = HRESULT(__stdcall*)(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
+using ResizeBuffersFn = HRESULT(__stdcall*)(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags);
 
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags);
+HRESULT hkResizeBuffers(IDXGISwapChain* pThis, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags);
+
 #else
 using DirectXDevice = IDirect3DDevice9;
 
@@ -53,6 +56,12 @@ namespace TwinkUiState
 #ifdef MANIAPLANET
 	// The DirectX11 context.
 	extern DirectXContext* Context;
+
+	// The main render target view.
+	extern ID3D11RenderTargetView* mainRenderTargetView;
+
+	// The original resize buffers function for this DX11 device;
+	extern ResizeBuffersFn oResizeBuffers;
 #endif
 }
 

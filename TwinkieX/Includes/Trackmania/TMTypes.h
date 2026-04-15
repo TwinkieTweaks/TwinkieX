@@ -75,7 +75,7 @@ public:
 struct CMwMemberInfo
 {
 	// ARRAYBASE => https://openplanet.dev/docs/api/global/MwSArray
-	// [TYPE] and [TYPE]2 are DIFFERENT. Do NOT ignore them.
+	// [TYPE] and [TYPE]ALT are DIFFERENT. Do NOT ignore them.
 	enum eType
 	{
 		ACTION = 0,
@@ -106,7 +106,9 @@ struct CMwMemberInfo
 		INTBUFFERCAT = 40, // EXTRAPOLATED
 		INTARRAYBASE = 41, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 
-		INT2 = 46,
+		INTALT = 46,
+
+		ISO4 = 47,
 
 		ID = 65,
 		
@@ -122,7 +124,7 @@ struct CMwMemberInfo
 		REALBUFFERCAT = 87, // EXTRAPOLATED
 		REALARRAYBASE = 88, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 		
-		REAL2 = 93,
+		REALALT = 93,
 
 		STRING = 94,
 		STRINGARRAY = 95, // EXTRAPOLATED
@@ -136,6 +138,7 @@ struct CMwMemberInfo
 		STRINGINTBUFFERCAT = 106, // EXTRAPOLATED
 		STRINGINTARRAYBASE = 107,  // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 		
+		VEC2 = 112,
 		VEC3 = 121,
 		
 		PROC = 184,
