@@ -3,6 +3,7 @@
 #include "Stdlibs.h"
 
 extern DWORD ProtFlags;
+extern const char* g_MemberTypeNames[];
 
 // Useful definitions
 
@@ -46,6 +47,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // Vtable indices
 #define O_V_MWCLASSINFO 2
 #define O_V_PRESENT 8
+#define O_V_RESIZEBUFFERS 13
 
 #elif defined(TM1)
 
