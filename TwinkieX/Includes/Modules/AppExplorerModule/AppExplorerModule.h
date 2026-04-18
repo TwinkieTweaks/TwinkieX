@@ -10,6 +10,9 @@ struct PopupNodInfo
 	uintptr_t Nod;
 
 	PopupNodInfo() = delete;
+	PopupNodInfo(PopupNodInfo&) = delete;
+	PopupNodInfo& operator=(const PopupNodInfo&) = delete;
+
 	PopupNodInfo(const std::string Name) : Name(Name) {}
 };
 
@@ -25,6 +28,9 @@ struct PopupMemberInfo
 	uintptr_t MemberNodItself;
 
 	PopupMemberInfo() = delete;
+	PopupMemberInfo(PopupMemberInfo&) = delete;
+	PopupMemberInfo& operator=(const PopupMemberInfo&) = delete;
+
 	PopupMemberInfo(const std::string Name) : Name(Name) {}
 };
 

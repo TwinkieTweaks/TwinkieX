@@ -360,15 +360,15 @@ void TwinkUi::Render()
 {
 	using namespace ImGui;
 
-	auto InputPort = TrackmaniaMgr->GetInputPort();
+	// TODO: Implement input blocking
+	/*auto InputPort = TrackmaniaMgr->GetInputPort();
 
 	auto& TheImGuiIO = GetIO();
 
 	for (auto& ConnectedDevice : InputPort->ConnectedDevices)
 	{
 		auto ClassInfo = TrackmaniaMgr->GetNodClassInfo(ConnectedDevice);
-		// TODO
-	}
+	}*/
 
 	if (TwinkUiState::RenderUi)
 	{
