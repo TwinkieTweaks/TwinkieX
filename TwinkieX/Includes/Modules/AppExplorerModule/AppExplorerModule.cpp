@@ -108,7 +108,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 	);
 
 	PushID((void*)Nod);
-	bool TreeNodeIsOpen = TreeNode(TreeNodeLabel.c_str());
+	bool TreeNodeIsOpen = TreeNodeEx(TreeNodeLabel.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
 
 	if (HasRightClickedOnItem())
 	{
@@ -157,7 +157,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 							if (Array)
 							{
 								PushID((void*)Array);
-								bool ArrayTreeNodeOpened = TreeNode(FancyMemberName.c_str());
+								bool ArrayTreeNodeOpened = TreeNodeEx(FancyMemberName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
 
 								if (HasRightClickedOnItem())
 								{
@@ -191,7 +191,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 							if (Array)
 							{
 								PushID((void*)Array);
-								bool ArrayTreeNodOpened = TreeNode(FancyMemberName.c_str());
+								bool ArrayTreeNodOpened = TreeNodeEx(FancyMemberName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
 
 								if (HasRightClickedOnItem())
 								{
