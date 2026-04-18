@@ -5,9 +5,9 @@
 // Contains info about a nod. This info is used whenever a nod is right-clicked and a popup shows up
 struct PopupNodInfo
 {
-	const std::string Name;
-	CMwClassInfo* ClassInfo;
-	uintptr_t Nod;
+	const std::string Name = "";
+	CMwClassInfo* ClassInfo = nullptr;
+	uintptr_t Nod = 0;
 
 	PopupNodInfo() = delete;
 	PopupNodInfo(PopupNodInfo&) = delete;
@@ -19,13 +19,13 @@ struct PopupNodInfo
 // Contains info about a nod's member. This info is used whenever a member is right-clicked and a popup shows up
 struct PopupMemberInfo
 {
-	const std::string Name;
-	CMwMemberInfo* MemberInfo;
-	CMwClassInfo* ParentClassInfo;
-	uintptr_t ParentNod;
+	const std::string Name = "";
+	CMwMemberInfo* MemberInfo = nullptr;
+	CMwClassInfo* ParentClassInfo = nullptr;
+	uintptr_t ParentNod = 0;
 
 	// When the member is CLASS-adjacent, this value is non-null and it will be the member itself
-	uintptr_t MemberNodItself;
+	uintptr_t MemberNodItself = 0;
 
 	PopupMemberInfo() = delete;
 	PopupMemberInfo(PopupMemberInfo&) = delete;
