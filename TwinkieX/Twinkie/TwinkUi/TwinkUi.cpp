@@ -41,9 +41,14 @@ namespace TwinkUiState
 	DirectXContext* Context;
 
 	// The main render target view.
-	ID3D11RenderTargetView* mainRenderTargetView = nullptr;
+	ID3D11RenderTargetView* MainRenderTargetView = nullptr;
 
 	ResizeBuffersFn oResizeBuffers = nullptr;
+#else defined(GAMEBOX)
+	// The new window size, when the window is resized.
+	unsigned int WindowWidth = 0;
+	// The new window size, when the window is resized.
+	unsigned int WindowHeight = 0;
 #endif
 }
 
@@ -95,7 +100,7 @@ __declspec(noinline) void TwinkUi::Update()
 
 	// Hook ResizeBuffers
 	TwinkUiState::oResizeBuffers = reinterpret_cast<ResizeBuffersFn>(VirtualWrite(O_V_RESIZEBUFFERS, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain(), (uintptr_t)hkResizeBuffers));
-		
+
 	// Everything else
 #else
 
@@ -103,7 +108,7 @@ __declspec(noinline) void TwinkUi::Update()
 	D3DDEVICE_CREATION_PARAMETERS D3DCreationParams = {};
 
 	// While (          we could not get the creation parameters successfully          ) or (the parameters have no window,)
-	while (  (TwinkUiState::Device->GetCreationParameters(&D3DCreationParams) != D3D_OK) or !D3DCreationParams.hFocusWindow)
+	while ((TwinkUiState::Device->GetCreationParameters(&D3DCreationParams) != D3D_OK) or !D3DCreationParams.hFocusWindow)
 	{
 		// Wait
 		Sleep(1);
@@ -114,6 +119,9 @@ __declspec(noinline) void TwinkUi::Update()
 
 	// Set our new window process
 	TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
+	unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
+	WindowStyle |= WS_SIZEBOX | WS_THICKFRAME;
+	SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
 
 	// Before hooking, make sure that our memory is writable
 	Unprotect(VirtualPtr(O_V_PRESENT, (uintptr_t)TwinkUiState::Device), sizeof(uintptr_t));
@@ -129,6 +137,56 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	{
 		return CallWindowProcA(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);
 	}
+
+#ifdef GAMEBOX
+	switch (uMsg)
+	{
+	case WM_SIZE:
+		if (wParam != SIZE_MINIMIZED)
+		{
+			TwinkUiState::WindowWidth = LOWORD(lParam);
+			TwinkUiState::WindowHeight = HIWORD(lParam);
+			ImGui::GetIO().DisplaySize = ImVec2((float)LOWORD(lParam), (float)HIWORD(lParam));
+
+			// Manually trigger a repaint even if shrinking
+			InvalidateRect(hWnd, NULL, FALSE);
+		}
+		break;
+	case WM_PAINT:
+		// Only trigger if we are actually initialized
+		if (TwinkUiState::ImGuiInit)
+		{
+			// Get the implicit swap chain (index 0)
+			IDirect3DSwapChain9* pSwapChain = nullptr;
+			if (SUCCEEDED(TwinkUiState::Device->GetSwapChain(0, &pSwapChain)))
+			{
+				D3DPRESENT_PARAMETERS d3dpp = {};
+				// Populate d3dpp with current settings
+				if (SUCCEEDED(pSwapChain->GetPresentParameters(&d3dpp)))
+				{
+					// Update only the dimensions
+					d3dpp.BackBufferWidth = TwinkUiState::WindowWidth;
+					d3dpp.BackBufferHeight = TwinkUiState::WindowHeight;
+
+					// Carry out the Reset
+					ImGui_ImplDX9_InvalidateDeviceObjects();
+
+					HRESULT hr = TwinkUiState::Device->Reset(&d3dpp);
+					if (SUCCEEDED(hr))
+					{
+						ImGui_ImplDX9_CreateDeviceObjects();
+					}
+
+					unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
+					WindowStyle |= WS_SIZEBOX | WS_THICKFRAME;
+					SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
+				}
+				pSwapChain->Release(); // Don't forget to release the COM object
+			}
+		}
+		break;
+	}
+#endif
 
 	auto& ImIo = ImGui::GetIO();
 
@@ -162,6 +220,39 @@ void InitImGui(DirectXDevice* Device)
 
 static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, HWND C, LPVOID D)
 {
+	//if (TwinkUiState::NeedsReset)
+	//{
+	//	// Get the implicit swap chain (index 0)
+	//	IDirect3DSwapChain9* pSwapChain = nullptr;
+	//	if (SUCCEEDED(pDevice->GetSwapChain(0, &pSwapChain)))
+	//	{
+	//		D3DPRESENT_PARAMETERS d3dpp;
+	//		// Populate d3dpp with current settings
+	//		if (SUCCEEDED(pSwapChain->GetPresentParameters(&d3dpp)))
+	//		{
+	//			// Update only the dimensions
+	//			d3dpp.BackBufferWidth  = TwinkUiState::WindowWidth;
+	//			d3dpp.BackBufferHeight = TwinkUiState::WindowHeight;
+
+	//			// Carry out the Reset
+	//			ImGui_ImplDX9_InvalidateDeviceObjects();
+
+	//			HRESULT hr = pDevice->Reset(&d3dpp);
+	//			if (SUCCEEDED(hr))
+	//			{
+	//				ImGui_ImplDX9_CreateDeviceObjects();
+	//				TwinkUiState::NeedsReset = false;
+	//			}
+	//		}
+	//		pSwapChain->Release(); // Don't forget to release the COM object
+	//	}
+	//	else
+	//	{
+	//		AllocConsole();
+	//		TwinkUiState::NeedsReset = false;
+	//	}
+	//}
+
 	if (!TwinkUiState::ImGuiInit)
 	{
 		InitImGui(pDevice);
@@ -250,7 +341,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
 			
 			// Create a target view using the buffer we got to render our UI on
-			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::mainRenderTargetView);
+			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
 
 			// Release the buffer so that the game can use it later
 			pBackBuffer->Release();
@@ -280,7 +371,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui::Render();
 
 	// Set the render target for the draw data rendering
-	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::mainRenderTargetView, NULL);
+	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::MainRenderTargetView, NULL);
 
 	// Draw from the draw data
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
@@ -292,11 +383,11 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 // https://github.com/GHFear/Universal-ImGui-D3D11-Hook-WithResize/blob/8bcad6865e4e579ab841ebe9ff16be09000251c4/DX11HookWithResize_Kiero_ImGui/DX11.h
 HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
 {
-	if (TwinkUiState::mainRenderTargetView)
+	if (TwinkUiState::MainRenderTargetView)
 	{
 		TwinkUiState::Context->OMSetRenderTargets(0, 0, 0);
-		TwinkUiState::mainRenderTargetView->Release();
-		TwinkUiState::mainRenderTargetView = nullptr; // Good practice to null it out
+		TwinkUiState::MainRenderTargetView->Release();
+		TwinkUiState::MainRenderTargetView = nullptr; // Good practice to null it out
 	}
 
 	HRESULT resizeBuffers = TwinkUiState::oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
@@ -329,7 +420,7 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 	// -------------------------
 
 	// Pass our explicit descriptor instead of NULL
-	HRESULT pDeviceRenderTarget = TwinkUiState::Device->CreateRenderTargetView(pBuffer, &RenderTargetViewDesc, &TwinkUiState::mainRenderTargetView);
+	HRESULT pDeviceRenderTarget = TwinkUiState::Device->CreateRenderTargetView(pBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
 	if (pDeviceRenderTarget != S_OK)
 	{
 		// TODO: Perform error handling here!
@@ -339,10 +430,10 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 	pBuffer->Release();
 
 	// Set Rendertarget
-	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::mainRenderTargetView, NULL);
+	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::MainRenderTargetView, NULL);
 
 	// Set up the viewport.
-	D3D11_VIEWPORT vp;
+	D3D11_VIEWPORT vp = {};
 	vp.Width = (FLOAT)Width;   // Cast to FLOAT to satisfy the struct and avoid warnings
 	vp.Height = (FLOAT)Height;
 	vp.MinDepth = 0.0f;

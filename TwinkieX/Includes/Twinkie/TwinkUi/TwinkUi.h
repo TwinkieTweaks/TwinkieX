@@ -21,7 +21,6 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pThis, UINT BufferCount, UINT Width, UIN
 #else
 using DirectXDevice = IDirect3DDevice9;
 
-using ResetFn = HRESULT(__stdcall*)(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pPresentationParameters);
 using PresentFn = long(__stdcall*)(LPDIRECT3DDEVICE9 pDevice, LPVOID, LPVOID, HWND, LPVOID);
 
 static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, HWND C, LPVOID D);
@@ -58,10 +57,15 @@ namespace TwinkUiState
 	extern DirectXContext* Context;
 
 	// The main render target view.
-	extern ID3D11RenderTargetView* mainRenderTargetView;
+	extern ID3D11RenderTargetView* MainRenderTargetView;
 
 	// The original resize buffers function for this DX11 device;
 	extern ResizeBuffersFn oResizeBuffers;
+#elif defined(GAMEBOX)
+	// The new window size, when the window is resized.
+	extern unsigned int WindowWidth;
+	// The new window size, when the window is resized.
+	extern unsigned int WindowHeight;
 #endif
 }
 
