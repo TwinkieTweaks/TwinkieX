@@ -19,3 +19,9 @@ jobs:
 
     - name: Build Project
       run: msbuild TwinkieX.sln /p:Configuration=TMCN /p:Platform=x64 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; msbuild TwinkieX.sln /p:Configuration=ESWC /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; msbuild TwinkieX.sln /p:Configuration=TMO  /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; msbuild TwinkieX.sln /p:Configuration=TMSX /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"
+
+    - name: Install NSIS
+      uses: negrutiu/nsis-install@v2
+
+    - name: Create installers
+      run: makensis
