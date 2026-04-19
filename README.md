@@ -1,4 +1,4 @@
-![TwinkieX Banner](Media/TwinkieXBanner1920x720.png) 
+![TwinkieX Banner](Media/Banner/TwinkieXBanner1920x720.png) 
 # TwinkieX
 A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, and TMCN.
 
