@@ -24,4 +24,4 @@ jobs:
       uses: negrutiu/nsis-install@v2
 
     - name: Create installers
-      run: makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerTMCN.nsi
+      run: mkdir D:/a/TwinkieX/TwinkieX/NSIS/Scripts/Output; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerTMCN.nsi; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerESWC.nsi; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerTMO.nsi; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerTMSX.nsi

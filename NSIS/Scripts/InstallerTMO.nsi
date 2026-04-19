@@ -1,8 +1,8 @@
 !include "MUI.nsh"
 
-Name "TwinkieX for TMCN"
-OutFile "Output/TwinkieXTMCN.exe"
-InstallDir "$LOCALAPPDATA\TrackmaniaChina\"
+Name "TwinkieX for TMO"
+OutFile "Output/TwinkieXTMO.exe"
+InstallDir "$LOCALAPPDATA\TrackMania Original\"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"
@@ -14,6 +14,6 @@ InstallDir "$LOCALAPPDATA\TrackmaniaChina\"
 
 Section ""
     SetOutPath $INSTDIR
-    File "..\..\Builds\x64\TMCN\TwinkieTMCN.dll"
-    File "..\ReleaseDeps\TMCN\dinput8.dll"
+    File "..\..\Builds\Win32\TMO\TwinkieTMO.dll"
+    File "..\ReleaseDeps\TMO\dinput8.dll"
 SectionEnd
