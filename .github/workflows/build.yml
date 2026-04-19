@@ -1,8 +1,7 @@
 name: Parallel MSBuild and NSIS
 
 on:
-  push:
-    branches: [ "development" ]
+  workflow_dispatch:
   pull_request:
     branches: [ "development" ]
 
