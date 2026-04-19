@@ -1,5 +1,11 @@
 ![TwinkieX Banner](Media/Banner/TwinkieXBanner1920x720.png) 
-# TwinkieX
+
+<p align="center">
+    <a href="https://discord.gg/kRZ4MdCkVf">
+        <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff" />
+    </a>
+</p>
+
 A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, and TMCN.
 
 ## Features (currently implemented)
@@ -10,6 +16,7 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 - **Versioning**
 - **Installer creation** via NSIS
 - **Setting** management
+- **Automatic build** via GitHub Actions
 - Support for **Trackmania coloring syntax in ImGui**
 - On-the-fly **module import** for C++ modules
 - Basic **Angelscript scripting** support for modules
