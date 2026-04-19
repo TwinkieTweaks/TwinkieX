@@ -54,7 +54,7 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
 }
 
 // DllMain runs when the DLL is attached/detached to a process.
-static BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, LPVOID lpReserved)
 {
     // Disables any subsequent (DLL_THREAD_ATTACH/DETACH) CallReasons for DllMain.
     DisableThreadLibraryCalls(hModule);
