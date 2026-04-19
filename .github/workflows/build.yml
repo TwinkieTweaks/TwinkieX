@@ -18,8 +18,4 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Build Project
-      run: | 
-      msbuild TwinkieX.sln /p:Configuration=TMCN /p:Platform=x64 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; `
-      msbuild TwinkieX.sln /p:Configuration=ESWC /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; `
-      msbuild TwinkieX.sln /p:Configuration=TMO  /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; `
-      msbuild TwinkieX.sln /p:Configuration=TMSX /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"
+      run: msbuild TwinkieX.sln /p:Configuration=TMCN /p:Platform=x64 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes" /WX; msbuild TwinkieX.sln /p:Configuration=ESWC /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes" /WX; msbuild TwinkieX.sln /p:Configuration=TMO  /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes" /WX; msbuild TwinkieX.sln /p:Configuration=TMSX /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes" /WX
