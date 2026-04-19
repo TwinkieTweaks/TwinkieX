@@ -360,7 +360,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>powershell "D:/Dev/CPlusPlus/TwinkieX/TwinkieX/DLLSend.ps1"</Command>
+      <Command>powershell "DLLSend.ps1"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TM1.0|Win32'">
