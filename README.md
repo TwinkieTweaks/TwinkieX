@@ -14,9 +14,8 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 
 ## Features (yet to be made)
 - **Versioning**
-- **Installer creation** via NSIS
+- **Installer upload** to GitHub releases
 - **Setting** management
-- **Automatic build** via GitHub Actions
 - Support for **Trackmania coloring syntax in ImGui**
 - On-the-fly **module import** for C++ modules
 - Basic **Angelscript scripting** support for modules
