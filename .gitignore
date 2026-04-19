@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 
 /DLLSend.ps1
+/NSIS/Scripts/Output
