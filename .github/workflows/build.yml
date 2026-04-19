@@ -1,4 +1,4 @@
-name: Simple MSBuild
+name: Parallel MSBuild and NSIS
 
 on:
   push:
@@ -9,6 +9,19 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Define your unique combinations here
+        include:
+          - config: TMCN
+            platform: x64
+          - config: ESWC
+            platform: x86
+          - config: TMO
+            platform: x86
+          - config: TMSX
+            platform: x86
 
     steps:
     - name: Checkout code
@@ -18,10 +31,25 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Build Project
-      run: msbuild TwinkieX.sln /p:Configuration=TMCN /p:Platform=x64 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; msbuild TwinkieX.sln /p:Configuration=ESWC /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; msbuild TwinkieX.sln /p:Configuration=TMO  /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"; msbuild TwinkieX.sln /p:Configuration=TMSX /p:Platform=x86 /p:IncludePath="D:/a/TwinkieX/TwinkieX/TwinkieX/Includes"
+      # We use the matrix variables to fill in the config and platform
+      run: |
+        msbuild TwinkieX.sln `
+          /p:Configuration=${{ matrix.config }} `
+          /p:Platform=${{ matrix.platform }} `
+          /p:IncludePath="${{ github.workspace }}/TwinkieX/Includes" `
+          /m
 
     - name: Install NSIS
       uses: negrutiu/nsis-install@v2
 
-    - name: Create installers
-      run: mkdir D:/a/TwinkieX/TwinkieX/NSIS/Scripts/Output; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerTMCN.nsi; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerESWC.nsi; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerTMO.nsi; makensis D:/a/TwinkieX/TwinkieX/NSIS/Scripts/InstallerTMSX.nsi
+    - name: Create Installer
+      shell: pwsh
+      run: |
+        New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/NSIS/Scripts/Output"
+        makensis "${{ github.workspace }}/NSIS/Scripts/Installer${{ matrix.config }}.nsi"
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: Installer-${{ matrix.config }}-${{ matrix.platform }}
+        path: ${{ github.workspace }}/NSIS/Scripts/Output/
