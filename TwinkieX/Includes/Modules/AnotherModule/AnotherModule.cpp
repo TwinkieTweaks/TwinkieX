@@ -13,21 +13,9 @@ void AnotherModule::RenderMenuMain()
 		MenuItem("Another item");
 		EndDisabled();
 
+		// Ooh, fancy item!
+		MenuItem("$F00O$F40o$F90h$FD0, $BF0f$7F0a$3F0n$0F1c$0F6y $0FAi$0FFt$0AFe$06Fm$01F!");
+
 		ImGui::EndMenu();
 	}
-}
-
-void AnotherModule::RenderInterface()
-{
-	static char InputField[2048] = { 0 };
-
-	using namespace ImGui;
-
-	Begin("$f00Test");
-
-	InputText("##InputField", InputField, 2048);
-
-	Text(InputField);
-
-	End();
 }
