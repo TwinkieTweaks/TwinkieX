@@ -1,4 +1,5 @@
 #include "pch.h"
+#pragma warning(disable : 4062)
 
 // dear imgui, v1.92.4
 // (drawing and font code)
@@ -1700,17 +1701,14 @@ void ImDrawList::AddBezierQuadratic(const ImVec2& p1, const ImVec2& p2, const Im
     PathStroke(col, 0, thickness);
 }
 
-void ImDrawList::AddText(ImFont* font, float font_size, const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end, float wrap_width, const ImVec4* cpu_fine_clip_rect)
+void ImDrawList::AddText(ImFont* font, float font_size, const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end, float wrap_width, const ImVec4* cpu_fine_clip_rect, bool ignore_tm_formatting)
 {
     if ((col & IM_COL32_A_MASK) == 0)
         return;
 
-    // Accept null ranges
     if (text_begin == text_end || text_begin[0] == 0)
         return;
-    // No need to strlen() here: font->RenderText() will do it and may early out.
 
-    // Pull default font/size from the shared ImDrawListSharedData instance
     if (font == NULL)
         font = _Data->Font;
     if (font_size == 0.0f)
@@ -1724,7 +1722,74 @@ void ImDrawList::AddText(ImFont* font, float font_size, const ImVec2& pos, ImU32
         clip_rect.z = ImMin(clip_rect.z, cpu_fine_clip_rect->z);
         clip_rect.w = ImMin(clip_rect.w, cpu_fine_clip_rect->w);
     }
-    font->RenderText(this, font_size, pos, col, clip_rect, text_begin, text_end, wrap_width, (cpu_fine_clip_rect != NULL) ? ImDrawTextFlags_CpuFineClip : ImDrawTextFlags_None);
+
+    const char* dollar_sign = NULL;
+    if (!ignore_tm_formatting)
+    {
+        dollar_sign = text_end ? (const char*)memchr(text_begin, '$', text_end - text_begin) : strchr(text_begin, '$');
+    }
+
+    if (ignore_tm_formatting || dollar_sign == NULL)
+    {
+        font->RenderText(this, font_size, pos, col, clip_rect, text_begin, text_end, wrap_width, (cpu_fine_clip_rect != NULL) ? ImDrawTextFlags_CpuFineClip : ImDrawTextFlags_None);
+        return;
+    }
+
+    int text_len = text_end ? (int)(text_end - text_begin) : (int)strlen(text_begin);
+    std::string raw_str(text_begin, text_len);
+
+    TrackmaniaText::FormatSpecifierSearchResult SearchResult = TrackmaniaText::FindAllFormatSpecifiers(raw_str);
+
+    ImGui::FormatState CurrentState;
+    CurrentState.Color = col;
+    std::vector<ImGui::FormatState> StateStack;
+
+    size_t Cursor = 0;
+    ImVec2 current_pos = pos;
+
+    for (const auto& Specifier : SearchResult.Specifiers)
+    {
+        if (Specifier.Idx > Cursor)
+        {
+            std::string Part = SearchResult.OriginalText.substr(Cursor, Specifier.Idx - Cursor);
+
+            font->RenderText(this, font_size, current_pos, CurrentState.Color, clip_rect, Part.c_str(), Part.c_str() + Part.length(), wrap_width, (cpu_fine_clip_rect != NULL) ? ImDrawTextFlags_CpuFineClip : ImDrawTextFlags_None);
+
+            ImVec2 part_size = font->CalcTextSizeA(font_size, FLT_MAX, wrap_width, Part.c_str(), Part.c_str() + Part.length(), NULL);
+            current_pos.x += part_size.x;
+        }
+
+        if (!CurrentState.ApplyFormatSpecifier(Specifier))
+        {
+            switch (Specifier.Type)
+            {
+            case TrackmaniaText::FormatSpecifierType_ResetColor:
+                CurrentState.Color = col;
+                break;
+            case TrackmaniaText::FormatSpecifierType_ResetAll:
+                CurrentState = {};
+                CurrentState.Color = col;
+                break;
+            case TrackmaniaText::FormatSpecifierType_BracketBegin:
+                StateStack.push_back(CurrentState);
+                break;
+            case TrackmaniaText::FormatSpecifierType_BracketEnd:
+                if (!StateStack.empty()) {
+                    CurrentState = StateStack.back();
+                    StateStack.pop_back();
+                }
+                break;
+            }
+        }
+
+        Cursor = Specifier.Idx;
+    }
+
+    if (Cursor < SearchResult.OriginalText.length())
+    {
+        std::string Remaining = SearchResult.OriginalText.substr(Cursor);
+        font->RenderText(this, font_size, current_pos, CurrentState.Color, clip_rect, Remaining.c_str(), Remaining.c_str() + Remaining.length(), wrap_width, (cpu_fine_clip_rect != NULL) ? ImDrawTextFlags_CpuFineClip : ImDrawTextFlags_None);
+    }
 }
 
 void ImDrawList::AddText(const ImVec2& pos, ImU32 col, const char* text_begin, const char* text_end)
@@ -5472,12 +5537,32 @@ const char* ImFont::CalcWordWrapPosition(float size, const char* text, const cha
     return ImFontCalcWordWrapPositionEx(this, size, text, text_end, wrap_width, ImDrawTextFlags_None);
 }
 
-ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wrap_width, const char* text_begin, const char* text_end_display, const char* text_end, const char** out_remaining, ImVec2* out_offset, ImDrawTextFlags flags)
+ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wrap_width, const char* text_begin, const char* text_end_display, const char* text_end, const char** out_remaining, ImVec2* out_offset, ImDrawTextFlags flags, bool ignore_tm_formatting)
 {
     if (!text_end)
         text_end = text_begin + ImStrlen(text_begin); // FIXME-OPT: Need to avoid this.
     if (!text_end_display)
         text_end_display = text_end;
+
+    std::string clean_text;
+    const char* orig_text_begin = text_begin;
+    const char* orig_text_end_display = text_end_display;
+
+    if (!ignore_tm_formatting && text_begin != text_end_display)
+    {
+        const char* dollar_sign = (const char*)memchr(text_begin, '$', text_end_display - text_begin);
+        if (dollar_sign != NULL)
+        {
+            // Slice the target area and strip formatting
+            std::string raw_slice(text_begin, text_end_display - text_begin);
+            clean_text = TrackmaniaText::FindAllFormatSpecifiers(raw_slice).OriginalText;
+
+            // Redirect ImGui's pointers to our clean string!
+            text_begin = clean_text.c_str();
+            text_end_display = text_begin + clean_text.length();
+            text_end = text_end_display;
+        }
+    }
 
     ImFontBaked* baked = font->GetFontBaked(size);
     const float line_height = size;
@@ -5492,10 +5577,8 @@ ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wra
     const char* s = text_begin;
     while (s < text_end_display)
     {
-        // Word-wrapping
         if (word_wrap_enabled)
         {
-            // Calculate how far we can render. Requires two passes on the string data but keeps the code simple and not intrusive for what's essentially an uncommon feature.
             if (!word_wrap_eol)
                 word_wrap_eol = ImFontCalcWordWrapPositionEx(font, size, s, text_end, wrap_width - line_width, flags);
 
@@ -5505,7 +5588,7 @@ ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wra
                     text_size.x = line_width;
                 text_size.y += line_height;
                 line_width = 0.0f;
-                s = ImTextCalcWordWrapNextLineStart(s, text_end, flags); // Wrapping skips upcoming blanks
+                s = ImTextCalcWordWrapNextLineStart(s, text_end, flags);
                 if (flags & ImDrawTextFlags_StopOnNewLine)
                     break;
                 word_wrap_eol = NULL;
@@ -5513,7 +5596,6 @@ ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wra
             }
         }
 
-        // Decode and advance source
         const char* prev_s = s;
         unsigned int c = (unsigned int)*s;
         if (c < 0x80)
@@ -5533,7 +5615,6 @@ ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wra
         if (c == '\r')
             continue;
 
-        // Optimized inline version of 'float char_width = GetCharAdvance((ImWchar)c);'
         float char_width = (c < (unsigned int)baked->IndexAdvanceX.Size) ? baked->IndexAdvanceX.Data[c] : -1.0f;
         if (char_width < 0.0f)
             char_width = BuildLoadGlyphGetAdvanceOrFallback(baked, c);
@@ -5552,13 +5633,59 @@ ImVec2 ImFontCalcTextSizeEx(ImFont* font, float size, float max_width, float wra
         text_size.x = line_width;
 
     if (out_offset != NULL)
-        *out_offset = ImVec2(line_width, text_size.y + line_height);  // offset allow for the possibility of sitting after a trailing \n
+        *out_offset = ImVec2(line_width, text_size.y + line_height);
 
-    if (line_width > 0 || text_size.y == 0.0f)                        // whereas size.y will ignore the trailing \n
+    if (line_width > 0 || text_size.y == 0.0f)
         text_size.y += line_height;
 
     if (out_remaining != NULL)
-        *out_remaining = s;
+    {
+        if (!clean_text.empty())
+        {
+            size_t clean_chars_processed = (size_t)(s - clean_text.c_str());
+
+            size_t clean_count = 0;
+            const char* p = orig_text_begin;
+
+            while (p < orig_text_end_display && clean_count < clean_chars_processed)
+            {
+                if (*p == '$')
+                {
+                    if (p + 1 < orig_text_end_display)
+                    {
+                        if (p[1] == '$') {
+                            p += 2; // Skip '$$'
+                            clean_count++;
+                            continue;
+                        }
+
+                        // Skip tag
+                        char nextChar = p[1];
+                        p += 2;
+                        if (TrackmaniaText_IsHexadecimal(nextChar)) {
+                            if (p < orig_text_end_display) p++;
+                            if (p < orig_text_end_display) p++;
+                        }
+                    }
+                    else
+                    {
+                        p++;
+                        clean_count++;
+                    }
+                }
+                else
+                {
+                    p++;
+                    clean_count++;
+                }
+            }
+            *out_remaining = p;
+        }
+        else
+        {
+            *out_remaining = s;
+        }
+    }
 
     return text_size;
 }
