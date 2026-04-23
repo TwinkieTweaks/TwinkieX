@@ -465,15 +465,14 @@ void TwinkUi::Render()
 	{
 		if (BeginMainMenuBar())
 		{
-			PushStyleColor(ImGuiCol_Text, ColorConvertFloat4ToU32({ 1.f, 0.f, 1.f, 1.f }));
 			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
-			if (BeginMenu("Twinkie##Twinkie"))
+
+			if (BeginMenu("$f0fTwinkie##Twinkie"))
 			{
 				PopStyleColor();
 
 				ImGui::EndMenu();
 			}
-			else PopStyleColor();
 
 			if (BeginMenu("Modules##Twinkie"))
 			{
