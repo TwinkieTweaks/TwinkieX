@@ -714,6 +714,8 @@
     <ClInclude Include="Includes\Modules\AnotherModule\AnotherModule.h" />
     <ClInclude Include="Includes\Modules\AppExplorerModule\AppExplorerModule.h" />
     <ClInclude Include="Includes\Modules\IModule.h" />
+    <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
+    <ClInclude Include="Includes\TMText\TMText.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
     <ClInclude Include="Includes\Twinkie\TwinkUi\TwinkUi.h" />
     <ClInclude Include="Includes\Utils\Arch.h" />
@@ -736,6 +738,8 @@
     <ClCompile Include="Includes\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Includes\Modules\AnotherModule\AnotherModule.cpp" />
     <ClCompile Include="Includes\Modules\AppExplorerModule\AppExplorerModule.cpp" />
+    <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
+    <ClCompile Include="Includes\TMText\TMText.cpp" />
     <ClCompile Include="Includes\Utils\Offsets.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

@@ -47,6 +47,8 @@
 
 #include <imgui/imgui_impl_win32.h>
 
+#include <TMText/ImGuiTMText.h>
+
 #include <GlyphTable/IconsForkAwesome.h>
 #include <GlyphTable/IconsKenney.h>
 

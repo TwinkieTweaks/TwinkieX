@@ -475,11 +475,6 @@ void TwinkUi::Render()
 			}
 			else PopStyleColor();
 
-			for (auto& Module : this->Modules)
-			{
-				Module->RenderMenuMain();
-			}
-
 			if (BeginMenu("Modules##Twinkie"))
 			{
 				for (auto& Module : this->Modules)
@@ -488,6 +483,11 @@ void TwinkUi::Render()
 				}
 
 				ImGui::EndMenu();
+			}
+
+			for (auto& Module : this->Modules)
+			{
+				Module->RenderMenuMain();
 			}
 
 			PopItemFlag();

@@ -16,3 +16,20 @@ void AnotherModule::RenderMenuMain()
 		ImGui::EndMenu();
 	}
 }
+
+void AnotherModule::RenderInterface()
+{
+	static char InputField[2048] = { 0 };
+
+
+
+	using namespace ImGui;
+
+	Begin("Test");
+
+	InputText("##InputField", InputField, 2048);
+
+	TextTrackmania(InputField);
+
+	End();
+}
