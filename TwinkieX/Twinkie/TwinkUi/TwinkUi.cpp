@@ -469,8 +469,6 @@ void TwinkUi::Render()
 
 			if (BeginMenu("$f0fTwinkie##Twinkie"))
 			{
-				PopStyleColor();
-
 				ImGui::EndMenu();
 			}
 
