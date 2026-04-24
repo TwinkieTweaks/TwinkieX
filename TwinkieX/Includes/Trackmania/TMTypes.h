@@ -9,12 +9,12 @@ struct CFastBuffer
 {
 #ifdef TMCN
 	T* Ptr = nullptr;
-	unsigned int Size = 0;
-	unsigned int Capacity = 0;
+	uint32_t Size = 0;
+	uint32_t Capacity = 0;
 #elif defined(GAMEBOX)
-	unsigned int Size = 0;
+	uint32_t Size = 0;
 	T* Ptr = nullptr;
-	unsigned int Capacity = 0;
+	uint32_t Capacity = 0;
 #endif
 
 	T* operator[](size_t Idx)
@@ -35,10 +35,10 @@ struct CFastArray
 {
 #ifdef MANIAPLANET
 	T* Ptr = nullptr;
-	unsigned int Size = 0;
+	uint32_t Size = 0;
 #else
 	uintptr_t vf;
-	unsigned int Size = 0;
+	uint32_t Size = 0;
 	T* Ptr = nullptr;
 #endif
 
@@ -61,12 +61,12 @@ struct CMwNod
 {
 public:
 	ActionFn* vftable;
-	unsigned int ReferenceCount;
-	unsigned int Pad0;
+	uint32_t ReferenceCount;
+	uint32_t Pad0;
 	uintptr_t SystemFid;
 	CFastBuffer<CMwNod*>* Dependants;
-	unsigned int unknown1;
-	unsigned int Pad1;
+	uint32_t unknown1;
+	uint32_t Pad1;
 };
 
 #ifdef TMCN
@@ -169,7 +169,7 @@ struct CMwMemberInfo
 	CMwParam* pParam;
 
 	// Offset of the member in the class instance, -1 for methods and virtual members
-	unsigned int MemberOffset;
+	uint32_t MemberOffset;
 
 	int Pad0;
 
@@ -192,7 +192,7 @@ struct CMwClassInfo
 {
 	int Pad1;
 
-	unsigned int Pad2;
+	uint32_t Pad2;
 
 	// Class name
 	char* ClassName;
@@ -214,7 +214,7 @@ struct CMwClassInfo
 	ActionFn CtorFn;
 
 	// Padding for unknown data
-	unsigned long long Padding[18];
+	uint64_t Padding[18];
 
 	// File extension for this class
 	char* FileExtName;
@@ -222,7 +222,7 @@ struct CMwClassInfo
 	// List of member infos
 	CMwMemberInfo** Members;
 	// Number of member infos in the list
-	unsigned int MembersAmount;
+	uint32_t MembersAmount;
 
 	// Iterator function for the beginning of the members array
 	CMwMemberInfo** begin();
@@ -235,6 +235,15 @@ struct CMwClassInfo
 	CMwMemberInfo** end() const;
 
 	int Pad0;
+};
+
+// Info of a CLASS type member
+struct CMwMemberInfoClass : CMwMemberInfo
+{
+	ActionFn InstantiationFn;
+	CMwClassInfo* ClassInfo;
+	uint32_t ClassId;
+	int Pad;
 };
 // GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #elif defined(GAMEBOX)
@@ -372,7 +381,7 @@ struct CMwClassInfo
 	// List of member infos
 	CMwMemberInfo** Members;
 	// Number of member infos in the list
-	unsigned int MembersAmount;
+	uint32_t MembersAmount;
 
 	// Iterator function for the beginning of the members array
 	CMwMemberInfo** begin();
@@ -393,12 +402,6 @@ struct CMwMemberInfoAction : CMwMemberInfo
 
 	// The action function itself
 	ActionFn Action;
-};
-
-// Info of a CLASS type member
-struct CMwMemberInfoClass : CMwMemberInfo
-{
-
 };
 
 // The class used by the app's input port (CTrackMania.InputPort)

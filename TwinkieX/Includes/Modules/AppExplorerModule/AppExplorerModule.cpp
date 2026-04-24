@@ -98,7 +98,21 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 		return;
 	}
 
-	auto ClassInfo = Twinkie->GetNodClassInfo(Nod);
+	CMwClassInfo* ClassInfo = 
+#ifdef TMCN
+	nullptr;
+	if (NodMemberInfo and NodMemberInfo->MemberType == CMwMemberInfo::CLASSNOTPERSISTENT)
+	{
+		ClassInfo = ((CMwMemberInfoClass*)NodMemberInfo)->ClassInfo;
+	}
+	else
+	{
+		ClassInfo = 
+#endif
+		Twinkie->GetNodClassInfo(Nod);
+#ifdef TMCN
+	}
+#endif
 
 	std::string NodAddressStr = std::format("{:p}", (void*)Nod);
 	std::string TreeNodeLabel = std::format("{}* {} ({})",
@@ -129,6 +143,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 
 				switch (MemberInfo->MemberType)
 				{
+					case CMwMemberInfo::CLASSNOTPERSISTENT:
 					case CMwMemberInfo::CLASS:
 					{
 						if (!IsMemberVirtual)
