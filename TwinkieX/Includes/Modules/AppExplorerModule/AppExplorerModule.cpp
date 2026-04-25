@@ -4,6 +4,20 @@
 
 #define HasRightClickedOnItem() IsMouseClicked(ImGuiMouseButton_Right) and IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)
 
+constexpr bool IsMemberClassAdjacent(CMwMemberInfo* Member)
+{
+	std::vector<CMwMemberInfo::eType> ClassTypes = {
+		CMwMemberInfo::CLASS
+#ifdef TMCN
+		,
+		CMwMemberInfo::CLASSALT,
+		CMwMemberInfo::CLASSNOTPERSISTENT
+#endif
+	};
+
+	return std::find(ClassTypes.begin(), ClassTypes.end(), Member->MemberType) != ClassTypes.end();
+}
+
 using namespace ImGui;
 
 void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, uintptr_t Nod, CMwClassInfo* ClassInfo)
@@ -30,8 +44,7 @@ void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std:
 	ChildInfo->ParentNod = Nod;
 	ChildInfo->ParentClassInfo = ClassInfo;
 
-	// TODO: Fix for other CLASS-adjacent types and for virtual members
-	if (MemberInfo->MemberType == CMwMemberInfo::CLASS and !IsMemberVirtual)
+	if (IsMemberClassAdjacent(MemberInfo) and !IsMemberVirtual)
 	{
 		ChildInfo->MemberNodItself = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
 	}
@@ -140,6 +153,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 				std::string FancyMemberName = GetFancyMemberName(MemberInfo);
 
 				bool IsMemberVirtual = MemberInfo->MemberOffset == 0xFFFFFFFFU;
+				bool IgnoreRightClicks = false;
 
 				switch (MemberInfo->MemberType)
 				{
@@ -154,6 +168,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 							uintptr_t ChildNod = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
 							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
 						}
+						else IgnoreRightClicks = true;
 						break;
 					}
 
@@ -199,6 +214,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 								EndDisabled();
 							}
 						}
+						else IgnoreRightClicks = true;
 						break;
 					}
 					case CMwMemberInfo::CLASSARRAY:
@@ -233,6 +249,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 								EndDisabled();
 							}
 						}
+						else IgnoreRightClicks = true;
 						break;
 					}
 
@@ -243,8 +260,46 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 							float* Float = (float*)(Nod + MemberInfo->MemberOffset);
 							InputFloat(FancyMemberName.c_str(), Float);
 						}
+						else IgnoreRightClicks = true;
 						break;
 					}
+#ifdef TMCN
+					case CMwMemberInfo::REALRANGE:
+					{
+						if (!IsMemberVirtual)
+						{
+							CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
+							float* Float = (float*)(Nod + MemberInfo->MemberOffset);
+							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
+						}
+						else IgnoreRightClicks = true;
+						break;
+					}
+
+					case CMwMemberInfo::INTRANGE:
+					{
+						if (!IsMemberVirtual)
+						{
+							CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
+							int* Int = (int*)(Nod + MemberInfo->MemberOffset);
+							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
+						}
+						else IgnoreRightClicks = true;
+						break;
+					}
+
+					case CMwMemberInfo::ENUM:
+					{
+						if (!IsMemberVirtual)
+						{
+							CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
+							int* CurrentItem = (int*)(Nod + MemberInfo->MemberOffset);
+							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
+						}
+						else IgnoreRightClicks = true;
+						break;
+					}
+#endif
 
 					case CMwMemberInfo::BOOL:
 					{
@@ -253,6 +308,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 							bool* Bool = (bool*)(Nod + MemberInfo->MemberOffset);
 							Checkbox(FancyMemberName.c_str(), Bool);
 						}
+						else IgnoreRightClicks = true;
 						break;
 					}
 
@@ -262,7 +318,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 						break;
 					}
 				}
-				if (HasRightClickedOnItem())
+				if (HasRightClickedOnItem() and not IgnoreRightClicks)
 				{
 					SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
 				}
@@ -364,7 +420,22 @@ void AppExplorerModule::RenderNodInfoMemberInfo()
 	{
 		Separator();
 
-		RenderNodInfoClassInfo(Twinkie->GetNodClassInfo(ChildInfo->MemberNodItself));
+		CMwClassInfo* MemberNodClassInfo =
+#ifdef TMCN
+			nullptr;
+		if (ChildInfo->MemberInfo->MemberType == CMwMemberInfo::CLASSNOTPERSISTENT)
+		{
+			MemberNodClassInfo = ((CMwMemberInfoClass*)ChildInfo->MemberInfo)->ClassInfo;
+		}
+		else
+		{
+			MemberNodClassInfo = 
+#endif
+				Twinkie->GetNodClassInfo(ChildInfo->MemberNodItself);
+#ifdef TMCN
+		}
+#endif
+		RenderNodInfoClassInfo(MemberNodClassInfo);
 	}
 }
 

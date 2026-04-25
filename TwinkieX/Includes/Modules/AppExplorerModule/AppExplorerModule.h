@@ -2,6 +2,8 @@
 #include <Modules/IModule.h>
 #include <string>
 
+constexpr bool IsMemberClassAdjacent(CMwMemberInfo* Member);
+
 // Contains info about a nod. This info is used whenever a nod is right-clicked and a popup shows up
 struct PopupNodInfo
 {
