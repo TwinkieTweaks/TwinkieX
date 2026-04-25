@@ -428,6 +428,38 @@ void TwinkUi::Render()
 		auto ClassInfo = TrackmaniaMgr->GetNodClassInfo(ConnectedDevice);
 	}*/
 
+#ifdef TMCN
+	ImGuiIO& ImIo = ImGui::GetIO();
+
+	auto InputPort = TrackmaniaMgr->GetInputPort();
+
+	if (ImIo.WantCaptureMouse or ImIo.WantCaptureKeyboard)
+	{
+		InputPort->IsFocused = 0;
+	}
+
+	for (auto& ConnectedDevice : InputPort->ConnectedDevices)
+	{
+		auto ClassInfo = TrackmaniaMgr->GetNodClassInfo(ConnectedDevice);
+		if (ClassInfo->ClassID == 0x1300b000 and ImIo.WantCaptureKeyboard)
+		{
+			WriteAddr(uint32_t, ConnectedDevice + O_M_CINPUTDEVICE_ISDISABLED, 1);
+		}
+		else if (ClassInfo->ClassID == 0x1300b000 and not ImIo.WantCaptureKeyboard)
+		{
+			WriteAddr(uint32_t, ConnectedDevice + O_M_CINPUTDEVICE_ISDISABLED, 0);
+		}
+		else if (ClassInfo->ClassID == 0x1300a000 and ImIo.WantCaptureMouse)
+		{
+			WriteAddr(uint32_t, ConnectedDevice + O_M_CINPUTDEVICE_ISDISABLED, 1);
+		}
+		else if (ClassInfo->ClassID == 0x1300a000 and not ImIo.WantCaptureMouse)
+		{
+			WriteAddr(uint32_t, ConnectedDevice + O_M_CINPUTDEVICE_ISDISABLED, 0);
+		}
+	}
+#endif
+
 	if (TwinkUiState::RenderUi)
 	{
 		if (BeginMainMenuBar())

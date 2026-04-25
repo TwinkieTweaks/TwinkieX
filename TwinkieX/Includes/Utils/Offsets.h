@@ -38,8 +38,9 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0x70
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x178
+#define O_M_CINPUTPORT_ISFOCUSED 0xA90
 
-#define O_M_CINPUTDEVICE_ISDISABLED 0x0
+#define O_M_CINPUTDEVICE_ISDISABLED 0xE4
 
 // Exclusive to TMCN, the other games have the device as a global
 #define O_M_CDX11VIEWPORT_D3DSWAPCHAIN 8808
@@ -60,6 +61,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0
+#define O_M_CINPUTPORT_ISFOCUSED 0
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
@@ -78,6 +80,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0
+#define O_M_CINPUTPORT_ISFOCUSED 0
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
@@ -96,6 +99,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0x58
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
+#define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
@@ -114,6 +118,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0x58
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
+#define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
@@ -132,6 +137,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0x58
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
+#define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
