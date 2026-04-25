@@ -38,7 +38,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CTRACKMANIA_INPUTPORT 0x70
 
 #define O_M_CINPUTPORT_CONNECTEDDEVICES 0x178
-#define O_M_CINPUTPORT_ISFOCUSED 0xA90
+#define O_M_CINPUTPORT_ISFOCUSED 0xA98
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0xE4
 
