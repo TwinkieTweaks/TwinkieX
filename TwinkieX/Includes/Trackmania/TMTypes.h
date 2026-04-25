@@ -106,7 +106,7 @@ struct CMwMemberInfo
 		INTBUFFERCAT = 40, // EXTRAPOLATED
 		INTARRAYBASE = 41, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 
-		INTALT = 46,
+		INTRANGE = 46,
 
 		ISO4 = 47,
 
@@ -124,7 +124,7 @@ struct CMwMemberInfo
 		REALBUFFERCAT = 87, // EXTRAPOLATED
 		REALARRAYBASE = 88, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 		
-		REALALT = 93,
+		REALRANGE = 93,
 
 		STRING = 94,
 		STRINGARRAY = 95, // EXTRAPOLATED
@@ -165,7 +165,7 @@ struct CMwMemberInfo
 	eType MemberType;
 
 	// Member ID, unique between classes
-	int MemberID;
+	uint32_t MemberID;
 
 	// I have no idea
 	CMwParam* pParam;
@@ -173,18 +173,18 @@ struct CMwMemberInfo
 	// Offset of the member in the class instance, -1 for methods and virtual members
 	uint32_t MemberOffset;
 
-	int Pad0;
+	uint32_t Pad0;
 
 	// Name of the member
 	const char* MemberName;
 
 	// Unknown pointer
-	void* p;
+	uintptr_t p;
 
 	// Flags for the member, see (eFlags)
-	int MemberFlags;
+	uint32_t MemberFlags;
 	// Secondary flags for the member, see (eFlags)
-	int MemberFlags2;
+	uint32_t MemberFlags2;
 };
 
 
@@ -192,20 +192,20 @@ struct CMwMemberInfo
 // This class is exclusive to TMCN
 struct CMwClassInfo
 {
-	int Pad1;
+	uint32_t Pad1;
 
 	uint32_t Pad2;
 
 	// Class name
-	char* ClassName;
+	const char* ClassName;
 
-	int unknown0;
-	int unknown1;
+	uint32_t unknown0;
+	uint32_t unknown1;
 
 	// Class ID
-	int ClassID;
+	uint32_t ClassID;
 
-	int unknown2;
+	uint32_t unknown2;
 
 	// Parent class' info, null if none
 	CMwClassInfo* ParentClassInfo;
@@ -236,7 +236,7 @@ struct CMwClassInfo
 	// Const iterator function for the end of the members array
 	CMwMemberInfo** end() const;
 
-	int Pad0;
+	uint32_t Pad0;
 };
 
 // Info of a CLASS type member
@@ -245,7 +245,37 @@ struct CMwMemberInfoClass : CMwMemberInfo
 	ActionFn InstantiationFn;
 	CMwClassInfo* ClassInfo;
 	uint32_t ClassId;
-	int Pad;
+	uint32_t Pad;
+};
+
+struct CMwMemberInfoRealRange : CMwMemberInfo
+{
+	uint8_t Padding[8];
+
+	float ValueMin;
+	float ValueMax;
+};
+
+struct CMwMemberInfoIntRange : CMwMemberInfo
+{
+	uint8_t Padding[8];
+
+	// KEEP THESE AS int
+
+	int ValueMin;
+	int ValueMax;
+};
+
+struct CMwMemberInfoEnum : CMwMemberInfo
+{
+	uint8_t Padding[8];
+
+	const char* EnumTypeName;
+	int32_t EnumValueNamesLength;
+	uint32_t Padding2;
+	const char** EnumValueNames;
+
+	uint64_t Unknown;
 };
 // GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #elif defined(GAMEBOX)
@@ -400,7 +430,7 @@ struct CMwClassInfo
 // Info of an ACTION type member
 struct CMwMemberInfoAction : CMwMemberInfo
 {
-	char Padding[8];
+	uint8_t Padding[8];
 
 	// The action function itself
 	ActionFn Action;
@@ -409,6 +439,6 @@ struct CMwMemberInfoAction : CMwMemberInfo
 // The class used by the app's input port (CTrackMania.InputPort)
 struct CInputPort
 {
-	char Padding[O_M_CINPUTPORT_CONNECTEDDEVICES];
+	uint8_t Padding[O_M_CINPUTPORT_CONNECTEDDEVICES];
 	CFastArray<uintptr_t> ConnectedDevices;
 };
