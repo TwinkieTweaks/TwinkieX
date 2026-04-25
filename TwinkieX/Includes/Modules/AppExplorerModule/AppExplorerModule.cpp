@@ -143,7 +143,10 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 
 				switch (MemberInfo->MemberType)
 				{
+#ifdef TMCN
 					case CMwMemberInfo::CLASSNOTPERSISTENT:
+					case CMwMemberInfo::CLASSALT:
+#endif
 					case CMwMemberInfo::CLASS:
 					{
 						if (!IsMemberVirtual)

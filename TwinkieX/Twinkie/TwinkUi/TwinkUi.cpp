@@ -220,39 +220,6 @@ void InitImGui(DirectXDevice* Device)
 
 static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, HWND C, LPVOID D)
 {
-	//if (TwinkUiState::NeedsReset)
-	//{
-	//	// Get the implicit swap chain (index 0)
-	//	IDirect3DSwapChain9* pSwapChain = nullptr;
-	//	if (SUCCEEDED(pDevice->GetSwapChain(0, &pSwapChain)))
-	//	{
-	//		D3DPRESENT_PARAMETERS d3dpp;
-	//		// Populate d3dpp with current settings
-	//		if (SUCCEEDED(pSwapChain->GetPresentParameters(&d3dpp)))
-	//		{
-	//			// Update only the dimensions
-	//			d3dpp.BackBufferWidth  = TwinkUiState::WindowWidth;
-	//			d3dpp.BackBufferHeight = TwinkUiState::WindowHeight;
-
-	//			// Carry out the Reset
-	//			ImGui_ImplDX9_InvalidateDeviceObjects();
-
-	//			HRESULT hr = pDevice->Reset(&d3dpp);
-	//			if (SUCCEEDED(hr))
-	//			{
-	//				ImGui_ImplDX9_CreateDeviceObjects();
-	//				TwinkUiState::NeedsReset = false;
-	//			}
-	//		}
-	//		pSwapChain->Release(); // Don't forget to release the COM object
-	//	}
-	//	else
-	//	{
-	//		AllocConsole();
-	//		TwinkUiState::NeedsReset = false;
-	//	}
-	//}
-
 	if (!TwinkUiState::ImGuiInit)
 	{
 		InitImGui(pDevice);
