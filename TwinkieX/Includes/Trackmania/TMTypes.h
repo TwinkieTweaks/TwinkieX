@@ -143,7 +143,9 @@ struct CMwMemberInfo
 		
 		PROC = 184,
 		
-		CLASSNOTPERSISTENT = 186 // https://next.openplanet.dev/MetaNotPersistent
+		CLASSNOTPERSISTENT = 186, // https://next.openplanet.dev/MetaNotPersistent
+
+		CLASSALT = 240 // App.GameScene.SceneFxMgr
 	};
 
 	enum eFlags 
