@@ -99,6 +99,8 @@ struct CMwMemberInfo
 		COLORARRAYBASE = 23, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 
 		ENUM = 28,
+		ENUMARRAY = 29,
+		ENUMBUFFER = 30,
 
 		INT = 37,
 		INTARRAY = 38,
