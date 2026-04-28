@@ -20,7 +20,9 @@ jobs:
             platform: x86
           - config: TMSX
             platform: x86
-
+          - config: TM1
+            platform: x86
+  
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
