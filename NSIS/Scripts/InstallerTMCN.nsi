@@ -1,4 +1,4 @@
-!include "MUI.nsh"
+!include "MUI2.nsh"
 
 Name "TwinkieX for TMCN"
 OutFile "Output/TwinkieXTMCN.exe"
