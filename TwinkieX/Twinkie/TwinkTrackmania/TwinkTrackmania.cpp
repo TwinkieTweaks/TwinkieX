@@ -28,17 +28,29 @@ CMwClassInfo* TwinkTrackmania::GetNodClassInfo(uintptr_t Nod)
 
 uintptr_t TwinkTrackmania::GetApp()
 {
+#ifndef TM1
 	return ReadAddr(uintptr_t, this->ExeBaseAddr + O_APP);
+#else
+	return ReadAddr(uintptr_t, O_M_CMWNODMAIN_APP + O_APP);
+#endif
 }
 
 uintptr_t TwinkTrackmania::GetViewport()
 {
+#ifndef TM1
 	return ReadAddr(uintptr_t, GetApp() + O_M_CTRACKMANIA_VIEWPORT);
+#else
+	return ReadAddr(uintptr_t, O_M_CMWNODMAIN_VIEWPORT + O_APP);
+#endif
 }
 
 uintptr_t TwinkTrackmania::GetDirectXDevice()
 {
+#ifndef TM1
 	return ReadAddr(uintptr_t, this->ExeBaseAddr + O_D3DDEVICE);
+#else
+	return ReadAddr(uintptr_t, O_M_CVISIONVIEWPORTDX9_DEVICE + GetViewport());
+#endif
 }
 
 CInputPort* TwinkTrackmania::GetInputPort()

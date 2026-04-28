@@ -53,20 +53,36 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #elif defined(TM1)
 
 // Globals
-#define O_APP 0x0
+
+// NOTE: For TM1.0, "APP" refers to the global object of type CMwNodMain*.
+#define O_APP 0x0097b108
+
+// NOTE: Null on purpose for TM1.0. Get the DirectX device from the viewport instead.
 #define O_D3DDEVICE 0x0
 
 // Offsets to members
-#define O_M_CTRACKMANIA_VIEWPORT 0
-#define O_M_CTRACKMANIA_INPUTPORT 0
 
-#define O_M_CINPUTPORT_CONNECTEDDEVICES 0
-#define O_M_CINPUTPORT_ISFOCUSED 0
+// Exclusive to TM1.0, since the app is not a global but a child of a global CMwNodMain*.
+#define O_M_CMWNODMAIN_APP 0x38
 
-#define O_M_CINPUTDEVICE_ISDISABLED 0x0
+// Exclusive to TM1.0, since the viewport is not a global but a child of a global CMwNodMain*.
+#define O_M_CMWNODMAIN_VIEWPORT 0x40
+
+// Exclusive to TM1.0, because the DirectX device is not a global.
+#define O_M_CVISIONVIEWPORTDX9_DEVICE 0x64C
+
+// NOTE: Null on purpose for TM1.0. Get the viewport from CMwNodMain* instead.
+#define O_M_CTRACKMANIA_VIEWPORT 0x0
+// NOTE: CTRACKMANIA here is inaccurate for TM1.0. The real type is CGameProcess*
+#define O_M_CTRACKMANIA_INPUTPORT 0x40
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
+#define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
+
+#define O_M_CINPUTDEVICE_ISDISABLED 0x0 
 
 // Vtable indices
-#define O_V_MWCLASSINFO 0
+#define O_V_MWCLASSINFO 1
 #define O_V_PRESENT 17
 
 #elif defined(TMS)
