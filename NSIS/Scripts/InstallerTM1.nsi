@@ -1,0 +1,19 @@
+!include "MUI.nsh"
+
+Name "TwinkieX for TM1.0"
+OutFile "Output/TwinkieXTM1.exe"
+InstallDir "$LOCALAPPDATA\TrackMania\"
+
+!insertmacro MUI_PAGE_WELCOME
+!insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"
+!insertmacro MUI_PAGE_DIRECTORY
+!insertmacro MUI_PAGE_INSTFILES
+!insertmacro MUI_PAGE_FINISH
+
+!insertmacro MUI_LANGUAGE "English"
+
+Section ""
+    SetOutPath $INSTDIR
+    File "..\..\Builds\Win32\TM1\TwinkieTM1.dll"
+    File "..\ReleaseDeps\TM1\dinput8.dll"
+SectionEnd
