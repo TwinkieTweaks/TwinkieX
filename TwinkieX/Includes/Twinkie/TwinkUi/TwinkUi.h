@@ -2,7 +2,6 @@
 
 // Modules
 #include <Modules/AppExplorerModule/AppExplorerModule.h>
-#include <Modules/AnotherModule/AnotherModule.h>
 
 #include <vector>
 

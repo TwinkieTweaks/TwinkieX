@@ -152,10 +152,10 @@ struct CMwMemberInfo
 
 	enum eFlags 
 	{
-		READ = 0b00000001,
-		WRITE = 0b00000010,
-		U1 = 0b00000100,
-		U2 = 0b00001000,
+		GET = 0b00000001,
+		SET = 0b00000010,
+		ADD = 0b00000100,
+		SUB = 0b00001000,
 		VIRTUAL_GET = 0b00010000,
 		VIRTUAL_SET = 0b00100000,
 		VIRTUAL_ADD = 0b01000000,
@@ -314,10 +314,12 @@ struct CMwMemberInfo
 		ISO3ARRAY,
 		ISO3BUFFER,
 		ISO3BUFFERCAT,
+#ifndef TM1
 		ID,
 		IDARRAY,
 		IDBUFFER,
 		IDBUFFERCAT,
+#endif
 		NATURAL,
 		NATURALARRAY,
 		NATURALBUFFER,
@@ -328,6 +330,13 @@ struct CMwMemberInfo
 		REALBUFFER,
 		REALBUFFERCAT,
 		REALRANGE,
+#ifdef TM1
+		ID, 
+		IDARRAY,
+		IDBUFFER,
+		IDBUFFERCAT,
+#endif
+#ifndef TM1
 		STRING,
 		STRINGARRAY,
 		STRINGBUFFER,
@@ -336,6 +345,7 @@ struct CMwMemberInfo
 		STRINGINTARRAY,
 		STRINGINTBUFFER,
 		STRINGINTBUFFERCAT,
+#endif
 		VEC2,
 		VEC2ARRAY,
 		VEC2BUFFER,
@@ -357,10 +367,10 @@ struct CMwMemberInfo
 
 	enum eFlags
 	{
-		READ = 0b00000001,
-		WRITE = 0b00000010,
-		U1 = 0b00000100,
-		U2 = 0b00001000,
+		GET = 0b00000001,
+		SET = 0b00000010,
+		ADD = 0b00000100,
+		SUB = 0b00001000,
 		VIRTUAL_GET = 0b00010000,
 		VIRTUAL_SET = 0b00100000,
 		VIRTUAL_ADD = 0b01000000,
@@ -396,19 +406,22 @@ struct CMwClassInfo
 	ActionFn* vftable;
 
 	// Class ID
-	int ClassID;
+	uint32_t ClassID;
 
 	// Parent class' info, null if none
 	CMwClassInfo* ParentClassInfo;
 
-	int unknown0;
-	int unknown1;
+	uint32_t unknown0;
+	uint32_t unknown1;
 	
 	// Class name
 	char* ClassName;
 
 	// Next class info, usually has nothing to do with this class
 	CMwClassInfo* NextClassInfo;
+#ifdef TM1
+	uint32_t unknown2;
+#endif
 	// Pointer to the class' constructor
 	ActionFn CtorFn;
 
