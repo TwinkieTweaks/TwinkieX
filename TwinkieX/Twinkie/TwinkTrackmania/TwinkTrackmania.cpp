@@ -42,7 +42,7 @@ uintptr_t TwinkTrackmania::GetDirectXDevice()
 #ifndef TM1
 	return ReadAddr(uintptr_t, this->ExeBaseAddr + O_D3DDEVICE);
 #else
-	return ReadAddr(uintptr_t, O_M_CVISIONVIEWPORTDX9_DEVICE + GetViewport());
+	return ReadAddr(uintptr_t, O_M_CVISIONVIEWPORTDX9_DEVICE + (uintptr_t)GetViewport());
 #endif
 }
 
