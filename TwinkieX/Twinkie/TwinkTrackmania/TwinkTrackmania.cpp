@@ -19,28 +19,21 @@ TwinkTrackmania::~TwinkTrackmania()
 
 // Getters
 
-CMwClassInfo* TwinkTrackmania::GetNodClassInfo(uintptr_t Nod)
-{
-	using MwClassInfoFn = CMwClassInfo*(__thiscall*)(uintptr_t);
-
-	return reinterpret_cast<MwClassInfoFn>(Virtual(O_V_MWCLASSINFO, Nod))(Nod);
-}
-
-uintptr_t TwinkTrackmania::GetApp()
+CMwNod* TwinkTrackmania::GetApp()
 {
 #ifndef TM1
-	return ReadAddr(uintptr_t, this->ExeBaseAddr + O_APP);
+	return ReadAddr(CMwNod*, this->ExeBaseAddr + O_APP);
 #else
-	return ReadAddr(uintptr_t, O_M_CMWNODMAIN_APP + O_APP);
+	return ReadAddr(CMwNod*, O_M_CMWNODMAIN_APP + O_APP);
 #endif
 }
 
-uintptr_t TwinkTrackmania::GetViewport()
+CMwNod* TwinkTrackmania::GetViewport()
 {
 #ifndef TM1
-	return ReadAddr(uintptr_t, GetApp() + O_M_CTRACKMANIA_VIEWPORT);
+	return ReadAddr(CMwNod*, (uintptr_t)GetApp() + O_M_CTRACKMANIA_VIEWPORT);
 #else
-	return ReadAddr(uintptr_t, O_M_CMWNODMAIN_VIEWPORT + O_APP);
+	return ReadAddr(CMwNod*, O_M_CMWNODMAIN_VIEWPORT + O_APP);
 #endif
 }
 
@@ -55,13 +48,13 @@ uintptr_t TwinkTrackmania::GetDirectXDevice()
 
 CInputPort* TwinkTrackmania::GetInputPort()
 {
-	return ReadAddr(CInputPort*, GetApp() + O_M_CTRACKMANIA_INPUTPORT);
+	return ReadAddr(CInputPort*, (uintptr_t)GetApp() + O_M_CTRACKMANIA_INPUTPORT);
 }
 
 #ifdef MANIAPLANET
 uintptr_t TwinkTrackmania::GetDirectXSwapChain()
 {
-	return ReadAddr(uintptr_t, this->GetViewport() + O_M_CDX11VIEWPORT_D3DSWAPCHAIN);
+	return ReadAddr(uintptr_t, (uintptr_t)this->GetViewport() + O_M_CDX11VIEWPORT_D3DSWAPCHAIN);
 }
 #endif
 

@@ -20,7 +20,7 @@ constexpr bool IsMemberClassAdjacent(CMwMemberInfo* Member)
 
 using namespace ImGui;
 
-void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, uintptr_t Nod, CMwClassInfo* ClassInfo)
+void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, CMwNod* Nod, CMwClassInfo* ClassInfo)
 {
 	bool IsMemberVirtual = MemberInfo->MemberOffset == 0xFFFFFFFFU;
 	
@@ -46,7 +46,7 @@ void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std:
 
 	if (IsMemberClassAdjacent(MemberInfo) and !IsMemberVirtual)
 	{
-		ChildInfo->MemberNodItself = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
+		ChildInfo->MemberNodItself = ReadAddr(CMwNod*, Nod + MemberInfo->MemberOffset);
 	}
 	else
 	{
@@ -56,7 +56,7 @@ void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std:
 	HasSetWindowPositionForPopup = false;
 }
 
-void AppExplorerModule::SetClassInfoPopup(CMwClassInfo* ClassInfo, const std::string NodName, uintptr_t Nod)
+void AppExplorerModule::SetClassInfoPopup(CMwClassInfo* ClassInfo, const std::string NodName, CMwNod* Nod)
 {
 	// Fix memory leak incase of user clicking on another nod while pop-up is still active
 	if (NodInfo)
@@ -97,12 +97,12 @@ std::string AppExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 	return FancyMemberName;
 }
 
-void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwMemberInfo* NodMemberInfo = nullptr)
+void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMemberInfo* NodMemberInfo = nullptr)
 {
 	// TODO: Compare intended nod info (NodMemberInfo) with nod's actual info (ClassInfo below)
 	if (!NodMemberInfo) NodMemberInfo = nullptr;
 
-	if (Nod == 0)
+	if (!Nod)
 	{
 		BeginDisabled();
 		Text(NodName.c_str());
@@ -120,9 +120,9 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 	}
 	else
 	{
-		ClassInfo = 
+		ClassInfo =
 #endif
-		Twinkie->GetNodClassInfo(Nod);
+			Nod->MwGetClassInfo();
 #ifdef TMCN
 	}
 #endif
@@ -165,7 +165,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 					{
 						if (!IsMemberVirtual)
 						{
-							uintptr_t ChildNod = ReadAddr(uintptr_t, Nod + MemberInfo->MemberOffset);
+							CMwNod* ChildNod = ReadAddr(CMwNod*, (uintptr_t)Nod + MemberInfo->MemberOffset);
 							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
 						}
 						else IgnoreRightClicks = true;
@@ -186,11 +186,20 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 					{
 						if (!IsMemberVirtual)
 						{
-							CFastBuffer<uintptr_t>* Array = reinterpret_cast<CFastBuffer<uintptr_t>*>(Nod + MemberInfo->MemberOffset);
+							CFastBuffer<CMwNod*>* Array = reinterpret_cast<CFastBuffer<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
 							if (Array)
 							{
 								PushID((void*)Array);
-								bool ArrayTreeNodeOpened = TreeNodeEx(FancyMemberName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+
+								CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+								CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+
+								std::string ElementNameSingular =
+									MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+									MemberInfoArray->MemberName;
+								std::string ArrayName = std::format("CFastBuffer<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
+
+								bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
 
 								if (HasRightClickedOnItem())
 								{
@@ -201,7 +210,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 								{
 									for (auto& ArrayNod : *Array)
 									{
-										RenderNod(ArrayNod, MemberInfo->MemberName);
+										RenderNod(ArrayNod, ElementNameSingular);
 									}
 									TreePop();
 								}
@@ -221,22 +230,31 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 					{
 						if (!IsMemberVirtual)
 						{
-							CFastArray<uintptr_t>* Array = reinterpret_cast<CFastArray<uintptr_t>*>(Nod + MemberInfo->MemberOffset);
+							CFastArray<CMwNod*>* Array = reinterpret_cast<CFastArray<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
 							if (Array)
 							{
 								PushID((void*)Array);
-								bool ArrayTreeNodOpened = TreeNodeEx(FancyMemberName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+
+								CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+								CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+
+								std::string ElementNameSingular =
+									MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+									MemberInfoArray->MemberName;
+								std::string ArrayName = std::format("CFastBuffer<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
+
+								bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
 
 								if (HasRightClickedOnItem())
 								{
 									SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
 								}
 
-								if (ArrayTreeNodOpened)
+								if (ArrayTreeNodeOpened)
 								{
 									for (auto& ArrayNod : *Array)
 									{
-										RenderNod(ArrayNod, MemberInfo->MemberName);
+										RenderNod(ArrayNod, ElementNameSingular);
 									}
 									TreePop();
 								}
@@ -257,7 +275,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 					{
 						if (!IsMemberVirtual)
 						{
-							float* Float = (float*)(Nod + MemberInfo->MemberOffset);
+							float* Float = (float*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							InputFloat(FancyMemberName.c_str(), Float);
 						}
 						else IgnoreRightClicks = true;
@@ -269,7 +287,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 						if (!IsMemberVirtual)
 						{
 							CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
-							float* Float = (float*)(Nod + MemberInfo->MemberOffset);
+							float* Float = (float*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
 						}
 						else IgnoreRightClicks = true;
@@ -281,7 +299,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 						if (!IsMemberVirtual)
 						{
 							CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
-							int* Int = (int*)(Nod + MemberInfo->MemberOffset);
+							int* Int = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
 						}
 						else IgnoreRightClicks = true;
@@ -293,7 +311,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 						if (!IsMemberVirtual)
 						{
 							CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
-							int* CurrentItem = (int*)(Nod + MemberInfo->MemberOffset);
+							int* CurrentItem = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
 						}
 						else IgnoreRightClicks = true;
@@ -305,7 +323,7 @@ void AppExplorerModule::RenderNod(uintptr_t Nod, const std::string NodName, CMwM
 					{
 						if (!IsMemberVirtual)
 						{
-							bool* Bool = (bool*)(Nod + MemberInfo->MemberOffset);
+							bool* Bool = (bool*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							Checkbox(FancyMemberName.c_str(), Bool);
 						}
 						else IgnoreRightClicks = true;
@@ -431,7 +449,7 @@ void AppExplorerModule::RenderNodInfoMemberInfo()
 		{
 			MemberNodClassInfo = 
 #endif
-				Twinkie->GetNodClassInfo(ChildInfo->MemberNodItself);
+				ChildInfo->MemberNodItself->MwGetClassInfo();
 #ifdef TMCN
 		}
 #endif

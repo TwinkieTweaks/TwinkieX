@@ -46,7 +46,6 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CDX11VIEWPORT_D3DSWAPCHAIN 8808
 
 // Vtable indices
-#define O_V_MWCLASSINFO 2
 #define O_V_PRESENT 8
 #define O_V_RESIZEBUFFERS 13
 
@@ -82,7 +81,6 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0 
 
 // Vtable indices
-#define O_V_MWCLASSINFO 1
 #define O_V_PRESENT 17
 
 #elif defined(TMS)
@@ -101,7 +99,6 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
 // Vtable indices
-#define O_V_MWCLASSINFO 0
 #define O_V_PRESENT 0
 
 #elif defined(TMSX)
@@ -120,7 +117,6 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
 // Vtable indices
-#define O_V_MWCLASSINFO 1
 #define O_V_PRESENT 17
 
 #elif defined(TMO)
@@ -139,7 +135,6 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
 // Vtable indices
-#define O_V_MWCLASSINFO 1
 #define O_V_PRESENT 17
 
 #elif defined(ESWC)
@@ -158,7 +153,6 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
 // Vtable indices
-#define O_V_MWCLASSINFO 1
 #define O_V_PRESENT 17
 
 #endif

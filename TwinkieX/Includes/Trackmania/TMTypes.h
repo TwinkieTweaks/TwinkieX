@@ -1,7 +1,9 @@
 #include <Utils/Offsets.h>
 #pragma once
 
-using ActionFn = void(__thiscall*)(uintptr_t);
+class CMwNod;
+
+using ActionFn = void(__thiscall*)(CMwNod*);
 
 // Resizable array type used by the game
 template <typename T>
@@ -54,19 +56,6 @@ struct CFastArray
 struct CMwParam 
 {
 	void* Ptr;
-};
-
-// The base class for all game objects
-struct CMwNod 
-{
-public:
-	ActionFn* vftable;
-	uint32_t ReferenceCount;
-	uint32_t Pad0;
-	uintptr_t SystemFid;
-	CFastBuffer<CMwNod*>* Dependants;
-	uint32_t unknown1;
-	uint32_t Pad1;
 };
 
 #ifdef TMCN
@@ -141,11 +130,18 @@ struct CMwMemberInfo
 		STRINGINTARRAYBASE = 107,  // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 		
 		VEC2 = 112,
+
 		VEC3 = 121,
 		
+		VEC4 = 132,
+		VEC4ARRAY = 133,
+		VEC4BUFFER = 134,
+
 		PROC = 184,
 		
 		CLASSNOTPERSISTENT = 186, // https://next.openplanet.dev/MetaNotPersistent
+
+		CLASSNOTPERSISTENTBUFFER = 197,
 
 		CLASSALT = 240 // App.GameScene.SceneFxMgr
 	};
@@ -194,9 +190,7 @@ struct CMwMemberInfo
 // This class is exclusive to TMCN
 struct CMwClassInfo
 {
-	uint32_t Pad1;
-
-	uint32_t Pad2;
+	uintptr_t Pad;
 
 	// Class name
 	const char* ClassName;
@@ -278,6 +272,18 @@ struct CMwMemberInfoEnum : CMwMemberInfo
 	const char** EnumValueNames;
 
 	uint64_t Unknown;
+};
+
+// Info for a member who is an array of CLASSes (like CLASSBUFFER)
+struct CMwMemberInfoClassArray : CMwMemberInfo
+{
+	uint8_t Padding[16];
+
+	const char* ElementNameSingular; // If member name is something like "Tracks", this would be "Track" instead. Could be null.
+
+	uint64_t Padding2;
+
+	CMwClassInfo* ArrayClassInfo;
 };
 // GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #elif defined(GAMEBOX)
@@ -440,6 +446,22 @@ struct CMwClassInfo
 	// Const iterator function for the end of the members array
 	CMwMemberInfo** end() const;
 };
+
+// Info for a member who is an array of CLASSes (like CLASSBUFFER)
+struct CMwMemberInfoClassArray : CMwMemberInfo
+{
+	uint32_t Pad0;
+
+	uint32_t Pad1;
+
+	uint32_t Pad2;
+
+	const char* ElementNameSingular;
+
+	uint32_t Pad3;
+
+	CMwClassInfo* ArrayClassInfo;
+};
 #endif
 
 // Info of an ACTION type member
@@ -455,7 +477,68 @@ struct CMwMemberInfoAction : CMwMemberInfo
 struct CInputPort
 {
 	uint8_t Padding[O_M_CINPUTPORT_CONNECTEDDEVICES];
-	CFastArray<uintptr_t> ConnectedDevices;
+	CFastArray<CMwNod*> ConnectedDevices;
 	uint8_t Padding2[O_M_CINPUTPORT_ISFOCUSED - O_M_CINPUTPORT_CONNECTEDDEVICES - sizeof(CFastArray<uintptr_t>)];
 	uint32_t IsFocused;
+};
+
+class CMwStack
+{
+public:
+	ActionFn* vftable;
+	int u2;
+	int u3;
+	size_t m_Size;
+	CMwMemberInfo** ppMemberInfos;
+	int* ppTypes;
+	int iCurrentPos;
+};
+
+class CMwValueStd
+{
+public:
+	void* pValue;
+	void* pValue2;
+	unsigned char Pad[16];
+};
+
+// The base class for all game objects
+class CMwNod
+{
+public:
+#ifdef MANIAPLANET
+	virtual ~CMwNod(void);
+	virtual void VTablePadding1(void);
+	virtual CMwClassInfo* MwGetClassInfo(void);
+	virtual unsigned long MwGetMwClassId(void);
+	virtual bool MwIsKindOf(unsigned long classID);
+	virtual uint64_t* MwGetId(void);
+	virtual void MwSetIdName(char const* psz);
+	virtual void MwIsKilled(CMwNod*);
+	virtual void MwIsUnreferenced(CMwNod*);
+	virtual unsigned long VirtualParam_Get(CMwStack* pStack, CMwValueStd* ppValue);
+	virtual unsigned long VirtualParam_Set(CMwStack* pStack, void* pValue);
+	virtual unsigned long VirtualParam_Add(CMwStack* pStack, void* pValue);
+	virtual unsigned long VirtualParam_Sub(CMwStack* pStack, void* pValue);
+#else
+	virtual ~CMwNod(void);
+	virtual CMwClassInfo* MwGetClassInfo(void);
+	virtual unsigned long MwGetMwClassId(void);
+	virtual bool MwIsKindOf(unsigned long classID);
+	virtual uint64_t* MwGetId(void);
+	virtual void MwSetIdName(char const* psz);
+	virtual void VTablePadding7(void);
+	virtual void MwIsUnreferenced(CMwNod*);
+	virtual unsigned long VirtualParam_Get(CMwStack* pStack, CMwValueStd* ppValue);
+	virtual unsigned long VirtualParam_Set(CMwStack* pStack, void* pValue);
+	virtual unsigned long VirtualParam_Add(CMwStack* pStack, void* pValue);
+	virtual unsigned long VirtualParam_Sub(CMwStack* pStack, void* pValue);
+#endif
+
+	uint32_t ReferenceCount;
+	uint32_t Pad0;
+	uintptr_t SystemFid;
+	CFastBuffer<CMwNod*>* Dependants;
+	uint32_t unknown1;
+	uint32_t Pad1;
 };
