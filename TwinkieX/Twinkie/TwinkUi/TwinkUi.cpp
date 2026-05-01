@@ -417,16 +417,7 @@ void TwinkUi::Render()
 {
 	using namespace ImGui;
 
-	// TODO: Implement input blocking
-	/*auto InputPort = TrackmaniaMgr->GetInputPort();
-
-	auto& TheImGuiIO = GetIO();
-
-	for (auto& ConnectedDevice : InputPort->ConnectedDevices)
-	{
-		auto ClassInfo = TrackmaniaMgr->GetNodClassInfo(ConnectedDevice);
-	}*/
-
+	// TODO: Implement for the rest
 #ifdef TMCN
 	ImGuiIO& ImIo = ImGui::GetIO();
 
@@ -439,7 +430,7 @@ void TwinkUi::Render()
 
 	for (auto& ConnectedDevice : InputPort->ConnectedDevices)
 	{
-		auto ClassInfo = TrackmaniaMgr->GetNodClassInfo(ConnectedDevice);
+		auto ClassInfo = ConnectedDevice->MwGetClassInfo();
 		if (ClassInfo->ClassID == 0x1300b000 and ImIo.WantCaptureKeyboard)
 		{
 			WriteAddr(uint32_t, ConnectedDevice + O_M_CINPUTDEVICE_ISDISABLED, 1);
