@@ -320,12 +320,6 @@ struct CMwMemberInfo
 		ISO3ARRAY,
 		ISO3BUFFER,
 		ISO3BUFFERCAT,
-#ifndef TM1
-		ID,
-		IDARRAY,
-		IDBUFFER,
-		IDBUFFERCAT,
-#endif
 		NATURAL,
 		NATURALARRAY,
 		NATURALBUFFER,
@@ -336,12 +330,10 @@ struct CMwMemberInfo
 		REALBUFFER,
 		REALBUFFERCAT,
 		REALRANGE,
-#ifdef TM1
-		ID, 
+		ID,
 		IDARRAY,
 		IDBUFFER,
 		IDBUFFERCAT,
-#endif
 #ifndef TM1
 		STRING,
 		STRINGARRAY,
@@ -364,10 +356,6 @@ struct CMwMemberInfo
 		VEC4ARRAY,
 		VEC4BUFFER,
 		VEC4BUFFERCAT,
-		INT3,
-		INT3ARRAY,
-		INT3BUFFER,
-		INT3BUFFERCAT,
 		PROC
 	};
 
@@ -387,21 +375,21 @@ struct CMwMemberInfo
 	eType MemberType;
 
 	// Member ID, unique between classes
-	int MemberID;
+	uint32_t MemberID;
 
 	// I have no idea
 	CMwParam* pParam;
 
 	// Offset of the member in the class instance, -1 for methods and virtual members
-	int MemberOffset;
+	uint32_t MemberOffset;
 
 	// Member name
 	const char* MemberName;
 
 	// Flags for the member, see (eFlags)
-	int MemberFlags;
+	uint32_t MemberFlags;
 	// Secondary flags for the member, see (eFlags)
-	int MemberFlags2;
+	uint32_t MemberFlags2;
 };
 
 // Information about a class' member
@@ -482,18 +470,6 @@ struct CInputPort
 	uint32_t IsFocused;
 };
 
-class CMwStack
-{
-public:
-	ActionFn* vftable;
-	int u2;
-	int u3;
-	size_t m_Size;
-	CMwMemberInfo** ppMemberInfos;
-	int* ppTypes;
-	int iCurrentPos;
-};
-
 class CMwValueStd
 {
 public:
@@ -502,37 +478,43 @@ public:
 	unsigned char Pad[16];
 };
 
+class CMwStack;
+
+#pragma warning(disable : 4100)
+#pragma warning(push)
+
 // The base class for all game objects
 class CMwNod
 {
 public:
 #ifdef MANIAPLANET
-	virtual ~CMwNod(void);
-	virtual void VTablePadding1(void);
-	virtual CMwClassInfo* MwGetClassInfo(void);
-	virtual unsigned long MwGetMwClassId(void);
-	virtual bool MwIsKindOf(unsigned long classID);
-	virtual uint64_t* MwGetId(void);
-	virtual void MwSetIdName(char const* psz);
-	virtual void MwIsKilled(CMwNod*);
-	virtual void MwIsUnreferenced(CMwNod*);
-	virtual unsigned long VirtualParam_Get(CMwStack* pStack, CMwValueStd* ppValue);
-	virtual unsigned long VirtualParam_Set(CMwStack* pStack, void* pValue);
-	virtual unsigned long VirtualParam_Add(CMwStack* pStack, void* pValue);
-	virtual unsigned long VirtualParam_Sub(CMwStack* pStack, void* pValue);
+	virtual ~CMwNod(void) {}
+	virtual void VTablePadding1(void) {}
+	virtual CMwClassInfo* MwGetClassInfo(void) { return nullptr; }
+	virtual unsigned long MwGetMwClassId(void) { return 0L; }
+	virtual bool MwIsKindOf(unsigned long classID) { return false; }
+	virtual uint64_t* MwGetId(void) { return nullptr; }
+	virtual void MwSetIdName(char const* psz) {}
+	virtual void MwIsKilled(CMwNod*) {}
+	virtual void MwIsUnreferenced(CMwNod*) {}
+	virtual void VTablePadding9(void) {}
+	virtual unsigned long VirtualParam_Get(CMwStack* pStack, void* ppValue) { return 0L; }
+	virtual unsigned long VirtualParam_Set(CMwStack* pStack, void* pValue)  { return 0L; }
+	virtual unsigned long VirtualParam_Add(CMwStack* pStack, void* pValue)  { return 0L; }
+	virtual unsigned long VirtualParam_Sub(CMwStack* pStack, void* pValue)  { return 0L; }
 #else
-	virtual ~CMwNod(void);
-	virtual CMwClassInfo* MwGetClassInfo(void);
-	virtual unsigned long MwGetMwClassId(void);
-	virtual bool MwIsKindOf(unsigned long classID);
-	virtual uint64_t* MwGetId(void);
-	virtual void MwSetIdName(char const* psz);
-	virtual void VTablePadding7(void);
-	virtual void MwIsUnreferenced(CMwNod*);
-	virtual unsigned long VirtualParam_Get(CMwStack* pStack, CMwValueStd* ppValue);
-	virtual unsigned long VirtualParam_Set(CMwStack* pStack, void* pValue);
-	virtual unsigned long VirtualParam_Add(CMwStack* pStack, void* pValue);
-	virtual unsigned long VirtualParam_Sub(CMwStack* pStack, void* pValue);
+	virtual ~CMwNod(void) {}
+	virtual CMwClassInfo* MwGetClassInfo(void) { return nullptr; }
+	virtual unsigned long MwGetMwClassId(void) { return 0; }
+	virtual bool MwIsKindOf(unsigned long classID) { return false; }
+	virtual uint64_t* MwGetId(void) { return nullptr; }
+	virtual void MwSetIdName(char const* psz) {}
+	virtual void VTablePadding6(void) {}
+	virtual void MwIsUnreferenced(CMwNod*) {}
+	virtual unsigned long VirtualParam_Get(CMwStack* pStack, void* ppValue) { return 0L; }
+	virtual unsigned long VirtualParam_Set(CMwStack* pStack, void* pValue)  { return 0L; }
+	virtual unsigned long VirtualParam_Add(CMwStack* pStack, void* pValue)  { return 0L; }
+	virtual unsigned long VirtualParam_Sub(CMwStack* pStack, void* pValue)  { return 0L; }
 #endif
 
 	uint32_t ReferenceCount;
@@ -542,3 +524,48 @@ public:
 	uint32_t unknown1;
 	uint32_t Pad1;
 };
+
+class CMwStack
+#ifdef GAMEBOX
+	: public CMwNod
+#endif
+{
+public:
+#ifdef GAMEBOX
+	CMwMemberInfo** ppMemberInfos = nullptr;
+	uint32_t m_Size = 0;
+	uint32_t iCurrentPos = 0;
+#elif defined(TMCN)
+	enum eItemType
+	{
+		ITEM_MEMBER = 0,            
+		ITEM_BOOL = 0x10000001,
+		ITEM_OBJECT = 0x10000002,   
+		ITEM_ENUM = 0x10000003,
+		ITEM_ISO4 = 0x10000004,
+		ITEM_VEC2 = 0x10000005,
+		ITEM_VEC3 = 0x10000006,
+		ITEM_INT3 = 0x10000007,
+		ITEM_UINT3 = 0x10000008,
+		ITEM_INT = 0x10000009,
+		ITEM_UINT = 0x1000000A,
+		ITEM_FLOAT = 0x1000000B,
+		ITEM_STRING = 0x1000000C,   
+		ITEM_WSTRING = 0x1000000D    
+	};
+
+	struct Item
+	{
+		void*          m_pValue;     
+		eItemType       m_Type;
+	};
+
+	uint32_t m_iCurrentPos;
+	uint16_t m_Size;
+	uint16_t m_ExtraItemsCapacity;
+	Item     m_ContainedItems[2];  
+	Item*    m_pExtraItems;        
+#endif
+};
+
+#pragma warning(pop)

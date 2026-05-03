@@ -6,6 +6,13 @@
 // Various types used by Trackmania
 #include <Trackmania/TMTypes.h>
 
+// Useful for realloc
+#include <cstdlib>
+
+#include <type_traits>
+
+#include <cassert>
+
 // The Trackmania manager class, used by (TwinkTrackmania gTwinkie.TrackmaniaMgr).
 class TwinkTrackmania
 {
@@ -34,8 +41,67 @@ public:
 	// Gets the game's input port, for mouse and keyboard events (always CDx8InputPort or similar)
 	__declspec(noinline) CInputPort* GetInputPort();
 
+	template<typename ReturnT>
+	ReturnT* VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
+
+	template<typename ReturnT>
+	ReturnT* VirtualParamGet(CMwNod* Nod, uint32_t MemberID, CMwMemberInfo::eType MemberType);
+
+	void PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo);
+
 #ifdef MANIAPLANET
 	// Gets the game's DirectX swap chain, only for TMCN/D3D11
 	__declspec(noinline) uintptr_t GetDirectXSwapChain();
 #endif
 };
+
+template<typename ReturnT>
+ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo)
+{
+	struct
+	{
+		ReturnT* pReturnValue;
+		ReturnT Storage;
+	} Result;
+
+	CMwStack Stack = CMwStack();
+
+	PushToStack(&Stack, MemberInfo);
+	Nod->VirtualParam_Get(&Stack, &Result);
+
+	return Result.pReturnValue;
+}
+
+template<typename ReturnT>
+ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, uint32_t MemberID, CMwMemberInfo::eType MemberType)
+{
+
+	struct
+	{
+		ReturnT* pReturnValue;
+		ReturnT Storage;
+	} Result;
+	CMwStack Stack;
+	CMwMemberInfo* MemberInfo = nullptr;
+	CMwClassInfo* ClassInfo = Nod->MwGetClassInfo();
+
+	while (ClassInfo)
+	{
+		for (auto& Member : *ClassInfo)
+		{
+			if (Member->MemberID == MemberID)
+			{
+				MemberInfo = Member;
+				break;
+			}
+		}
+		ClassInfo = ClassInfo->ParentClassInfo;
+	}
+
+	if (!MemberInfo) return nullptr;
+
+	PushToStack(&Stack, &MemberInfo);
+	Nod->VirtualParam_Get(&Stack, &Result);
+
+	return Result.pReturnValue;
+}

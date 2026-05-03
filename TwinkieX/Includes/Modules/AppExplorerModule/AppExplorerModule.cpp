@@ -102,6 +102,9 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 	// TODO: Compare intended nod info (NodMemberInfo) with nod's actual info (ClassInfo below)
 	if (!NodMemberInfo) NodMemberInfo = nullptr;
 
+	bool IsNodVirtual = false;
+	if (NodMemberInfo) IsNodVirtual = NodMemberInfo->MemberOffset == 0xFFFFFFFFU;
+
 	if (!Nod)
 	{
 		BeginDisabled();
@@ -128,7 +131,8 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 #endif
 
 	std::string NodAddressStr = std::format("{:p}", (void*)Nod);
-	std::string TreeNodeLabel = std::format("{}* {} ({})",
+	std::string TreeNodeLabel = std::format("{}{}* {} ({})",
+		IsNodVirtual ? std::string("$66fV$z ") : std::string(""),
 		ClassInfo->ClassName,
 		NodName,
 		NodAddressStr
@@ -168,7 +172,16 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							CMwNod* ChildNod = ReadAddr(CMwNod*, (uintptr_t)Nod + MemberInfo->MemberOffset);
 							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+#ifdef GAMEBOX
+							CMwNod* ChildNod = Twinkie->VirtualParamGet<CMwNod>(Nod, MemberInfo);
+							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
+#else
+							// TODO: Add virtual member support for TMCN
+							IgnoreRightClicks = true;
+#endif
+						}
 						break;
 					}
 

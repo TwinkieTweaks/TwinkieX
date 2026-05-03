@@ -58,4 +58,40 @@ uintptr_t TwinkTrackmania::GetDirectXSwapChain()
 }
 #endif
 
+void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
+{
+#ifdef GAMEBOX
+	if (Stack->m_Size != 0 and Stack->ppMemberInfos)
+	{
+		realloc(Stack->ppMemberInfos, (Stack->m_Size + 1) * sizeof(CMwMemberInfo*));
+
+		Stack->ppMemberInfos[Stack->m_Size] = MemberInfo;
+
+		Stack->m_Size++;
+	}
+	else
+	{
+		Stack->ppMemberInfos = new CMwMemberInfo* { MemberInfo };
+		Stack->m_Size = 1;
+	}
+#else
+	if (Stack->m_Size < 2)
+	{
+		Stack->m_ContainedItems[Stack->m_Size] = CMwStack::Item{ MemberInfo, CMwStack::ITEM_MEMBER };
+		Stack->m_Size++;
+	}
+	else
+	{
+		if (Stack->m_ExtraItemsCapacity != 0 and Stack->m_pExtraItems)
+		{
+			realloc(Stack->m_pExtraItems, (Stack->m_ExtraItemsCapacity + 1) * sizeof(CMwStack::Item));
+
+			Stack->m_pExtraItems[Stack->m_ExtraItemsCapacity] = CMwStack::Item{ MemberInfo, CMwStack::ITEM_MEMBER };
+			Stack->m_ExtraItemsCapacity++;
+			Stack->m_Size++;
+		}
+	}
+#endif
+}
+
 // END Getters
