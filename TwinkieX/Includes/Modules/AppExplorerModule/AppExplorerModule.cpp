@@ -262,6 +262,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						else
 						{
 							Array = Twinkie->VirtualParamGet<CFastArray<CMwNod*>>(Nod, MemberInfo);
+
 						}
 						if (Array)
 						{
@@ -317,6 +318,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						else
 						{
 							float* Float = Twinkie->VirtualParamGet<float>(Nod, MemberInfo);
+							if (!Float) goto RerenderMember;
 							InputFloat(FancyMemberName.c_str(), Float);
 						}
 						break;
@@ -333,6 +335,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						else
 						{
 							float* Float = Twinkie->VirtualParamGet<float>(Nod, MemberInfo);
+							if (!Float) goto RerenderMember;
 							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
 						}
 						break;
@@ -349,6 +352,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						else
 						{
 							int* Int = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
+							if (!Int) goto RerenderMember;
 							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
 						}
 						break;
@@ -365,6 +369,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						else
 						{
 							int* CurrentItem = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
+							if (!CurrentItem) goto RerenderMember;
 							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
 						}
 						break;
@@ -385,6 +390,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						else
 						{
 							int* Int = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
+							if (!Int) goto RerenderMember;
 							InputInt(FancyMemberName.c_str(), Int);
 						}
 						break;
@@ -400,6 +406,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						else
 						{
 							bool* Bool = Twinkie->VirtualParamGet<bool>(Nod, MemberInfo);
+							if (!Bool) goto RerenderMember;
 							Checkbox(FancyMemberName.c_str(), Bool);
 						}
 						break;
@@ -407,6 +414,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 
 					default:
 					{
+RerenderMember:
 						Text("%s (%s)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType]);
 						break;
 					}
