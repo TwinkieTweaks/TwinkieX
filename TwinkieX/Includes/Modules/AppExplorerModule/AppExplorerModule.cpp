@@ -99,18 +99,22 @@ std::string AppExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 
 void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMemberInfo* NodMemberInfo = nullptr)
 {
-	// TODO: Compare intended nod info (NodMemberInfo) with nod's actual info (ClassInfo below)
-	if (!NodMemberInfo) NodMemberInfo = nullptr;
-
 	bool IsNodVirtual = false;
 	if (NodMemberInfo) IsNodVirtual = NodMemberInfo->MemberOffset == 0xFFFFFFFFU;
 
+	CMwMemberInfoClass* MemberInfoAsClass = (CMwMemberInfoClass*)NodMemberInfo;
 	if (!Nod)
 	{
 		BeginDisabled();
-		Text(NodName.c_str());
+		if (NodMemberInfo)
+		{
+			Text("%s* %s", MemberInfoAsClass->ClassInfo->ClassName, NodName.c_str());
+		}
+		else
+		{
+			Text(NodName.c_str());
+		}
 		EndDisabled();
-
 		return;
 	}
 
@@ -119,7 +123,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 	nullptr;
 	if (NodMemberInfo and NodMemberInfo->MemberType == CMwMemberInfo::CLASSNOTPERSISTENT)
 	{
-		ClassInfo = ((CMwMemberInfoClass*)NodMemberInfo)->ClassInfo;
+		ClassInfo = MemberInfoAsClass->ClassInfo;
 	}
 	else
 	{
@@ -131,9 +135,13 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 #endif
 
 	std::string NodAddressStr = std::format("{:p}", (void*)Nod);
-	std::string TreeNodeLabel = std::format("{}{}* {} ({})",
-		IsNodVirtual ? std::string("$66fV$z ") : std::string(""),
+	std::string ClassTypeName = std::format("{}*{}",
 		ClassInfo->ClassName,
+		MemberInfoAsClass and (MemberInfoAsClass->ClassInfo->ClassID != ClassInfo->ClassID) ? std::string(" $999(") + MemberInfoAsClass->ClassInfo->ClassName + "*)$z" : std::string("")
+	); 
+	std::string TreeNodeLabel = std::format("{}{} {} ({})",
+		IsNodVirtual ? std::string("$66fV$z ") : std::string(""),
+		ClassTypeName,
 		NodName,
 		NodAddressStr
 	);

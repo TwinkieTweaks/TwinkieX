@@ -244,7 +244,7 @@ struct CMwMemberInfoClass : CMwMemberInfo
 {
 	ActionFn InstantiationFn;
 	CMwClassInfo* ClassInfo;
-	uint32_t ClassId;
+	uint32_t ClassID;
 	uint32_t Pad;
 };
 
@@ -439,6 +439,15 @@ struct CMwClassInfo
 	CMwMemberInfo** end() const;
 };
 
+// Info of a CLASS type member
+struct CMwMemberInfoClass : CMwMemberInfo
+{
+	uint32_t Pad0;
+	uint32_t Pad1;
+	CMwClassInfo* ClassInfo;
+	uint32_t Pad2;
+};
+
 // Info for a member who is an array of CLASSes (like CLASSBUFFER)
 struct CMwMemberInfoClassArray : CMwMemberInfo
 {
@@ -535,9 +544,11 @@ class CMwStack
 {
 public:
 #ifdef GAMEBOX
+#pragma optimize("", off)
 	CMwMemberInfo** ppMemberInfos = nullptr;
 	uint32_t m_Size = 0;
 	uint32_t iCurrentPos = 0;
+#pragma optimize("", on)
 #elif defined(TMCN)
 	enum eItemType
 	{

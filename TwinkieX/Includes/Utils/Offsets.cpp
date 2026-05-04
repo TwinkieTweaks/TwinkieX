@@ -307,7 +307,6 @@ const char* g_MemberTypeNames[] = {
         "IDARRAY",
         "IDBUFFER",
         "IDBUFFERCAT",
-#ifndef TM1
         "STRING",
         "STRINGARRAY",
         "STRINGBUFFER",
@@ -316,7 +315,6 @@ const char* g_MemberTypeNames[] = {
         "STRINGINTARRAY",
         "STRINGINTBUFFER",
         "STRINGINTBUFFERCAT",
-#endif
         "VEC2",
         "VEC2ARRAY",
         "VEC2BUFFER",

@@ -58,9 +58,13 @@ uintptr_t TwinkTrackmania::GetDirectXSwapChain()
 }
 #endif
 
+#pragma optimize("", off)
 void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
 {
 #ifdef GAMEBOX
+	static CMwMemberInfo* OptimizationRemover = nullptr;
+	if (!OptimizationRemover) OptimizationRemover = nullptr;
+
 	if (Stack->m_Size != 0 and Stack->ppMemberInfos)
 	{
 		realloc(Stack->ppMemberInfos, (Stack->m_Size + 1) * sizeof(CMwMemberInfo*));
@@ -74,6 +78,7 @@ void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
 		Stack->ppMemberInfos = new CMwMemberInfo* { MemberInfo };
 		Stack->m_Size = 1;
 	}
+	OptimizationRemover = *Stack->ppMemberInfos;
 #else
 	if (Stack->m_Size < 2)
 	{
@@ -93,5 +98,6 @@ void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
 	}
 #endif
 }
+#pragma optimize("", on)
 
 // END Getters

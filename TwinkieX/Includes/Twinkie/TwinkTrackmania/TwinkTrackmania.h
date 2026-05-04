@@ -55,9 +55,13 @@ public:
 #endif
 };
 
+#pragma optimize("", off)
 template<typename ReturnT>
 ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo)
 {
+	// This variable is used only to not let the compiler optimize the type of Stack->ppMemberInfos for GAMEBOX to a single pointer.
+	static CMwStack* PreviousUsedStack = nullptr;
+
 	struct
 	{
 		ReturnT* pReturnValue;
@@ -67,6 +71,9 @@ ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo
 	CMwStack Stack = CMwStack();
 
 	PushToStack(&Stack, MemberInfo);
+
+	PreviousUsedStack = &Stack;
+
 	Nod->VirtualParam_Get(&Stack, &Result);
 
 	return Result.pReturnValue;
@@ -75,6 +82,8 @@ ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo
 template<typename ReturnT>
 ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, uint32_t MemberID, CMwMemberInfo::eType MemberType)
 {
+	// This variable is used only to not let the compiler optimize the type of Stack->ppMemberInfos for GAMEBOX to a single pointer.
+	static CMwStack* PreviousUsedStack = nullptr;
 
 	struct
 	{
@@ -101,7 +110,11 @@ ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, uint32_t MemberID, CMwMem
 	if (!MemberInfo) return nullptr;
 
 	PushToStack(&Stack, &MemberInfo);
+	
+	PreviousUsedStack = &Stack;
+	
 	Nod->VirtualParam_Get(&Stack, &Result);
 
 	return Result.pReturnValue;
 }
+#pragma optimize("", on)
