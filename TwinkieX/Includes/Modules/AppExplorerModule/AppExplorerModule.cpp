@@ -192,95 +192,109 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 
 					case CMwMemberInfo::CLASSBUFFER:
 					{
+						CFastBuffer<CMwNod*>* Array = nullptr;
 						if (!IsMemberVirtual)
 						{
-							CFastBuffer<CMwNod*>* Array = reinterpret_cast<CFastBuffer<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
-							if (Array)
-							{
-								PushID((void*)Array);
-
-								CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-								CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-
-								std::string ElementNameSingular =
-									MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
-									MemberInfoArray->MemberName;
-								std::string ArrayName = std::format("CFastBuffer<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
-
-								bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
-
-								if (HasRightClickedOnItem())
-								{
-									SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
-								}
-
-								if (ArrayTreeNodeOpened)
-								{
-									for (auto& ArrayNod : *Array)
-									{
-										RenderNod(ArrayNod, ElementNameSingular);
-									}
-									TreePop();
-								}
-								PopID();
-							}
-							else
-							{
-								BeginDisabled();
-								Text("%s CLASSBUFFER (0x%llx)", MemberInfo);
-								EndDisabled();
-							}
+							Array = reinterpret_cast<CFastBuffer<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
 						}
 						else
 						{
-							goto RerenderMember;
+							Array = Twinkie->VirtualParamGet<CFastBuffer<CMwNod*>>(Nod, MemberInfo);
+						}
+						if (Array)
+						{
+							PushID((void*)Array);
+
+							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+
+							std::string ElementNameSingular =
+								MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+								MemberInfoArray->MemberName;
+							std::string ArrayName = std::format("CFastBuffer<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
+
+							bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+
+							if (HasRightClickedOnItem())
+							{
+								SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
+							}
+
+							if (ArrayTreeNodeOpened)
+							{
+								for (auto& ArrayNod : *Array)
+								{
+									RenderNod(ArrayNod, ElementNameSingular);
+								}
+								TreePop();
+							}
+							PopID();
+						}
+						else
+						{
+							BeginDisabled();
+
+							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+							std::string ArrayName = std::format("CFastBuffer<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
+							
+							Text(ArrayName.c_str());
+							
+							EndDisabled();
 						}
 						break;
 					}
 					case CMwMemberInfo::CLASSARRAY:
 					{
+						CFastArray<CMwNod*>* Array = nullptr;
 						if (!IsMemberVirtual)
 						{
-							CFastArray<CMwNod*>* Array = reinterpret_cast<CFastArray<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
-							if (Array)
-							{
-								PushID((void*)Array);
-
-								CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-								CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-
-								std::string ElementNameSingular =
-									MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
-									MemberInfoArray->MemberName;
-								std::string ArrayName = std::format("CFastBuffer<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
-
-								bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
-
-								if (HasRightClickedOnItem())
-								{
-									SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
-								}
-
-								if (ArrayTreeNodeOpened)
-								{
-									for (auto& ArrayNod : *Array)
-									{
-										RenderNod(ArrayNod, ElementNameSingular);
-									}
-									TreePop();
-								}
-								PopID();
-							}
-							else
-							{
-								BeginDisabled();
-								Text("%s CLASSARRAY (0x%llx)", MemberInfo);
-								EndDisabled();
-							}
+							Array = reinterpret_cast<CFastArray<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
 						}
 						else
 						{
-							goto RerenderMember;
+							Array = Twinkie->VirtualParamGet<CFastArray<CMwNod*>>(Nod, MemberInfo);
+						}
+						if (Array)
+						{
+							PushID((void*)Array);
+
+							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+
+							std::string ElementNameSingular =
+								MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+								MemberInfoArray->MemberName;
+							std::string ArrayName = std::format("CFastArray<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
+
+							bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+
+							if (HasRightClickedOnItem())
+							{
+								SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
+							}
+
+							if (ArrayTreeNodeOpened)
+							{
+								for (auto& ArrayNod : *Array)
+								{
+									RenderNod(ArrayNod, ElementNameSingular);
+								}
+								TreePop();
+							}
+							PopID();
+						}
+						else
+						{
+							BeginDisabled();
+
+							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+							std::string ArrayName = std::format("CFastArray<{}>* {}", ArrayClassType->ClassName, FancyMemberName);
+
+							Text(ArrayName.c_str());
+
+							EndDisabled();
 						}
 						break;
 					}
@@ -294,56 +308,79 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						}
 						else
 						{
-							goto RerenderMember;
+							float* Float = Twinkie->VirtualParamGet<float>(Nod, MemberInfo);
+							InputFloat(FancyMemberName.c_str(), Float);
 						}
 						break;
 					}
 #ifdef TMCN
 					case CMwMemberInfo::REALRANGE:
 					{
+						CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
 						if (!IsMemberVirtual)
 						{
-							CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
 							float* Float = (float*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
 						}
 						else
 						{
-							goto RerenderMember;
+							float* Float = Twinkie->VirtualParamGet<float>(Nod, MemberInfo);
+							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
 						}
 						break;
 					}
 
 					case CMwMemberInfo::INTRANGE:
 					{
+						CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
 						if (!IsMemberVirtual)
 						{
-							CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
 							int* Int = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
 						}
 						else
 						{
-							goto RerenderMember;
+							int* Int = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
+							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
 						}
 						break;
 					}
 
 					case CMwMemberInfo::ENUM:
 					{
+						CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
 						if (!IsMemberVirtual)
 						{
-							CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
 							int* CurrentItem = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
 						}
 						else
 						{
-							goto RerenderMember;
+							int* CurrentItem = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
+							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
 						}
 						break;
 					}
 #endif
+
+					case CMwMemberInfo::NATURAL:
+					case CMwMemberInfo::INT:
+#ifdef GAMEBOX
+					case CMwMemberInfo::ENUM:
+#endif
+					{
+						if (!IsMemberVirtual)
+						{
+							int* Int = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
+							InputInt(FancyMemberName.c_str(), Int);
+						}
+						else
+						{
+							int* Int = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
+							InputInt(FancyMemberName.c_str(), Int);
+						}
+						break;
+					}
 
 					case CMwMemberInfo::BOOL:
 					{
@@ -354,14 +391,14 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						}
 						else
 						{
-							goto RerenderMember;
+							bool* Bool = Twinkie->VirtualParamGet<bool>(Nod, MemberInfo);
+							Checkbox(FancyMemberName.c_str(), Bool);
 						}
 						break;
 					}
 
 					default:
 					{
-RerenderMember:
 						Text("%s (%s)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType]);
 						break;
 					}
