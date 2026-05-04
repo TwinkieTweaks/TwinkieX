@@ -174,13 +174,8 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						}
 						else
 						{
-#ifdef GAMEBOX
 							CMwNod* ChildNod = Twinkie->VirtualParamGet<CMwNod>(Nod, MemberInfo);
 							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
-#else
-							// TODO: Add virtual member support for TMCN
-							IgnoreRightClicks = true;
-#endif
 						}
 						break;
 					}
@@ -236,7 +231,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 								EndDisabled();
 							}
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+							goto RerenderMember;
+						}
 						break;
 					}
 					case CMwMemberInfo::CLASSARRAY:
@@ -280,7 +278,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 								EndDisabled();
 							}
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+							goto RerenderMember;
+						}
 						break;
 					}
 
@@ -291,7 +292,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							float* Float = (float*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							InputFloat(FancyMemberName.c_str(), Float);
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+							goto RerenderMember;
+						}
 						break;
 					}
 #ifdef TMCN
@@ -303,7 +307,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							float* Float = (float*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+							goto RerenderMember;
+						}
 						break;
 					}
 
@@ -315,7 +322,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							int* Int = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+							goto RerenderMember;
+						}
 						break;
 					}
 
@@ -327,7 +337,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							int* CurrentItem = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+							goto RerenderMember;
+						}
 						break;
 					}
 #endif
@@ -339,12 +352,16 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							bool* Bool = (bool*)((uintptr_t)Nod + MemberInfo->MemberOffset);
 							Checkbox(FancyMemberName.c_str(), Bool);
 						}
-						else IgnoreRightClicks = true;
+						else
+						{
+							goto RerenderMember;
+						}
 						break;
 					}
 
 					default:
 					{
+RerenderMember:
 						Text("%s (%s)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType]);
 						break;
 					}

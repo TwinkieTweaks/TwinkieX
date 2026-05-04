@@ -130,6 +130,10 @@ struct CMwMemberInfo
 		STRINGINTARRAYBASE = 107,  // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 		
 		VEC2 = 112,
+		VEC2ARRAY = 113, // EXTRAPOLATED
+		VEC2BUFFER = 114,
+		VEC2BUFFERCAT = 115, // EXTRAPOLATED
+		VEC2ARRAYBASE = 116, // EXTRAPOLATED, https://openplanet.dev/docs/api/global/MwSArray
 
 		VEC3 = 121,
 		
@@ -497,7 +501,6 @@ public:
 	virtual void MwSetIdName(char const* psz) {}
 	virtual void MwIsKilled(CMwNod*) {}
 	virtual void MwIsUnreferenced(CMwNod*) {}
-	virtual void VTablePadding9(void) {}
 	virtual unsigned long VirtualParam_Get(CMwStack* pStack, void* ppValue) { return 0L; }
 	virtual unsigned long VirtualParam_Set(CMwStack* pStack, void* pValue)  { return 0L; }
 	virtual unsigned long VirtualParam_Add(CMwStack* pStack, void* pValue)  { return 0L; }
