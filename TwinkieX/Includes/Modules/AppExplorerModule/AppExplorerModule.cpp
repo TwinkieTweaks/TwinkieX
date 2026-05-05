@@ -173,7 +173,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						CMwNod** ChildNod = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo);
 						CMwNod* ChildNod2 = ChildNod ? *ChildNod : nullptr;
 #else
-						// DO NOT TOUCH, OTHERWISE COMPILER MIGHT OPTIMIZE A POINTER LEVER OR TWO AWAY
+						// DO NOT TOUCH, OTHERWISE COMPILER MIGHT OPTIMIZE A POINTER LEVEL OR TWO AWAY
 						CMwNod* ChildNod = Twinkie->ParamGet<CMwNod>(Nod, MemberInfo);
 						static CMwNod* ChildNodDp = *reinterpret_cast<CMwNod**>(ChildNod);
 						if (ChildNodDp) ChildNodDp++;
