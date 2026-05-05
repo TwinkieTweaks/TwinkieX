@@ -2,6 +2,9 @@
 
 // Modules
 #include <Modules/AppExplorerModule/AppExplorerModule.h>
+#ifdef TMCN
+#include <Modules/AddictionUnlimiterModule/AddictionUnlimiter.h>
+#endif
 
 #include <vector>
 
