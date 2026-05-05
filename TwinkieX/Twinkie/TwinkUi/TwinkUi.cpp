@@ -61,9 +61,10 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 	// Set the trackmania manager reference for later use
 	this->TrackmaniaMgr = &TrackmaniaMgr;
 
-	this->Modules = {
-		new AppExplorerModule(TrackmaniaMgr)
-	};
+	this->Modules.push_back(new AppExplorerModule(TrackmaniaMgr));
+#ifdef TMCN
+	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr));
+#endif
 }
 
 // END Behaviors

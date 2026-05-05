@@ -319,7 +319,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						{
 							float* Float = Twinkie->VirtualParamGet<float>(Nod, MemberInfo);
 							if (!Float) goto RerenderMember;
-							InputFloat(FancyMemberName.c_str(), Float);
+							if (InputFloat(FancyMemberName.c_str(), Float))
+							{
+								Twinkie->VirtualParamSet(Nod, MemberInfo, Float);
+							}
 						}
 						break;
 					}
@@ -391,7 +394,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						{
 							int* Int = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
 							if (!Int) goto RerenderMember;
-							InputInt(FancyMemberName.c_str(), Int);
+							if (InputInt(FancyMemberName.c_str(), Int))
+							{
+								Twinkie->VirtualParamSet(Nod, MemberInfo, Int);
+							}
 						}
 						break;
 					}
@@ -407,7 +413,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						{
 							bool* Bool = Twinkie->VirtualParamGet<bool>(Nod, MemberInfo);
 							if (!Bool) goto RerenderMember;
-							Checkbox(FancyMemberName.c_str(), Bool);
+							if (Checkbox(FancyMemberName.c_str(), Bool))
+							{
+								Twinkie->VirtualParamSet(Nod, MemberInfo, Bool);
+							}
 						}
 						break;
 					}

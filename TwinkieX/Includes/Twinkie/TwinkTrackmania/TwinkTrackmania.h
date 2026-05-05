@@ -45,7 +45,19 @@ public:
 	ReturnT* VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
 
 	template<typename ReturnT>
-	ReturnT* VirtualParamGet(CMwNod* Nod, uint32_t MemberID, CMwMemberInfo::eType MemberType);
+	ReturnT* VirtualParamGet(CMwNod* Nod, const char* MemberName);
+
+	template<typename ValueT>
+	bool VirtualParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value);
+
+	template<typename ValueT>
+	bool VirtualParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value);
+
+	template<typename ReturnT>
+	ReturnT* ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
+
+	template<typename ReturnT>
+	ReturnT* ParamGet(CMwNod* Nod, const char* MemberName);
 
 	void PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo);
 
@@ -80,25 +92,19 @@ ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo
 }
 
 template<typename ReturnT>
-ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, uint32_t MemberID, CMwMemberInfo::eType MemberType)
+ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, const char* MemberName)
 {
 	// This variable is used only to not let the compiler optimize the type of Stack->ppMemberInfos for GAMEBOX to a single pointer.
 	static CMwStack* PreviousUsedStack = nullptr;
 
-	struct
-	{
-		ReturnT* pReturnValue;
-		ReturnT Storage;
-	} Result;
-	CMwStack Stack;
+	auto ClassInfo = Nod->MwGetClassInfo();
 	CMwMemberInfo* MemberInfo = nullptr;
-	CMwClassInfo* ClassInfo = Nod->MwGetClassInfo();
 
 	while (ClassInfo)
-	{
+	{ 
 		for (auto& Member : *ClassInfo)
 		{
-			if (Member->MemberID == MemberID)
+			if (strcmp(Member->MemberName, MemberName) == 0)
 			{
 				MemberInfo = Member;
 				break;
@@ -107,14 +113,104 @@ ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, uint32_t MemberID, CMwMem
 		ClassInfo = ClassInfo->ParentClassInfo;
 	}
 
-	if (!MemberInfo) return nullptr;
+	if (!MemberInfo)
+	{
+		return nullptr;
+	}
 
-	PushToStack(&Stack, &MemberInfo);
-	
+	struct
+	{
+		ReturnT* pReturnValue;
+		ReturnT Storage;
+	} Result;
+
+	CMwStack Stack = CMwStack();
+	PushToStack(&Stack, MemberInfo);
+
 	PreviousUsedStack = &Stack;
-	
+
 	Nod->VirtualParam_Get(&Stack, &Result);
 
 	return Result.pReturnValue;
+}
+
+template<typename ValueT>
+bool TwinkTrackmania::VirtualParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value)
+{
+	CMwStack Stack = CMwStack();
+	PushToStack(&Stack, MemberInfo);
+
+	return !Nod->VirtualParam_Set(&Stack, Value);
+}
+
+template<typename ValueT>
+bool TwinkTrackmania::VirtualParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value)
+{
+	auto ClassInfo = Nod->MwGetClassInfo();
+	CMwMemberInfo* MemberInfo = nullptr;
+
+	while (ClassInfo)
+	{
+		for (auto& Member : *ClassInfo)
+		{
+			if (strcmp(Member->MemberName, MemberName) == 0)
+			{
+				MemberInfo = Member;
+				break;
+			}
+		}
+		ClassInfo = ClassInfo->ParentClassInfo;
+	}
+
+	if (!MemberInfo)
+	{
+		return false;
+	}
+
+	CMwStack Stack = CMwStack();
+	PushToStack(&Stack, MemberInfo);
+
+	return !Nod->VirtualParam_Set(&Stack, Value);
+}
+
+template<typename ReturnT>
+ReturnT* TwinkTrackmania::ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo)
+{
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	{
+		return VirtualParamGet<ReturnT>(Nod, MemberInfo);
+	}
+	return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+}
+
+template<typename ReturnT>
+ReturnT* TwinkTrackmania::ParamGet(CMwNod* Nod, const char* MemberName)
+{
+	auto ClassInfo = Nod->MwGetClassInfo();
+	CMwMemberInfo* MemberInfo = nullptr;
+
+	while (ClassInfo)
+	{
+		for (auto& Member : *ClassInfo)
+		{
+			if (strcmp(Member->MemberName, MemberName) == 0)
+			{
+				MemberInfo = Member;
+				break;
+			}
+		}
+		ClassInfo = ClassInfo->ParentClassInfo;
+	}
+
+	if (!MemberInfo)
+	{
+		return nullptr;
+	}
+
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	{
+		return VirtualParamGet<ReturnT>(Nod, MemberInfo);
+	}
+	return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
 }
 #pragma optimize("", on)
