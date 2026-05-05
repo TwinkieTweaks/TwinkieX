@@ -59,6 +59,12 @@ public:
 	template<typename ReturnT>
 	ReturnT* ParamGet(CMwNod* Nod, const char* MemberName);
 
+	template<typename ValueT>
+	bool ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value);
+
+	template<typename ValueT>
+	bool ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value);
+
 	void PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo);
 
 #ifdef MANIAPLANET
@@ -212,5 +218,48 @@ ReturnT* TwinkTrackmania::ParamGet(CMwNod* Nod, const char* MemberName)
 		return VirtualParamGet<ReturnT>(Nod, MemberInfo);
 	}
 	return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+}
+
+template<typename ValueT>
+bool TwinkTrackmania::ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value)
+{
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	{
+		return VirtualParamSet(Nod, MemberInfo, Value);
+	}
+	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo, *Value);
+	return true;
+}
+
+template<typename ValueT>
+bool TwinkTrackmania::ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value)
+{
+	auto ClassInfo = Nod->MwGetClassInfo();
+	CMwMemberInfo* MemberInfo = nullptr;
+
+	while (ClassInfo)
+	{
+		for (auto& Member : *ClassInfo)
+		{
+			if (strcmp(Member->MemberName, MemberName) == 0)
+			{
+				MemberInfo = Member;
+				break;
+			}
+		}
+		ClassInfo = ClassInfo->ParentClassInfo;
+	}
+
+	if (!MemberInfo)
+	{
+		return false;
+	}
+
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	{
+		return VirtualParamSet(Nod, MemberInfo, Value);
+	}
+	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo, *Value);
+	return true;
 }
 #pragma optimize("", on)

@@ -22,7 +22,7 @@ void AddictionUnlimiter::Render()
 		if (!UserConfig) continue;
 
 		int DailyQuotaMinutes = 90;
-		Twinkie->VirtualParamSet(*UserConfig, "AddictionLimiter_DailyQuotaMinutes", &DailyQuotaMinutes);
+		Twinkie->ParamSet(*UserConfig, "AddictionLimiter_DailyQuotaMinutes", &DailyQuotaMinutes);
 	}
 }
 #endif

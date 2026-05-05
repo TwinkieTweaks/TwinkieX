@@ -22,8 +22,6 @@ using namespace ImGui;
 
 void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, CMwNod* Nod, CMwClassInfo* ClassInfo)
 {
-	bool IsMemberVirtual = MemberInfo->MemberOffset == 0xFFFFFFFFU;
-	
 	// Fix memory leak incase of user clicking on another member while pop-up is still active
 	if (ChildInfo)
 	{
@@ -44,13 +42,9 @@ void AppExplorerModule::SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std:
 	ChildInfo->ParentNod = Nod;
 	ChildInfo->ParentClassInfo = ClassInfo;
 
-	if (IsMemberClassAdjacent(MemberInfo) and !IsMemberVirtual)
+	if (IsMemberClassAdjacent(MemberInfo))
 	{
-		ChildInfo->MemberNodItself = ReadAddr(CMwNod*, Nod + MemberInfo->MemberOffset);
-	}
-	else
-	{
-		ChildInfo->MemberNodItself = 0;
+		ChildInfo->MemberNodItself = *Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo);
 	}
 
 	HasSetWindowPositionForPopup = false;
@@ -97,6 +91,7 @@ std::string AppExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 	return FancyMemberName;
 }
 
+#pragma optimize("", off)
 void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMemberInfo* NodMemberInfo = nullptr)
 {
 	bool IsNodVirtual = false;
@@ -164,7 +159,6 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 			{
 				std::string FancyMemberName = GetFancyMemberName(MemberInfo);
 
-				bool IsMemberVirtual = MemberInfo->MemberOffset == 0xFFFFFFFFU;
 				bool IgnoreRightClicks = false;
 
 				switch (MemberInfo->MemberType)
@@ -175,16 +169,24 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 #endif
 					case CMwMemberInfo::CLASS:
 					{
-						if (!IsMemberVirtual)
-						{
-							CMwNod* ChildNod = ReadAddr(CMwNod*, (uintptr_t)Nod + MemberInfo->MemberOffset);
-							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
-						}
-						else
-						{
-							CMwNod* ChildNod = Twinkie->VirtualParamGet<CMwNod>(Nod, MemberInfo);
-							RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
-						}
+#ifdef TMCN
+						CMwNod** ChildNod = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo);
+						CMwNod* ChildNod2 = ChildNod ? *ChildNod : nullptr;
+#else
+						// DO NOT TOUCH, OTHERWISE COMPILER MIGHT OPTIMIZE A POINTER LEVER OR TWO AWAY
+						CMwNod* ChildNod = Twinkie->ParamGet<CMwNod>(Nod, MemberInfo);
+						static CMwNod* ChildNodDp = *reinterpret_cast<CMwNod**>(ChildNod);
+						if (ChildNodDp) ChildNodDp++;
+						static int Refs = ChildNodDp->ReferenceCount;
+#endif
+						RenderNod(
+#ifdef TMCN
+							ChildNod2
+#else
+							reinterpret_cast<CMwNod*>(--ChildNodDp)
+#endif
+							, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
+
 						break;
 					}
 
@@ -200,15 +202,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 
 					case CMwMemberInfo::CLASSBUFFER:
 					{
-						CFastBuffer<CMwNod*>* Array = nullptr;
-						if (!IsMemberVirtual)
-						{
-							Array = reinterpret_cast<CFastBuffer<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
-						}
-						else
-						{
-							Array = Twinkie->VirtualParamGet<CFastBuffer<CMwNod*>>(Nod, MemberInfo);
-						}
+						CFastBuffer<CMwNod*>* Array = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Nod, MemberInfo);
 						if (Array)
 						{
 							PushID((void*)Array);
@@ -254,16 +248,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					}
 					case CMwMemberInfo::CLASSARRAY:
 					{
-						CFastArray<CMwNod*>* Array = nullptr;
-						if (!IsMemberVirtual)
-						{
-							Array = reinterpret_cast<CFastArray<CMwNod*>*>((uintptr_t)Nod + MemberInfo->MemberOffset);
-						}
-						else
-						{
-							Array = Twinkie->VirtualParamGet<CFastArray<CMwNod*>>(Nod, MemberInfo);
-
-						}
+						CFastArray<CMwNod*>* Array = Twinkie->ParamGet<CFastArray<CMwNod*>>(Nod, MemberInfo);
 						if (Array)
 						{
 							PushID((void*)Array);
@@ -310,19 +295,11 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 
 					case CMwMemberInfo::REAL:
 					{
-						if (!IsMemberVirtual)
+						float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo);
+						if (!Float) goto RerenderMember;
+						if (InputFloat(FancyMemberName.c_str(), Float))
 						{
-							float* Float = (float*)((uintptr_t)Nod + MemberInfo->MemberOffset);
-							InputFloat(FancyMemberName.c_str(), Float);
-						}
-						else
-						{
-							float* Float = Twinkie->VirtualParamGet<float>(Nod, MemberInfo);
-							if (!Float) goto RerenderMember;
-							if (InputFloat(FancyMemberName.c_str(), Float))
-							{
-								Twinkie->VirtualParamSet(Nod, MemberInfo, Float);
-							}
+							Twinkie->ParamSet(Nod, MemberInfo, Float);
 						}
 						break;
 					}
@@ -330,16 +307,11 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					case CMwMemberInfo::REALRANGE:
 					{
 						CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
-						if (!IsMemberVirtual)
+						float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo);
+						if (!Float) goto RerenderMember;
+						if (SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax))
 						{
-							float* Float = (float*)((uintptr_t)Nod + MemberInfo->MemberOffset);
-							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
-						}
-						else
-						{
-							float* Float = Twinkie->VirtualParamGet<float>(Nod, MemberInfo);
-							if (!Float) goto RerenderMember;
-							SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax);
+							Twinkie->ParamSet(Nod, MemberInfo, Float);
 						}
 						break;
 					}
@@ -347,16 +319,11 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					case CMwMemberInfo::INTRANGE:
 					{
 						CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
-						if (!IsMemberVirtual)
+						int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo);
+						if (!Int) goto RerenderMember;
+						if (SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax))
 						{
-							int* Int = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
-							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
-						}
-						else
-						{
-							int* Int = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
-							if (!Int) goto RerenderMember;
-							SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax);
+							Twinkie->ParamSet(Nod, MemberInfo, Int);
 						}
 						break;
 					}
@@ -364,16 +331,11 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					case CMwMemberInfo::ENUM:
 					{
 						CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
-						if (!IsMemberVirtual)
+						int* CurrentItem = Twinkie->ParamGet<int>(Nod, MemberInfo);
+						if (!CurrentItem) goto RerenderMember;
+						if (Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength))
 						{
-							int* CurrentItem = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
-							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
-						}
-						else
-						{
-							int* CurrentItem = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
-							if (!CurrentItem) goto RerenderMember;
-							Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength);
+							Twinkie->ParamSet(Nod, MemberInfo, CurrentItem);
 						}
 						break;
 					}
@@ -385,38 +347,22 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					case CMwMemberInfo::ENUM:
 #endif
 					{
-						if (!IsMemberVirtual)
+						int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo);
+						if (!Int) goto RerenderMember;
+						if (InputInt(FancyMemberName.c_str(), Int))
 						{
-							int* Int = (int*)((uintptr_t)Nod + MemberInfo->MemberOffset);
-							InputInt(FancyMemberName.c_str(), Int);
-						}
-						else
-						{
-							int* Int = Twinkie->VirtualParamGet<int>(Nod, MemberInfo);
-							if (!Int) goto RerenderMember;
-							if (InputInt(FancyMemberName.c_str(), Int))
-							{
-								Twinkie->VirtualParamSet(Nod, MemberInfo, Int);
-							}
+							Twinkie->ParamSet(Nod, MemberInfo, Int);
 						}
 						break;
 					}
 
 					case CMwMemberInfo::BOOL:
 					{
-						if (!IsMemberVirtual)
+						bool* Bool = Twinkie->ParamGet<bool>(Nod, MemberInfo);
+						if (!Bool) goto RerenderMember;
+						if (Checkbox(FancyMemberName.c_str(), Bool))
 						{
-							bool* Bool = (bool*)((uintptr_t)Nod + MemberInfo->MemberOffset);
-							Checkbox(FancyMemberName.c_str(), Bool);
-						}
-						else
-						{
-							bool* Bool = Twinkie->VirtualParamGet<bool>(Nod, MemberInfo);
-							if (!Bool) goto RerenderMember;
-							if (Checkbox(FancyMemberName.c_str(), Bool))
-							{
-								Twinkie->VirtualParamSet(Nod, MemberInfo, Bool);
-							}
+							Twinkie->ParamSet(Nod, MemberInfo, Bool);
 						}
 						break;
 					}
@@ -460,6 +406,7 @@ RerenderMember:
 
 	PopID();
 }
+#pragma optimize("", on)
 
 void AppExplorerModule::RenderMenu()
 {
