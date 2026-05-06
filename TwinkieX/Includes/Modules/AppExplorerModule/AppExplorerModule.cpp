@@ -171,7 +171,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					{
 #ifdef TMCN
 						CMwNod** ChildNod = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo);
-						CMwNod* ChildNod2 = ChildNod ? *ChildNod : nullptr;
+						CMwNod* ChildNod2 = ChildNod ? MemberInfo->MemberOffset == 0xFFFFFFFFU ? reinterpret_cast<CMwNod*>(ChildNod) : *ChildNod : nullptr;
 #else
 						// DO NOT TOUCH, OTHERWISE COMPILER MIGHT OPTIMIZE A POINTER LEVEL OR TWO AWAY
 						CMwNod* ChildNod = Twinkie->ParamGet<CMwNod>(Nod, MemberInfo);
@@ -297,9 +297,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					{
 						float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo);
 						if (!Float) goto RerenderMember;
-						if (InputFloat(FancyMemberName.c_str(), Float))
+						float FloatV = *Float;
+						if (InputFloat(FancyMemberName.c_str(), &FloatV))
 						{
-							Twinkie->ParamSet(Nod, MemberInfo, Float);
+							Twinkie->ParamSet(Nod, MemberInfo, &FloatV);
 						}
 						break;
 					}
@@ -309,9 +310,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
 						float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo);
 						if (!Float) goto RerenderMember;
-						if (SliderFloat(FancyMemberName.c_str(), Float, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax))
+						float FloatV = *Float;
+						if (SliderFloat(FancyMemberName.c_str(), &FloatV, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax))
 						{
-							Twinkie->ParamSet(Nod, MemberInfo, Float);
+							Twinkie->ParamSet(Nod, MemberInfo, &FloatV);
 						}
 						break;
 					}
@@ -321,9 +323,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
 						int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo);
 						if (!Int) goto RerenderMember;
-						if (SliderInt(FancyMemberName.c_str(), Int, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax))
+						int IntV = *Int;
+						if (SliderInt(FancyMemberName.c_str(), &IntV, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax))
 						{
-							Twinkie->ParamSet(Nod, MemberInfo, Int);
+							Twinkie->ParamSet(Nod, MemberInfo, &IntV);
 						}
 						break;
 					}
@@ -333,9 +336,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
 						int* CurrentItem = Twinkie->ParamGet<int>(Nod, MemberInfo);
 						if (!CurrentItem) goto RerenderMember;
-						if (Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength))
+						int CurrentItemV = *CurrentItem;
+						if (Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), &CurrentItemV, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength))
 						{
-							Twinkie->ParamSet(Nod, MemberInfo, CurrentItem);
+							Twinkie->ParamSet(Nod, MemberInfo, &CurrentItemV);
 						}
 						break;
 					}
@@ -349,9 +353,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					{
 						int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo);
 						if (!Int) goto RerenderMember;
-						if (InputInt(FancyMemberName.c_str(), Int))
+						int IntV = *Int;
+						if (InputInt(FancyMemberName.c_str(), &IntV))
 						{
-							Twinkie->ParamSet(Nod, MemberInfo, Int);
+							Twinkie->ParamSet(Nod, MemberInfo, &IntV);
 						}
 						break;
 					}
@@ -360,9 +365,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					{
 						bool* Bool = Twinkie->ParamGet<bool>(Nod, MemberInfo);
 						if (!Bool) goto RerenderMember;
-						if (Checkbox(FancyMemberName.c_str(), Bool))
+						bool BoolV = *Bool;
+						if (Checkbox(FancyMemberName.c_str(), &BoolV))
 						{
-							Twinkie->ParamSet(Nod, MemberInfo, Bool);
+							Twinkie->ParamSet(Nod, MemberInfo, &BoolV);
 						}
 						break;
 					}
