@@ -227,7 +227,7 @@ bool TwinkTrackmania::ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* V
 	{
 		return VirtualParamSet(Nod, MemberInfo, Value);
 	}
-	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo, *Value);
+	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo->MemberOffset, *Value);
 	return true;
 }
 
