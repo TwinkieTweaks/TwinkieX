@@ -169,22 +169,10 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 #endif
 					case CMwMemberInfo::CLASS:
 					{
-#ifdef TMCN
 						CMwNod** ChildNod = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo);
 						CMwNod* ChildNod2 = ChildNod ? MemberInfo->MemberOffset == 0xFFFFFFFFU ? reinterpret_cast<CMwNod*>(ChildNod) : *ChildNod : nullptr;
-#else
-						// DO NOT TOUCH, OTHERWISE COMPILER MIGHT OPTIMIZE A POINTER LEVEL OR TWO AWAY
-						CMwNod* ChildNod = Twinkie->ParamGet<CMwNod>(Nod, MemberInfo);
-						static CMwNod* ChildNodDp = *reinterpret_cast<CMwNod**>(ChildNod);
-						if (ChildNodDp) ChildNodDp++;
-						static int Refs = ChildNodDp->ReferenceCount;
-#endif
 						RenderNod(
-#ifdef TMCN
 							ChildNod2
-#else
-							reinterpret_cast<CMwNod*>(--ChildNodDp)
-#endif
 							, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
 
 						break;
