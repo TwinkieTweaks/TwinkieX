@@ -171,9 +171,8 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					{
 						CMwNod** ChildNod = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo);
 						CMwNod* ChildNod2 = ChildNod ? MemberInfo->MemberOffset == 0xFFFFFFFFU ? reinterpret_cast<CMwNod*>(ChildNod) : *ChildNod : nullptr;
-						RenderNod(
-							ChildNod2
-							, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
+
+						RenderNod(ChildNod2, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
 
 						break;
 					}
