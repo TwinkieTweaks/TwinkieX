@@ -17,6 +17,9 @@
 class TwinkTrackmania
 {
 public:
+	template <typename ReturnT>
+	using GetterReturnT = std::conditional_t<std::is_same_v<ReturnT, CMwNod*>, CMwNod*, ReturnT*>;
+
 	uintptr_t ExeBaseAddr = 0;
 
 	// Behaviors
@@ -42,10 +45,10 @@ public:
 	__declspec(noinline) CInputPort* GetInputPort();
 
 	template<typename ReturnT>
-	ReturnT* VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
+	GetterReturnT<typename ReturnT> VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
 
 	template<typename ReturnT>
-	ReturnT* VirtualParamGet(CMwNod* Nod, const char* MemberName);
+	GetterReturnT<typename ReturnT> VirtualParamGet(CMwNod* Nod, const char* MemberName);
 
 	template<typename ValueT>
 	bool VirtualParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value);
@@ -54,16 +57,16 @@ public:
 	bool VirtualParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value);
 
 	template<typename ReturnT>
-	ReturnT* ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
+	GetterReturnT<typename ReturnT> ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo, bool IsNodImpersistent = false);
 
 	template<typename ReturnT>
-	ReturnT* ParamGet(CMwNod* Nod, const char* MemberName);
+	GetterReturnT<typename ReturnT> ParamGet(CMwNod* Nod, const char* MemberName, bool IsNodImpersistent = false);
 
 	template<typename ValueT>
-	bool ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value);
+	bool ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value, bool IsNodImpersistent = false);
 
 	template<typename ValueT>
-	bool ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value);
+	bool ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value, bool IsNodImpersistent = false);
 
 	void PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo);
 
@@ -73,17 +76,16 @@ public:
 #endif
 };
 
-#pragma optimize("", off)
 template<typename ReturnT>
-ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo)
+TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo)
 {
 	// This variable is used only to not let the compiler optimize the type of Stack->ppMemberInfos for GAMEBOX to a single pointer.
 	static CMwStack* PreviousUsedStack = nullptr;
 
 	struct
 	{
-		ReturnT* pReturnValue;
-		ReturnT Storage;
+		GetterReturnT<ReturnT> pReturnValue = nullptr;
+		uint8_t Storage[sizeof(ReturnT)] = {};
 	} Result;
 
 	CMwStack Stack = CMwStack();
@@ -98,7 +100,7 @@ ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo
 }
 
 template<typename ReturnT>
-ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, const char* MemberName)
+TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGet(CMwNod* Nod, const char* MemberName)
 {
 	// This variable is used only to not let the compiler optimize the type of Stack->ppMemberInfos for GAMEBOX to a single pointer.
 	static CMwStack* PreviousUsedStack = nullptr;
@@ -124,9 +126,11 @@ ReturnT* TwinkTrackmania::VirtualParamGet(CMwNod* Nod, const char* MemberName)
 		return nullptr;
 	}
 
+	using ReturnTypeT = std::conditional_t<std::is_same_v<ReturnT, CMwNod*>, CMwNod*, ReturnT*>;
+
 	struct
 	{
-		ReturnT* pReturnValue;
+		ReturnTypeT pReturnValue;
 		ReturnT Storage;
 	} Result;
 
@@ -180,17 +184,24 @@ bool TwinkTrackmania::VirtualParamSet(CMwNod* Nod, const char* MemberName, Value
 }
 
 template<typename ReturnT>
-ReturnT* TwinkTrackmania::ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo)
+TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo, bool IsNodImpersistent)
 {
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
 	{
 		return VirtualParamGet<ReturnT>(Nod, MemberInfo);
 	}
-	return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+	if constexpr (not std::is_same_v<ReturnT, CMwNod*>)
+	{
+		return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+	}
+	else
+	{
+		return ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+	}
 }
 
 template<typename ReturnT>
-ReturnT* TwinkTrackmania::ParamGet(CMwNod* Nod, const char* MemberName)
+TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::ParamGet(CMwNod* Nod, const char* MemberName, bool IsNodImpersistent)
 {
 	auto ClassInfo = Nod->MwGetClassInfo();
 	CMwMemberInfo* MemberInfo = nullptr;
@@ -213,17 +224,31 @@ ReturnT* TwinkTrackmania::ParamGet(CMwNod* Nod, const char* MemberName)
 		return nullptr;
 	}
 
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
 	{
-		return VirtualParamGet<ReturnT>(Nod, MemberInfo);
+		if constexpr (std::is_same_v<CMwNod*, ReturnT>)
+		{
+			return reinterpret_cast<CMwNod*>(VirtualParamGet<CMwNod*>(Nod, MemberInfo));
+		}
+		else 
+		{
+			return VirtualParamGet<ReturnT>(Nod, MemberInfo);
+		}
 	}
-	return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+	if constexpr (not std::is_same_v<ReturnT, CMwNod*>)
+	{
+		return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+	}
+	else
+	{
+		return ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+	}
 }
 
 template<typename ValueT>
-bool TwinkTrackmania::ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value)
+bool TwinkTrackmania::ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value, bool IsNodImpersistent)
 {
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
 	{
 		return VirtualParamSet(Nod, MemberInfo, Value);
 	}
@@ -232,7 +257,7 @@ bool TwinkTrackmania::ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* V
 }
 
 template<typename ValueT>
-bool TwinkTrackmania::ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value)
+bool TwinkTrackmania::ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value, bool IsNodImpersistent)
 {
 	auto ClassInfo = Nod->MwGetClassInfo();
 	CMwMemberInfo* MemberInfo = nullptr;
@@ -255,11 +280,10 @@ bool TwinkTrackmania::ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Valu
 		return false;
 	}
 
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU)
+	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
 	{
 		return VirtualParamSet(Nod, MemberInfo, Value);
 	}
 	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo, *Value);
 	return true;
 }
-#pragma optimize("", on)

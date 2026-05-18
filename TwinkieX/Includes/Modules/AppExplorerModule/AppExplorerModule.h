@@ -70,8 +70,8 @@ public:
 	void RenderNodInfoClassInfo(CMwClassInfo* ClassInfo);
 	void RenderNodInfoMemberInfo();
 
-	void SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, CMwNod* Nod, CMwClassInfo* ClassInfo);
-	void SetClassInfoPopup(CMwClassInfo* ClassInfo, const std::string NodName, CMwNod* Nod);
+	void SetMemberInfoPopup(CMwMemberInfo* MemberInfo, const std::string NodName, CMwNod* Nod, CMwClassInfo* ClassInfo, bool IsNodImpersistent = false);
+	void SetClassInfoPopup(CMwClassInfo* ClassInfo, const std::string NodName, CMwNod* Nod, bool IsNodImpersistent = false);
 
 	std::string GetFancyMemberName(CMwMemberInfo* MemberInfo);
 };

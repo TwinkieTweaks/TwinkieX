@@ -8,7 +8,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 // Class definition for the TwinkTrackmania class.
 #include <Twinkie/TwinkTrackmania/TwinkTrackmania.h>
 
-// Class definition for the TwinkUi class.
+// Class definition for the TwinkUi class, along with module headers.
 #include <Twinkie/TwinkUi/TwinkUi.h>
 
 // Namespace
@@ -64,6 +64,7 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 	this->Modules.push_back(new AppExplorerModule(TrackmaniaMgr));
 #ifdef TMCN
 	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr));
+	this->Modules.push_back(new VehicleExplorer(TrackmaniaMgr));
 #endif
 }
 
@@ -418,7 +419,6 @@ void TwinkUi::Render()
 {
 	using namespace ImGui;
 
-	// TODO: Implement for the rest
 #ifdef TMCN
 	ImGuiIO& ImIo = ImGui::GetIO();
 
@@ -453,6 +453,7 @@ void TwinkUi::Render()
 
 	if (TwinkUiState::RenderUi)
 	{
+		// TODO: Implement for the rest
 		if (BeginMainMenuBar())
 		{
 			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);

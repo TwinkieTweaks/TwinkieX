@@ -9,6 +9,12 @@
 TwinkTrackmania::TwinkTrackmania()
 {
 	this->ExeBaseAddr = (uintptr_t)GetModuleHandleA(NULL);
+
+#ifdef TMCN
+	// This is the SkuIdentifier for TMCN. 1 = EU, default was 4 (= CN).
+	Unprotect(this->ExeBaseAddr + 0x1b22c70, 4);
+	WriteAddr(uint32_t, this->ExeBaseAddr + 0x1b22c70, 1);
+#endif
 }
 
 TwinkTrackmania::~TwinkTrackmania()
@@ -90,11 +96,15 @@ void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
 		if (Stack->m_ExtraItemsCapacity != 0 and Stack->m_pExtraItems)
 		{
 			realloc(Stack->m_pExtraItems, (Stack->m_ExtraItemsCapacity + 1) * sizeof(CMwStack::Item));
-
-			Stack->m_pExtraItems[Stack->m_ExtraItemsCapacity] = CMwStack::Item{ MemberInfo, CMwStack::ITEM_MEMBER };
-			Stack->m_ExtraItemsCapacity++;
-			Stack->m_Size++;
 		}
+		else if (Stack->m_ExtraItemsCapacity == 0)
+		{
+			if (Stack->m_pExtraItems) free(Stack->m_pExtraItems);
+			Stack->m_pExtraItems = (CMwStack::Item*)malloc((Stack->m_ExtraItemsCapacity + 1) * sizeof(CMwStack::Item));
+		}
+		Stack->m_pExtraItems[Stack->m_ExtraItemsCapacity] = CMwStack::Item{ MemberInfo, CMwStack::ITEM_MEMBER };
+		Stack->m_ExtraItemsCapacity++;
+		Stack->m_Size++;
 	}
 #endif
 }

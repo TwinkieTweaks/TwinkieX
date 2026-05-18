@@ -3,7 +3,11 @@
 
 class CMwNod;
 
-using ActionFn = void(__thiscall*)(CMwNod*);
+using ActionFn = void(
+#ifdef X86
+	__thiscall
+#endif
+	*)(CMwNod*);
 
 // Resizable array type used by the game
 template <typename T>
@@ -147,7 +151,9 @@ struct CMwMemberInfo
 
 		CLASSNOTPERSISTENTBUFFER = 197,
 
-		CLASSALT = 240 // App.GameScene.SceneFxMgr
+		CLASSALT = 240, // App.GameScene.SceneFxMgr
+
+		MAX = 512
 	};
 
 	enum eFlags 
@@ -194,7 +200,7 @@ struct CMwMemberInfo
 // This class is exclusive to TMCN
 struct CMwClassInfo
 {
-	uintptr_t Pad;
+	uintptr_t* vf;
 
 	// Class name
 	const char* ClassName;
@@ -288,6 +294,50 @@ struct CMwMemberInfoClassArray : CMwMemberInfo
 	uint64_t Padding2;
 
 	CMwClassInfo* ArrayClassInfo;
+};
+
+struct CMwMemberInfoProc : CMwMemberInfo
+{
+	struct Type
+	{
+		enum EType
+		{
+			NORMAL = 1,
+			CLASS = 2
+		} Type;
+		// ClassID in case of CLASS
+		uint32_t AdditionalInfo; 
+	};
+
+	struct Param
+	{
+		Type Type;
+		const char* Name;
+		uint8_t Flags;
+	};
+
+	uint64_t Padding;
+	void* Ptr3;
+	ActionFn MethodItself;
+	uint64_t Padding3;
+
+	uint32_t ParamCount;
+	uint32_t Padding2;
+	Type* Params;
+	const char** ParamNames;
+	uint8_t* ParamFlags;
+
+	std::vector<Param> GetParams()
+	{
+		std::vector<Param> OutParams;
+
+		for (size_t ParamIdx = 0; ParamIdx < ParamCount; ParamIdx++)
+		{
+			OutParams.push_back(Param{ this->Params[ParamIdx], ParamNames[ParamIdx], ParamFlags[ParamIdx]});
+		}
+
+		return OutParams;
+	}
 };
 // GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #elif defined(GAMEBOX)
@@ -547,7 +597,7 @@ public:
 #pragma optimize("", off)
 	CMwMemberInfo** ppMemberInfos = nullptr;
 	uint32_t m_Size = 0;
-	uint32_t iCurrentPos = 0;
+	uint32_t m_iCurrentPos = 0;
 #pragma optimize("", on)
 #elif defined(TMCN)
 	enum eItemType
@@ -581,5 +631,44 @@ public:
 	Item*    m_pExtraItems;        
 #endif
 };
+
+#ifdef TMCN
+
+
+template <typename WantedType>
+consteval
+CMwStack::eItemType TypeToStackItemType()
+{
+	if constexpr (std::is_same_v<WantedType, bool>)
+	{
+		return CMwStack::ITEM_BOOL;
+	}
+	else if constexpr (std::is_same_v<WantedType, CMwNod*>)
+	{
+		return CMwStack::ITEM_OBJECT;
+	}
+	else if constexpr (std::is_enum_v<WantedType>)
+	{
+		return CMwStack::ITEM_ENUM;
+	}
+	else if constexpr (std::is_same_v<WantedType, int32_t>)
+	{
+		return CMwStack::ITEM_INT;
+	}
+	else if constexpr (std::is_same_v<WantedType, uint32_t>)
+	{
+		return CMwStack::ITEM_UINT;
+	}
+	else if constexpr (std::is_same_v<WantedType, float>)
+	{
+		return CMwStack::ITEM_FLOAT;
+	}
+	else
+	{
+		static_assert(false and "Must provide a valid and implemented type for TypeToStackItemType");
+	}
+}
+
+#endif
 
 #pragma warning(pop)

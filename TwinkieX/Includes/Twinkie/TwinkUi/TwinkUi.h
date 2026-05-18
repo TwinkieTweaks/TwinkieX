@@ -4,6 +4,7 @@
 #include <Modules/AppExplorerModule/AppExplorerModule.h>
 #ifdef TMCN
 #include <Modules/AddictionUnlimiterModule/AddictionUnlimiter.h>
+#include <Modules/VehicleExplorerModule/VehicleExplorerModule.h>
 #endif
 
 #include <vector>
