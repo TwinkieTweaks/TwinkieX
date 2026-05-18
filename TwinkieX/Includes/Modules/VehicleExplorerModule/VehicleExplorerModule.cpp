@@ -3,15 +3,18 @@
 #include <Modules/VehicleExplorerModule/VehicleExplorerModule.h>
 #include <format>
 
-#define CopyButton(Thing) if (SmallButton("Copy")) { TempPtrBuffer = PtrToString(Thing); SetClipboardText(TempPtrBuffer.c_str()); }
-#define PreviewPtr(Thing) PushID(Thing); Text(#Thing ": %p", Thing); SameLine(); CopyButton(Thing); PopID();
+#define CopyButton(Thing) do { if (SmallButton("Copy")) { TempPtrBuffer = PtrToString(Thing); SetClipboardText(TempPtrBuffer.c_str()); MemAddress = (uint64_t)Thing; } } while (false)
+#define PreviewPtr(Thing) do { PushID(Thing); Text(#Thing ": %p", Thing); SameLine(); CopyButton(Thing); PopID(); } while (false)
 
 
 VehicleExplorer::~VehicleExplorer() {}
 
 void VehicleExplorer::Render()
 {
-	auto PtrToString = [](void* Ptr) { return std::format("{:08x}", Ptr); };
+	static uint64_t MemAddress = 0;
+	static uint64_t MemOffset = 0;
+
+	auto PtrToString = [](void* Ptr) { return std::format("{:08x}", (uint64_t)Ptr); };
 
 	using namespace ImGui;
 
@@ -31,7 +34,7 @@ void VehicleExplorer::Render()
 	{
 		Text("No arena.");
 		End();
-		return;
+		return;*
 	}
 
 	auto Players = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Arena, "Players");
@@ -60,12 +63,29 @@ void VehicleExplorer::Render()
 
 	SeparatorText("Memory explore");
 	{
-		static uint64_t Address = 0;
-		static uint64_t Offset  = 0;
+		static uint64_t StepSize     =  4;
+		static uint64_t StepSizeFast = 16;
 
-		template for () {}
+		InputScalar("Offset", ImGuiDataType_U64, &MemOffset, &StepSize, &StepSizeFast, "%p");
+
+		uint64_t* ResultingAddr = (uint64_t*)(MemAddress + MemOffset);
+		uint64_t Result = MemAddress and ResultingAddr ? *ResultingAddr : 0;
+
+		Text("%llx\n%llu\n%x\n%u\n%p\n%f\n", Result, Result, Result, Result);
 	}
 
 	End();
 }
+
+// NOTES:
+// WheelCount = Vehicle + 0x368
+// Wheel1 = Vehicle + 0x368 + 8
+// Wheel2 = Vehicle + 0x368 + 16
+// ...
+// Steer = Vehicle + 0x4C4
+// Brake = Vehicle + 0x4C8
+// Accel = Vehicle + 0x4CC
+// DigitalBrake = Vehicle + 0x4D8
+// GroundContact = Vehicle + 0x544
+// DriverProtector = Vehicle + 0x548
 #endif
