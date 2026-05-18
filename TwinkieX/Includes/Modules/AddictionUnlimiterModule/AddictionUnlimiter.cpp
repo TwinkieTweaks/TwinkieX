@@ -11,7 +11,7 @@ void AddictionUnlimiter::Render()
 	auto UserMgr = Twinkie->ParamGet<CMwNod*>(App, "UserManagerScript");
 	if (!UserMgr) return;
 
-	auto UsersArray = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(*UserMgr, "Users");
+	auto UsersArray = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(UserMgr, "Users");
 	if (!UsersArray) return;
 
 	for (auto& User : *UsersArray)
@@ -22,7 +22,7 @@ void AddictionUnlimiter::Render()
 		if (!UserConfig) continue;
 
 		int DailyQuotaMinutes = 90;
-		Twinkie->ParamSet(*UserConfig, "AddictionLimiter_DailyQuotaMinutes", &DailyQuotaMinutes);
+		Twinkie->ParamSet(UserConfig, "AddictionLimiter_DailyQuotaMinutes", &DailyQuotaMinutes);
 	}
 }
 #endif

@@ -1,9 +1,11 @@
 #pragma once
+#include "../pch.h"
 #include "Arch.h"
 #include "Stdlibs.h"
 
 extern DWORD ProtFlags;
 extern const char* g_MemberTypeNames[];
+extern const char* g_MemberTypeSignatures[];
 
 // Useful definitions
 
@@ -19,7 +21,7 @@ extern const char* g_MemberTypeNames[];
 #define VirtualPtr(n, obj) &(Virtual((n), (obj)))
 
 // Unprotects memory at address with size
-#define Unprotect(addr, size) VirtualProtect((LPVOID)(addr), (size), PAGE_EXECUTE_READWRITE, &ProtFlags)
+#define Unprotect(addr, size) VirtualProtect((void*)(addr), (size), PAGE_EXECUTE_READWRITE, &ProtFlags)
 
 // Used to write to the n-th virtual function from an object ptr
 __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, uintptr_t ToWrite);

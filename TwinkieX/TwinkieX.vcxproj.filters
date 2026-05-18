@@ -90,6 +90,9 @@
     <ClInclude Include="Includes\Modules\AddictionUnlimiterModule\AddictionUnlimiter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -147,6 +150,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Modules\AddictionUnlimiterModule\AddictionUnlimiter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
