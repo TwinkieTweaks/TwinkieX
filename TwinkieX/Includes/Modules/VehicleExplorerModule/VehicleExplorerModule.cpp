@@ -34,7 +34,7 @@ void VehicleExplorer::Render()
 	{
 		Text("No arena.");
 		End();
-		return;*
+		return;
 	}
 
 	auto Players = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Arena, "Players");
@@ -63,8 +63,8 @@ void VehicleExplorer::Render()
 
 	SeparatorText("Memory explore");
 	{
-		static uint64_t StepSize     =  4;
-		static uint64_t StepSizeFast = 16;
+		uint64_t StepSize     =  4;
+		uint64_t StepSizeFast = 16;
 
 		InputScalar("Offset", ImGuiDataType_U64, &MemOffset, &StepSize, &StepSizeFast, "%p");
 

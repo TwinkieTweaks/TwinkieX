@@ -44,30 +44,39 @@ public:
 	// Gets the game's input port, for mouse and keyboard events (always CDx8InputPort or similar)
 	__declspec(noinline) CInputPort* GetInputPort();
 
+	// Not for direct use. Use ParamGet instead.
 	template<typename ReturnT>
 	GetterReturnT<typename ReturnT> VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
 
+	// Not for direct use. Use ParamGet instead.
 	template<typename ReturnT>
 	GetterReturnT<typename ReturnT> VirtualParamGet(CMwNod* Nod, const char* MemberName);
 
+	// Not for direct use. Use ParamSet instead.
 	template<typename ValueT>
 	bool VirtualParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value);
 
+	// Not for direct use. Use ParamSet instead.
 	template<typename ValueT>
 	bool VirtualParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value);
 
+	// Gets a member's value from a nod. If return result is null, then something failed. Returns pointer to requested datatype unless datatype is CMwNod*, then it returns CMwNod*.
 	template<typename ReturnT>
 	GetterReturnT<typename ReturnT> ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo, bool IsNodImpersistent = false);
 
+	// Gets a member's value from a nod. If return result is null, then something failed. Returns pointer to requested datatype unless datatype is CMwNod*, then it returns CMwNod*.
 	template<typename ReturnT>
 	GetterReturnT<typename ReturnT> ParamGet(CMwNod* Nod, const char* MemberName, bool IsNodImpersistent = false);
 
+	// Sets a member to a value for a nod. Returns true if succeeded.
 	template<typename ValueT>
 	bool ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value, bool IsNodImpersistent = false);
 
+	// Sets a member to a value for a nod. Returns true if succeeded.
 	template<typename ValueT>
 	bool ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value, bool IsNodImpersistent = false);
 
+	// Pushes member to stack.
 	void PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo);
 
 #ifdef MANIAPLANET
