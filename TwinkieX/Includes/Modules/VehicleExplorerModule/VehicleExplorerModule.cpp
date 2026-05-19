@@ -68,23 +68,35 @@ void VehicleExplorer::Render()
 
 		InputScalar("Offset", ImGuiDataType_U64, &MemOffset, &StepSize, &StepSizeFast, "%p");
 
-		uint64_t* ResultingAddr = (uint64_t*)(MemAddress + MemOffset);
-		uint64_t Result = MemAddress and ResultingAddr ? *ResultingAddr : 0;
+		uint32_t* ResultingAddr = (uint32_t*)(MemAddress + MemOffset);
+		uint32_t Result = MemAddress and ResultingAddr ? *ResultingAddr : 0;
 
-		Text("%llx\n%llu\n%x\n%u\n%p\n%f\n", Result, Result, Result, Result);
+		Text("%x\n%u\n%f\n", Result, Result, *(float*)&Result);
 	}
 
 	End();
 }
 
 // NOTES:
+// VelocityVec3 = Vehicle + 0x258
+// Speed = Vehicle + 0x534
 // WheelCount = Vehicle + 0x368
 // Wheel1 = Vehicle + 0x368 + 8
 // Wheel2 = Vehicle + 0x368 + 16
 // ...
-// Steer = Vehicle + 0x4C4
-// Brake = Vehicle + 0x4C8
-// Accel = Vehicle + 0x4CC
+// WheelSteerAngle = Vehicle + 0x558
+// WheelSurface = Vehicle + 0x55C
+// WheelIcyness = Vehicle + 0x56C
+// Steer = Vehicle + 0x4C8
+// Steer = Vehicle + 0xA0
+// Steer = Vehicle + 0x110
+// Brake = Vehicle + 0x4CC
+// Brake = Vehicle + 0x9C
+// Brake = Vehicle + 0x10C
+// Accel = Vehicle + 0x4D0
+// Accel = Vehicle + 0x98
+// Accel = Vehicle + 0x108
+// AccelEngine = Vehicle + 0x210
 // DigitalBrake = Vehicle + 0x4D8
 // GroundContact = Vehicle + 0x544
 // DriverProtector = Vehicle + 0x548
