@@ -31,3 +31,19 @@
 #if !defined(TMCN) && !defined(TM1) && !defined(TMO) && !defined(TMS) && !defined(TMSX) && !defined(ESWC)
 #error "No target game defined. Please define one of the following: TMCN, TM1, TMO, TMS, TMSX, ESWC."
 #endif
+
+#ifdef TMCN
+#define GAME "TMCN"
+#elif defined(TM1)
+#define GAME "TM1"
+#elif defined(TMO)
+#define GAME "TMO"
+#elif defined(TMS)
+#define GAME "TMS"
+#elif defined(TMSX)
+#define GAME "TMSX"
+#elif defined(ESWC)
+#define GAME "ESWC"
+#else
+#error "No target game defined."
+#endif

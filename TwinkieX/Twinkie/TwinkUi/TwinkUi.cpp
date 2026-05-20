@@ -419,6 +419,15 @@ void TwinkUi::Render()
 {
 	using namespace ImGui;
 
+	if (not ModuleQueue.empty())
+	{
+		for (auto& Module : ModuleQueue)
+		{
+			Modules.push_back(Module);
+		}
+		ModuleQueue.erase(ModuleQueue.begin(), ModuleQueue.end());
+	}
+
 	if (TwinkUiState::RenderUi)
 	{
 		if (BeginMainMenuBar())

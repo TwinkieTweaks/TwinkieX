@@ -1,14 +1,10 @@
 // Precompiled headers.
 #include "pch.h"
 
-// This export is used by the launcher to make the game import the DLL automatically (via hijacked import table in dinput8.dll)
-__declspec(dllexport) void ThisFunctionDoesNothing()
-{
-    return;
-}
-
 // Class definition for the Twinkie class used by (Twinkie gTwinkie).
 #include <Twinkie/Twinkie.h>
+
+#include "Exports/Exports.h"
 
 // The global Twinkie object, used to manage all other managers.
 Twinkie gTwinkie;
@@ -79,4 +75,3 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, LPVOID lpReserved)
 	// This is just to use the unused (lpReserved) parameter. It is expected to be (NULL).
     return lpReserved ? TRUE : TRUE;
 }
-
