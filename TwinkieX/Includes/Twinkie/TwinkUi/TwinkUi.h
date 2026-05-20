@@ -81,6 +81,9 @@ public:
 
 	std::vector<IModule*> Modules = {};
 
+	// Used when another thread wants to add a module
+	std::vector<IModule*> ModuleQueue = {};
+
 	// Behaviors
 
 	// Ctor

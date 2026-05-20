@@ -700,6 +700,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Exports\Exports.h" />
     <ClInclude Include="Includes\GlyphTable\IconsForkAwesome.h" />
     <ClInclude Include="Includes\GlyphTable\IconsKenney.h" />
     <ClInclude Include="Includes\imgui\imconfig.h" />
@@ -729,6 +730,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="Exports\Exports.cpp" />
     <ClCompile Include="Includes\imgui\imgui.cpp" />
     <ClCompile Include="Includes\imgui\imgui_demo.cpp" />
     <ClCompile Include="Includes\imgui\imgui_draw.cpp" />

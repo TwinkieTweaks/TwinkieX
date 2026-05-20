@@ -27,7 +27,7 @@ public:
 	// Ctor
 	__declspec(noinline) TwinkTrackmania();
 	// Dtor
-	__declspec(noinline) ~TwinkTrackmania();
+	__declspec(noinline) virtual ~TwinkTrackmania();
 
 
 	// Getters
