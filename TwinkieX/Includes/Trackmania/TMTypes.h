@@ -543,6 +543,7 @@ public:
 
 class CMwStack;
 
+// C4100: unreferenced parameter for function
 #pragma warning(disable : 4100)
 #pragma warning(push)
 
@@ -671,4 +672,4 @@ CMwStack::eItemType TypeToStackItemType()
 
 #endif
 
-#pragma warning(pop)
+#pragma warning(pop) // C4100

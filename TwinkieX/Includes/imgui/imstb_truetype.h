@@ -2137,7 +2137,6 @@ static int stbtt__run_charstring(const stbtt_fontinfo *info, int glyph_index, st
             f = 0.0;
          }
          break;
-
       case 0x0A: // callsubr
          if (!has_subrs) {
             if (info->fdselect.size)
@@ -2145,6 +2144,7 @@ static int stbtt__run_charstring(const stbtt_fontinfo *info, int glyph_index, st
             has_subrs = 1;
          }
          // FALLTHROUGH
+         [[fallthrough]];
       case 0x1D: // callgsubr
          if (sp < 1) return STBTT__CSERR("call(g|)subr stack");
          v = (int) s[--sp];

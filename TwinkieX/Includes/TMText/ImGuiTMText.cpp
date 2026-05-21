@@ -1,6 +1,5 @@
 #include "pch.h"
 
-#pragma warning(disable : 4062 4244 4242)
 #include "ImGuiTMText.h"
 
 namespace ImGui
@@ -48,6 +47,7 @@ namespace ImGui
 
 			this->Color = std::stoul(CodeAsValidHex, nullptr, 16);
 			this->Color = this->Color | 0xFF000000;
+			break;
 		default:
 			return false;
 		}
@@ -114,6 +114,8 @@ namespace ImGui
                         StateStack.pop_back();
                     }
                     break;
+				default:
+					break;
                 }
             }
 
