@@ -1,4 +1,5 @@
 #pragma once
+#pragma warning(disable : 4738 5045 4710)
 
 // Exclude rarely-used stuff from Windows headers
 #define WIN32_LEAN_AND_MEAN  
