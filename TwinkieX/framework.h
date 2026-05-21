@@ -4,19 +4,20 @@
 #define WIN32_LEAN_AND_MEAN  
 
 // This warning always fires when including Windows.h for some reason
-#pragma warning(disable : 5039)
-
-// "relative include path contains '..'"
-#pragma warning(disable : 4464)
+#pragma warning(disable : 5039 4514)
+#pragma warning(push)
 
 // Windows Header Files
 #include <windows.h>
+
+#pragma warning(pop)
 
 // Architecture detection header file
 #include <Utils/Arch.h>
 
 // Disable all warnings emmitted by DirectX11
 #pragma warning(disable : 4061 4365 4820 4365)
+#pragma warning(push)
 
 // DirectX (11 for TMCN, 9 otherwise)
 #ifdef MANIAPLANET
@@ -30,12 +31,15 @@
 
 #endif
 
+#pragma warning(pop)
+
 // dear ImGui
 // No idea why this define is needed
 #define IMGUI_DEFINE_MATH_OPERATORS
 
 // Disable all warnings emmitted by dear ImGui
-#pragma warning(disable : 4820 26819 28182 4191 4365 4582 4774 5219 5045 4738 4710 5262 4711)
+#pragma warning(disable : 4191 4582 4774 5219)
+#pragma warning(push)
 
 #include <imgui/imgui.h>
 
@@ -47,9 +51,17 @@
 
 #include <imgui/imgui_impl_win32.h>
 
+
+#pragma warning(pop)
+
 #include <TMText/ImGuiTMText.h>
 
 #include <GlyphTable/IconsForkAwesome.h>
 #include <GlyphTable/IconsKenney.h>
+
+#pragma warning(disable : 4244)
+#pragma warning(push)
+#include <algorithm>
+#pragma warning(pop)
 
 #include <vector>

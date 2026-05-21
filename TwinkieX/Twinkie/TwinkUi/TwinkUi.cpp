@@ -1,6 +1,5 @@
 // Precompiled headers.
 #include "pch.h"
-#include "../pch.h"
 
 // External dear ImGui WndProc handler declaration
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
