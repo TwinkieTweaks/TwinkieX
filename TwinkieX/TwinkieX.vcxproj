@@ -723,6 +723,7 @@
     <ClInclude Include="Includes\Utils\Arch.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Includes\Utils\Stdlibs.h" />
+    <ClInclude Include="Includes\Veridian\Veridian.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Includes\Utils\Offsets.h" />
     <ClInclude Include="Includes\Twinkie\Twinkie.h" />
@@ -745,6 +746,7 @@
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
     <ClCompile Include="Includes\Utils\Offsets.cpp" />
+    <ClCompile Include="Includes\Veridian\Veridian.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -420,7 +420,7 @@ void TwinkUi::Render()
 
 	if (not ModuleQueue.empty())
 	{
-		for (auto& Module : ModuleQueue)
+		for (auto& Module : this->ModuleQueue)
 		{
 			Modules.push_back(Module);
 		}
@@ -435,6 +435,21 @@ void TwinkUi::Render()
 
 			if (BeginMenu("$f0fTwinkie##Twinkie"))
 			{
+				if (MenuItem("Settings", "", ShowSettings))
+				{
+					ShowSettings = !ShowSettings;
+				}
+				if (BeginMenu("Modules"))
+				{
+					for (auto& Module : this->Modules)
+					{
+						if (MenuItem(Module->Name, "", Module->Enabled))
+						{
+							Module->Enabled = !Module->Enabled;
+						}
+					}
+					ImGui::EndMenu();
+				}
 				ImGui::EndMenu();
 			}
 
@@ -442,6 +457,8 @@ void TwinkUi::Render()
 			{
 				for (auto& Module : this->Modules)
 				{
+					if (!Module->Enabled) continue;
+
 					Module->RenderMenu();
 				}
 
@@ -450,6 +467,8 @@ void TwinkUi::Render()
 
 			for (auto& Module : this->Modules)
 			{
+				if (!Module->Enabled) continue;
+
 				Module->RenderMenuMain();
 			}
 
@@ -457,10 +476,21 @@ void TwinkUi::Render()
 
 			EndMainMenuBar();
 		}
+
+		if (ShowSettings)
+		{
+			if (Begin("Settings##Twinkie", &ShowSettings))
+			{
+				Veridian::RenderAll("Twinkie");
+			}
+			End();
+		}
 	}
 
 	for (auto& Module : this->Modules)
 	{
+		if (!Module->Enabled) continue;
+
 		Module->Render();
 		if (TwinkUiState::RenderUi) Module->RenderInterface();
 	}

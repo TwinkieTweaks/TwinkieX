@@ -58,7 +58,10 @@ class AppExplorerModule : public IModule
 
 public:
 	AppExplorerModule(TwinkTrackmania& Twinkie)
-		: IModule(Twinkie, "AppExplorer", "AppExplorer") {
+	{
+		this->Twinkie = &Twinkie;
+		this->Name = "AppExplorer";
+		this->ID = "AppExplorer";
 	};
 
 	virtual ~AppExplorerModule() = default;

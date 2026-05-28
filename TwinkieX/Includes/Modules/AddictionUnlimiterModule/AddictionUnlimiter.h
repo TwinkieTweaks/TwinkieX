@@ -5,9 +5,12 @@
 class AddictionUnlimiter : public IModule
 {
 public:
-	AddictionUnlimiter(TwinkTrackmania& Twinkie) : 
-		IModule(Twinkie, "AddictionUnlimiter", "AddictionUnlimiter") {
-	}
+	AddictionUnlimiter(TwinkTrackmania& Twinkie)
+	{
+		this->Twinkie = &Twinkie;
+		this->Name = "AddictionUnlimiter";
+		this->ID = "AddictionUnlimiter";
+	};
 
 	virtual ~AddictionUnlimiter() override;
 
