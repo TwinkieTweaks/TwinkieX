@@ -7,6 +7,9 @@
 #include <Modules/VehicleExplorerModule/VehicleExplorerModule.h>
 #endif
 
+// Veridian settings manager
+#include <Veridian/Veridian.h>
+
 #include <vector>
 
 class TwinkUi;
@@ -83,6 +86,9 @@ public:
 
 	// Used when another thread wants to add a module
 	std::vector<IModule*> ModuleQueue = {};
+
+	// Settings window
+	bool ShowSettings = false;
 
 	// Behaviors
 

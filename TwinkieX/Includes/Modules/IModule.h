@@ -17,10 +17,14 @@ public:
 	// A reference to the TrackmaniaMgr
 	TwinkTrackmania* Twinkie = nullptr;
 
+	// Controls whether or not the module is enabled.
+	bool Enabled = true;
+
 	// Behaviors
 
 	// Ctor
-	IModule(TwinkTrackmania& Twinkie, const char*, const char*) : Twinkie(&Twinkie) {};
+	IModule(TwinkTrackmania& Twinkie, const char*, const char*) : Twinkie(&Twinkie) {}
+	IModule() {}
 	// Virtual Dtor
 	virtual ~IModule() = default;
 	

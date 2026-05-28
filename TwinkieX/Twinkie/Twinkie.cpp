@@ -8,7 +8,14 @@
 
 Twinkie::Twinkie()
 {
+	Veridian::InitContext(std::filesystem::current_path() / "Twinkie\\Twinkie.ini");
 
+	Veridian::Register("Twinkie", "UiVisible", "Show UI", Veridian::VSettingType::VBool, &TwinkUiState::RenderUi);
+
+	for (IModule*& Module : UiMgr.Modules)
+	{
+		Veridian::Register("Modules", Module->ID, Module->Name, Veridian::VSettingType::VBool, &Module->Enabled);
+	}
 }
 
 Twinkie::~Twinkie()

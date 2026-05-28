@@ -5,9 +5,12 @@
 class VehicleExplorer : public IModule
 {
 public:
-	VehicleExplorer(TwinkTrackmania& Twinkie) :
-		IModule(Twinkie, "VehicleExplorer", "VehicleExplorer") {
-	}
+	VehicleExplorer(TwinkTrackmania& Twinkie)
+	{
+		this->Twinkie = &Twinkie;
+		this->Name = "VehicleExplorer";
+		this->ID = "VehicleExplorer";
+	};
 
 	virtual ~VehicleExplorer() override;
 
