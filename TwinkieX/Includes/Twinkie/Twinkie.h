@@ -26,6 +26,8 @@ public:
 	// The UI manager.
 	TwinkUi UiMgr = TwinkUi(TrackmaniaMgr);
 
+	std::filesystem::path DocumentsFolderLocation;
+
 	// Behaviors
 
 	// Ctor
