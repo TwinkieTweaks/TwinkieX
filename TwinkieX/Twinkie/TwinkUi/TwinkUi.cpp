@@ -67,6 +67,18 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 #endif
 }
 
+__declspec(noinline) TwinkUi::~TwinkUi()
+{
+	for (auto& Module : Modules)
+	{
+		delete Module;
+	}
+	for (auto& Module : ModuleQueue)
+	{
+		delete Module;
+	}
+}
+
 // END Behaviors
 
 // Methods
@@ -138,9 +150,9 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		return CallWindowProcA(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);
 	}
 
-#ifdef GAMEBOX
 	switch (uMsg)
 	{
+#ifdef GAMEBOX
 	case WM_SIZE:
 		if (wParam != SIZE_MINIMIZED)
 		{
@@ -185,8 +197,13 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			}
 		}
 		break;
-	}
 #endif
+		case WM_FILE_SELECTED:
+		{
+			// Empty on purpose (for now)
+			break;
+		}
+	}
 
 	auto& ImIo = ImGui::GetIO();
 
@@ -417,14 +434,16 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 void TwinkUi::Render()
 {
 	using namespace ImGui;
+	static TwinkFilePicker* FilePicker = nullptr;
 
 	if (not ModuleQueue.empty())
 	{
 		for (auto& Module : this->ModuleQueue)
 		{
 			Modules.push_back(Module);
+			Veridian::Register("Modules", Module->ID, Module->Name, Veridian::VSettingType::VBool, &Module->Enabled);
 		}
-		ModuleQueue.erase(ModuleQueue.begin(), ModuleQueue.end());
+		ModuleQueue = {};
 	}
 
 	if (TwinkUiState::RenderUi)
@@ -435,6 +454,16 @@ void TwinkUi::Render()
 
 			if (BeginMenu("$f0fTwinkie##Twinkie"))
 			{
+				if (MenuItem("Include module"))
+				{
+					if (FilePicker)
+					{
+						delete FilePicker;
+						FilePicker = nullptr;
+					}
+
+					FilePicker = new TwinkFilePicker();
+				}
 				if (MenuItem("Settings", "", ShowSettings))
 				{
 					ShowSettings = !ShowSettings;
@@ -493,6 +522,17 @@ void TwinkUi::Render()
 
 		Module->Render();
 		if (TwinkUiState::RenderUi) Module->RenderInterface();
+	}
+
+	if (FilePicker)
+	{
+		if (FilePicker->Done)
+		{
+			LoadLibrary(FilePicker->FinalPath.c_str());
+
+			delete FilePicker;
+			FilePicker = nullptr;
+		}
 	}
 }
 

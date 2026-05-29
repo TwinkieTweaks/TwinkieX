@@ -719,6 +719,8 @@
     <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
     <ClInclude Include="Includes\TMText\TMText.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePicker.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePickerExports.h" />
     <ClInclude Include="Includes\Twinkie\TwinkUi\TwinkUi.h" />
     <ClInclude Include="Includes\Utils\Arch.h" />
     <ClInclude Include="framework.h" />
@@ -745,6 +747,7 @@
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
+    <ClCompile Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePicker.cpp" />
     <ClCompile Include="Includes\Utils\Offsets.cpp" />
     <ClCompile Include="Includes\Veridian\Veridian.cpp" />
     <ClCompile Include="pch.cpp">
@@ -772,6 +775,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Includes\README.md" />
+    <None Include="Includes\Veridian\Veridian.sln" />
+    <None Include="Includes\Veridian\Veridian.vcxproj" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

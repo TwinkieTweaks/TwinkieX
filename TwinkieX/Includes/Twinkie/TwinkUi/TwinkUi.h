@@ -7,6 +7,8 @@
 #include <Modules/VehicleExplorerModule/VehicleExplorerModule.h>
 #endif
 
+#include <Twinkie/TwinkFilePicker/TwinkFilePickerExports.h>
+
 // Veridian settings manager
 #include <Veridian/Veridian.h>
 
@@ -95,7 +97,7 @@ public:
 	// Ctor
 	TwinkUi(TwinkTrackmania& TrackmaniaMgr);
 	// Dtor
-	~TwinkUi() = default;
+	~TwinkUi();
 
 	// Methods
 	// imgui render calls are allowed here

@@ -99,6 +99,12 @@
     <ClInclude Include="Includes\Veridian\Veridian.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePicker.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePickerExports.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -167,8 +173,13 @@
     <ClCompile Include="Includes\Veridian\Veridian.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePicker.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Includes\README.md" />
+    <None Include="Includes\Veridian\Veridian.sln" />
+    <None Include="Includes\Veridian\Veridian.vcxproj" />
   </ItemGroup>
 </Project>
