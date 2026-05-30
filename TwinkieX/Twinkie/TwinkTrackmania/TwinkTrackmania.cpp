@@ -14,6 +14,10 @@ TwinkTrackmania::TwinkTrackmania()
 	// This is the SkuIdentifier for TMCN. 1 = EU, default was 4 (= CN).
 	Unprotect(this->ExeBaseAddr + 0x1b22c70, 4);
 	WriteAddr(uint32_t, this->ExeBaseAddr + 0x1b22c70, 1);
+
+	// This is for people who want to use the US language without the game exiting early for some reason
+	Unprotect(this->ExeBaseAddr + 0x29e636, 2);
+	WriteAddr(uint16_t, this->ExeBaseAddr + 0x29e636, 0x9090);
 #endif
 }
 

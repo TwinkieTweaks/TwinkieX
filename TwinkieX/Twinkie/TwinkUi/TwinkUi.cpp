@@ -205,22 +205,14 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		}
 	}
 
-	auto& ImIo = ImGui::GetIO();
+	// auto& ImIo = ImGui::GetIO();
 
-	auto ImWndProcResult = ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-	if (ImWndProcResult)
-	{
-		return ImWndProcResult;
-	}
+	ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+
 	if (uMsg == WM_KEYDOWN)
 	{
 		if (wParam == VK_F3 and !(lParam & 0xFF000000))
 			TwinkUiState::RenderUi = !TwinkUiState::RenderUi;
-	}
-
-	if ((uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST && ImIo.WantCaptureKeyboard) || (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST && ImIo.WantCaptureMouse))
-	{
-		return 1;
 	}
 
 	return CallWindowProcA(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);
