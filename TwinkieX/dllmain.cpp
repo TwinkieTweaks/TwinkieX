@@ -36,6 +36,8 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
     }
 #endif
     
+    if (GetAsyncKeyState(VK_PAUSE) < 0) return FALSE;
+
     // After knowing that everything is initialized, we update everything
     gTwinkie.Update();
 
