@@ -198,21 +198,29 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		}
 		break;
 #endif
-		case WM_FILE_SELECTED:
-		{
-			// Empty on purpose (for now)
-			break;
-		}
+	case WM_FILE_SELECTED:
+	{
+		// Empty on purpose (for now)
+		break;
+	}
 	}
 
-	// auto& ImIo = ImGui::GetIO();
+	auto& ImIo = ImGui::GetIO();
 
-	ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
-
+	auto ImWndProcResult = ImGui_ImplWin32_WndProcHandler(hWnd, uMsg, wParam, lParam);
+	if (ImWndProcResult)
+	{
+		return ImWndProcResult;
+	}
 	if (uMsg == WM_KEYDOWN)
 	{
 		if (wParam == VK_F3 and !(lParam & 0xFF000000))
 			TwinkUiState::RenderUi = !TwinkUiState::RenderUi;
+	}
+
+	if ((uMsg >= WM_KEYFIRST && uMsg <= WM_KEYLAST && ImIo.WantCaptureKeyboard) || (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST && ImIo.WantCaptureMouse))
+	{
+		return 1;
 	}
 
 	return CallWindowProcA(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);
@@ -315,7 +323,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
 			RenderTargetViewDesc.Format = BackBufferColorFmt;
 			RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-			
+
 			// Create a target view using the buffer we got to render our UI on
 			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
 
