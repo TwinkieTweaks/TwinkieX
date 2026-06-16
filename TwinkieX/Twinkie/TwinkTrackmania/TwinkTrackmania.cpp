@@ -18,6 +18,10 @@ TwinkTrackmania::TwinkTrackmania()
 	// This is for people who want to use the US language without the game exiting early for some reason
 	Unprotect(this->ExeBaseAddr + 0x29e636, 2);
 	WriteAddr(uint16_t, this->ExeBaseAddr + 0x29e636, 0x9090);
+
+	// This is for removing the timelimit entirely.
+	Unprotect(this->ExeBaseAddr + 0x84976c, 8);
+	WriteAddr(uint64_t, this->ExeBaseAddr + 0x84976c, 0x3B'F0'8B'90'90'90'90'90);
 #endif
 }
 

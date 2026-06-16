@@ -458,6 +458,14 @@ void AppExplorerModule::RenderMenu()
 void AppExplorerModule::RenderNodInfoClassInfo(CMwClassInfo* ClassInfo)
 {
 	{
+		std::string Copyable = std::format("{:p}", (void*)NodInfo->Nod);
+		if (Selectable((std::string("Copy: ") + Copyable + " (nod ptr)").c_str()))
+		{
+			SetClipboardText(Copyable.c_str());
+			NodInfoPopup = false;
+		}
+	}
+	{
 		std::string Copyable = ClassInfo->ClassName;
 		if (Selectable((std::string("Copy: ") + Copyable).c_str()))
 		{
@@ -507,6 +515,14 @@ void AppExplorerModule::RenderNodInfoMemberInfo()
 		void* MemberInfoAddr = reinterpret_cast<void*>(MemberInfo);
 		std::string Copyable = std::format("{:p}", MemberInfoAddr);
 		if (Selectable((std::string("Copy: ") + Copyable + " (member info ptr)").c_str()))
+		{
+			SetClipboardText(Copyable.c_str());
+			NodInfoPopup = false;
+		}
+	}
+	{
+		std::string Copyable = g_MemberTypeNames[(size_t)MemberInfo->MemberType];
+		if (Selectable((std::string("Copy: ") + Copyable + "").c_str()))
 		{
 			SetClipboardText(Copyable.c_str());
 			NodInfoPopup = false;
@@ -570,14 +586,6 @@ void AppExplorerModule::RenderInterface()
 		{
 			std::string Copyable = NodInfo->Name;
 			if (Selectable((std::string("Copy: ") + Copyable).c_str()))
-			{
-				SetClipboardText(Copyable.c_str());
-				NodInfoPopup = false;
-			}
-		}
-		{
-			std::string Copyable = std::format("{:p}", (void*)NodInfo->Nod);
-			if (Selectable((std::string("Copy: ") + Copyable + " (nod ptr)").c_str()))
 			{
 				SetClipboardText(Copyable.c_str());
 				NodInfoPopup = false;
