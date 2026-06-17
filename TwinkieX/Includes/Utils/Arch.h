@@ -1,8 +1,6 @@
 // This file is for checking that the current build configuration is valid for the target game.
 #pragma once
 
-#define TMCN
-
 // _M_X64 is defined for x64
 #ifdef _M_X64
 #define X64
