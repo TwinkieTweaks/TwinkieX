@@ -16,7 +16,7 @@ Twinkie::Twinkie()
 	DocumentsFolderLocation = Buffer;
 	CoTaskMemFree(Buffer);
 
-	Veridian::InitContext(std::filesystem::path(DocumentsFolderLocation) / "TwinkieX\\Twinkie.ini");
+	Veridian::InitContext(DocumentsFolderLocation / "TwinkieX\\Twinkie.ini");
 
 	Veridian::Register("Twinkie", "UiVisible", "Show UI", Veridian::VSettingType::VBool, &TwinkUiState::RenderUi);
 

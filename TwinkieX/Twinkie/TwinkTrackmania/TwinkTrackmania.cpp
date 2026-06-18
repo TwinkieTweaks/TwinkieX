@@ -11,10 +11,6 @@ TwinkTrackmania::TwinkTrackmania()
 	this->ExeBaseAddr = (uintptr_t)GetModuleHandleA(NULL);
 
 #ifdef TMCN
-	// This is the SkuIdentifier for TMCN. 1 = EU, default was 4 (= CN).
-	Unprotect(this->ExeBaseAddr + 0x1b22c70, 4);
-	WriteAddr(uint32_t, this->ExeBaseAddr + 0x1b22c70, 1);
-
 	// This is for removing the timelimit entirely.
 	Unprotect(this->ExeBaseAddr + 0x84976c, 8);
 	WriteAddr(uint64_t, this->ExeBaseAddr + 0x84976c, 0x3B'F0'8B'90'90'90'90'90);
