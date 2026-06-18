@@ -410,7 +410,7 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					default:
 					{
 RerenderMember:
-						Text("%s (%s)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType]);
+						Text("%s (%s %d)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType], MemberInfo->MemberType);
 						break;
 					}
 				}
