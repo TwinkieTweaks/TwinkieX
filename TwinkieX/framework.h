@@ -5,7 +5,7 @@
 #define WIN32_LEAN_AND_MEAN  
 
 // This warning always fires when including Windows.h for some reason
-#pragma warning(disable : 5039 4514 4820)
+#pragma warning(disable : 5039 4514 4820 4668)
 #pragma warning(push)
 
 // Windows Header Files
