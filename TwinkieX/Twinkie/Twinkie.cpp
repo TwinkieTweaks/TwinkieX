@@ -20,6 +20,23 @@ Twinkie::Twinkie()
 
 	Veridian::Register("Twinkie", "UiVisible", "Show UI", Veridian::VSettingType::VBool, &TwinkUiState::RenderUi);
 
+	Veridian::Register("Twinkie", "UiScale", "UI Scale", Veridian::VSettingType::VFloat, &this->UiMgr.UiScale);
+
+	Veridian::Register("Twinkie", "FontPath", "Font path", Veridian::VSettingType::VString, &UiMgr.FontPath, false, [this](Veridian::VSetting*) { 
+		ImGui::SameLine();
+		if (ImGui::Button("Pick font file"))
+		{
+			if (this->UiMgr.FilePicker) delete this->UiMgr.FilePicker;
+			this->UiMgr.FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickFont);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("X"))
+		{
+			this->UiMgr.DestroyCurrentFont = true;
+		}
+		return true;
+		});
+
 	for (IModule*& Module : UiMgr.Modules)
 	{
 		Veridian::Register("Modules", Module->ID, Module->Name, Veridian::VSettingType::VBool, &Module->Enabled);
