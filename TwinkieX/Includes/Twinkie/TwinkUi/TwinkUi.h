@@ -89,8 +89,23 @@ public:
 	// Used when another thread wants to add a module
 	std::vector<IModule*> ModuleQueue = {};
 
+	// The current font path.
+	std::string FontPath = "";
+
+	// The current font itself.
+	ImFont* Font = nullptr;
+
+	// The file picker.
+	TwinkFilePicker* FilePicker = nullptr;
+
+	// The size of the font.
+	float UiScale = 1.f;
+
 	// Settings window
 	bool ShowSettings = false;
+
+	// True if the current font is set to be destroyed/removed.
+	bool DestroyCurrentFont = false;
 
 	// Behaviors
 

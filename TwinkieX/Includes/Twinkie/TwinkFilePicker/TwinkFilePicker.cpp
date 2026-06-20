@@ -3,6 +3,8 @@
 
 DWORD WINAPI TwinkFilePickerThread(LPVOID param)
 {
+    using enum TwinkFilePicker::FilePickerPurpose;
+
     TwinkFilePicker* FilePicker = static_cast<TwinkFilePickerThreadParam*>(param)->FilePicker;
     HWND hWindow = TwinkUiState::Window;
 
@@ -13,10 +15,34 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
     OpenFileNameStruct.hwndOwner = hWindow;
     OpenFileNameStruct.lpstrFile = FilePathBuffer;
     OpenFileNameStruct.nMaxFile = sizeof(FilePathBuffer) / sizeof(FilePathBuffer[0]);
-    OpenFileNameStruct.lpstrFilter =
-        L"Dynamic link libraries\0*.DLL\0"
-        L"All Files\0*.*\0"
-        ;
+
+    switch (FilePicker->Purpose)
+    {
+        case PickModule:
+        {
+            OpenFileNameStruct.lpstrFilter =
+                L"Dynamic link libraries\0*.DLL\0"
+                L"All Files\0*.*\0"
+                ;
+            break;
+        }
+        case PickFont:
+        {
+            OpenFileNameStruct.lpstrFilter =
+                L"TrueType Font file\0*.TTF\0"
+                L"All Files\0*.*\0"
+                ;
+            break;
+        }
+        case NoPurpose:
+        {
+            OpenFileNameStruct.lpstrFilter =
+                L"All Files\0*.*\0"
+                ;
+            break;
+        }
+    }
+
     OpenFileNameStruct.nFilterIndex = 1;
     OpenFileNameStruct.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
@@ -37,7 +63,7 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
     return 0;
 }
 
-TwinkFilePicker::TwinkFilePicker()
+TwinkFilePicker::TwinkFilePicker(FilePickerPurpose Purpose) : Purpose(Purpose)
 {
     TwinkFilePickerThreadParam* ThreadParams = new TwinkFilePickerThreadParam{ this };
     auto hThread = CreateThread(nullptr, 0, TwinkFilePickerThread, ThreadParams, 0, nullptr);

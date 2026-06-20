@@ -258,11 +258,28 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
+		if (not TwinkUiState::ImGuiInit)
+		{
+			if (not TwinkUiState::UiMgr->FontPath.empty())
+			{
+				TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(TwinkUiState::UiMgr->FontPath.c_str());
+			}
+			TwinkUiState::ImGuiInit = true;
+		}
+
 		TwinkUiState::UiMgr->Render();
 
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+
+		if (TwinkUiState::UiMgr->DestroyCurrentFont and TwinkUiState::UiMgr->Font)
+		{
+			TwinkUiState::UiMgr->FontPath = "";
+			ImGui::GetIO().Fonts->RemoveFont(TwinkUiState::UiMgr->Font);
+			TwinkUiState::UiMgr->Font = nullptr;
+			TwinkUiState::UiMgr->DestroyCurrentFont = false;
+		}
 
 		pStateBlock->Apply();
 		pStateBlock->Release();
@@ -335,7 +352,6 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 			// Initialize ImGui
 			InitImGui(TwinkUiState::Context, TwinkUiState::Device);
-			TwinkUiState::ImGuiInit = true;
 		}
 
 		// If we couldn't get the device, then fallback to original behavior
@@ -349,6 +365,15 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
+			
+	if (not TwinkUiState::ImGuiInit)
+	{
+		if (not TwinkUiState::UiMgr->FontPath.empty())
+		{
+			TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(TwinkUiState::UiMgr->FontPath.c_str());
+		}
+		TwinkUiState::ImGuiInit = true;
+	}
 
 	TwinkUiState::UiMgr->Render();
 
@@ -359,6 +384,14 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 	// Draw from the draw data
 	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+
+	if (TwinkUiState::UiMgr->DestroyCurrentFont and TwinkUiState::UiMgr->Font)
+	{
+		TwinkUiState::UiMgr->FontPath = "";
+		ImGui::GetIO().Fonts->RemoveFont(TwinkUiState::UiMgr->Font);
+		TwinkUiState::UiMgr->Font = nullptr;
+		TwinkUiState::UiMgr->DestroyCurrentFont = false;
+	}
 
 	// Continue as if nothing happened
 	return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
@@ -434,7 +467,8 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 void TwinkUi::Render()
 {
 	using namespace ImGui;
-	static TwinkFilePicker* FilePicker = nullptr;
+
+	if (Font) PushFont(Font, GetStyle().FontSizeBase * UiScale);
 
 	if (not ModuleQueue.empty())
 	{
@@ -462,7 +496,7 @@ void TwinkUi::Render()
 						FilePicker = nullptr;
 					}
 
-					FilePicker = new TwinkFilePicker();
+					FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickModule);
 				}
 				if (MenuItem("Settings", "", ShowSettings))
 				{
@@ -524,11 +558,31 @@ void TwinkUi::Render()
 		if (TwinkUiState::RenderUi) Module->RenderInterface();
 	}
 
+	if (Font) PopFont();
+
+	// ============== NO IMGUI DRAW CALLS PAST THIS POINT==============
+
 	if (FilePicker)
 	{
 		if (FilePicker->Done)
 		{
-			LoadLibrary(FilePicker->FinalPath.c_str());
+			using enum TwinkFilePicker::FilePickerPurpose;
+
+			switch (FilePicker->Purpose)
+			{
+				case PickModule:
+				{
+					LoadLibrary(FilePicker->FinalPath.c_str());
+					break;
+				}
+				case PickFont:
+				{
+					FontPath = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>{}.to_bytes(FilePicker->FinalPath);
+					Font = GetIO().Fonts->AddFontFromFileTTF(FontPath.c_str());
+					break;
+				}
+				case NoPurpose: break;
+			}
 
 			delete FilePicker;
 			FilePicker = nullptr;

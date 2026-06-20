@@ -10,9 +10,18 @@
 class TwinkFilePicker
 {
 public:
+	enum class FilePickerPurpose
+	{
+		NoPurpose = -1,
+		PickModule = 0,
+		PickFont = 1
+	};
+
 	bool Done = false;
+	FilePickerPurpose Purpose = FilePickerPurpose::NoPurpose;
 	std::wstring FinalPath;
-	TwinkFilePicker();
+	TwinkFilePicker() = delete;
+	TwinkFilePicker(FilePickerPurpose Purpose);
 };
 
 struct TwinkFilePickerThreadParam
