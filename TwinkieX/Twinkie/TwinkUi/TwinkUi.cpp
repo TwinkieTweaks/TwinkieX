@@ -577,7 +577,8 @@ void TwinkUi::Render()
 				}
 				case PickFont:
 				{
-					FontPath = std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>{}.to_bytes(FilePicker->FinalPath);
+					static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> Converter{};
+					FontPath = Converter.to_bytes(FilePicker->FinalPath);
 					Font = GetIO().Fonts->AddFontFromFileTTF(FontPath.c_str());
 					break;
 				}
