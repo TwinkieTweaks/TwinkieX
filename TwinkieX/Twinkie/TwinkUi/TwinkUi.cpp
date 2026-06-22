@@ -587,7 +587,7 @@ void TwinkUi::Render()
 #pragma warning(pop)
 #endif
 					Font = GetIO().Fonts->AddFontFromFileTTF((char*)UTF8FontPath);
-					FontPath = std::u8string(UTF8FontPath);
+					FontPath = UTF8FontPath;
 					break;
 				}
 				case NoPurpose: break;
