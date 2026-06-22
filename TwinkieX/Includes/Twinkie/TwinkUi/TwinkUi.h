@@ -90,7 +90,7 @@ public:
 	std::vector<IModule*> ModuleQueue = {};
 
 	// The current font path.
-	std::string FontPath = "";
+	std::u8string FontPath = u8"";
 
 	// The current font itself.
 	ImFont* Font = nullptr;
