@@ -370,7 +370,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	{
 		if (not TwinkUiState::UiMgr->FontPath.empty())
 		{
-			TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(TwinkUiState::UiMgr->FontPath.c_str());
+			TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF((char*)TwinkUiState::UiMgr->FontPath.c_str());
 		}
 		TwinkUiState::ImGuiInit = true;
 	}
@@ -387,7 +387,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 	if (TwinkUiState::UiMgr->DestroyCurrentFont and TwinkUiState::UiMgr->Font)
 	{
-		TwinkUiState::UiMgr->FontPath = "";
+		TwinkUiState::UiMgr->FontPath = u8"";
 		ImGui::GetIO().Fonts->RemoveFont(TwinkUiState::UiMgr->Font);
 		TwinkUiState::UiMgr->Font = nullptr;
 		TwinkUiState::UiMgr->DestroyCurrentFont = false;
@@ -577,9 +577,17 @@ void TwinkUi::Render()
 				}
 				case PickFont:
 				{
-					static std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t> Converter{};
-					FontPath = Converter.to_bytes(FilePicker->FinalPath);
-					Font = GetIO().Fonts->AddFontFromFileTTF(FontPath.c_str());
+					char8_t UTF8FontPath[1025];
+#ifdef TMCN
+#pragma warning(push)
+#pragma warning(disable : 4267)
+#endif
+					WideCharToMultiByte(CP_UTF8, 0, FilePicker->FinalPath.c_str(), FilePicker->FinalPath.length(), (char*)UTF8FontPath, 1024, NULL, NULL);
+#ifdef TMCN
+#pragma warning(pop)
+#endif
+					Font = GetIO().Fonts->AddFontFromFileTTF((char*)UTF8FontPath);
+					FontPath = std::u8string(UTF8FontPath);
 					break;
 				}
 				case NoPurpose: break;
