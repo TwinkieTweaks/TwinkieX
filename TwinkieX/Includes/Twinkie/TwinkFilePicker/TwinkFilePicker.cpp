@@ -44,11 +44,7 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
     }
 
     OpenFileNameStruct.nFilterIndex = 1;
-    OpenFileNameStruct.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-
-    wchar_t OldWorkingDir[513] = L"";
-
-    GetCurrentDirectory(512, OldWorkingDir);
+    OpenFileNameStruct.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
     if (GetOpenFileNameW(&OpenFileNameStruct))
     {
@@ -63,8 +59,6 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
             0,
             reinterpret_cast<LPARAM>(WndProcParam));
     }
-
-    SetCurrentDirectory(OldWorkingDir);
 
     return 0;
 }
