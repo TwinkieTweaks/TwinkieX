@@ -262,7 +262,7 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		{
 			if (not TwinkUiState::UiMgr->FontPath.empty())
 			{
-				TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF(TwinkUiState::UiMgr->FontPath.c_str());
+				TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF((char*)TwinkUiState::UiMgr->FontPath.c_str());
 			}
 			TwinkUiState::ImGuiInit = true;
 		}
@@ -275,7 +275,7 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 
 		if (TwinkUiState::UiMgr->DestroyCurrentFont and TwinkUiState::UiMgr->Font)
 		{
-			TwinkUiState::UiMgr->FontPath = "";
+			TwinkUiState::UiMgr->FontPath = u8"";
 			ImGui::GetIO().Fonts->RemoveFont(TwinkUiState::UiMgr->Font);
 			TwinkUiState::UiMgr->Font = nullptr;
 			TwinkUiState::UiMgr->DestroyCurrentFont = false;
