@@ -636,6 +636,7 @@ void TwinkUi::Render()
 		}
 #endif
 
+		// TODO: TM1 uses a different format for strings, see TMTypes.h
 		CFastStringInt* pMapNameStr = TrackmaniaMgr->ParamGet<CFastStringInt>(Map,
 #ifdef MANIAPLANET
 			"MapName"
@@ -652,18 +653,20 @@ void TwinkUi::Render()
 			return;
 		}
 
-		char8_t MapNameUTF8[257] = {};
-
+#ifndef TM1
 #ifdef TMCN
 #pragma warning(push)
 #pragma warning(disable : 4267)
 #endif
+		char8_t MapNameUTF8[257] = {};
 		WideCharToMultiByte(CP_UTF8, 0, pMapNameStr->CStr, pMapNameStr->Count, (char*)MapNameUTF8, 256, NULL, NULL);
 #ifdef TMCN
 #pragma warning(pop)
 #endif
-
 		Activity.SetDetails((char*)MapNameUTF8);
+#else
+		Activity.SetDetails(pMapNameStr->CStr);
+#endif
 		ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
 	
 		gNelly->RunCallbacks();
