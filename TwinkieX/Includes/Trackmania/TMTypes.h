@@ -347,11 +347,20 @@ struct CFastStringInt
 };
 // GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #elif defined(GAMEBOX)
+#ifndef TM1
 struct CFastStringInt
 {
 	uint32_t Count;
 	wchar_t* CStr;
 };
+#else
+struct CFastStringInt
+{
+	uint32_t Pad;
+	uint32_t Count;
+	char* CStr;
+};
+#endif
 
 // Information about a class' member
 // This class is shared between TM1, TMO, TMS, TMSX and ESWC
