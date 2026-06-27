@@ -808,9 +808,15 @@
     <ClCompile Include="Twinkie\TwinkUi\TwinkUi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Includes\DiscordGameSDK\x64\discord_game_sdk.dll" />
+    <None Include="Includes\DiscordGameSDK\x86\discord_game_sdk.dll" />
     <None Include="Includes\README.md" />
     <None Include="Includes\Veridian\Veridian.sln" />
     <None Include="Includes\Veridian\Veridian.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Includes\DiscordGameSDK\x64\discord_game_sdk.dll.lib" />
+    <Library Include="Includes\DiscordGameSDK\x86\discord_game_sdk.dll.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
