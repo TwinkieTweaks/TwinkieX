@@ -364,3 +364,4 @@ FodyWeavers.xsd
 
 /DLLSend.ps1
 /NSIS/Scripts/Output
+/TwinkieX/Includes/DiscordSocialSDK/SECRETS.h
