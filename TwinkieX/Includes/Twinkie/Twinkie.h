@@ -16,6 +16,7 @@
 #else
 #include <imgui/imgui_impl_dx9.h>
 #endif
+
 // The class used by the global Twinkie object (Twinkie gTwinkie).
 class Twinkie
 {
@@ -25,6 +26,9 @@ public:
 
 	// The UI manager.
 	TwinkUi UiMgr = TwinkUi(TrackmaniaMgr);
+
+	// The handle to the Discord thread.
+	HANDLE DiscordThread = INVALID_HANDLE_VALUE;
 
 	std::filesystem::path DocumentsFolderLocation;
 
@@ -40,3 +44,5 @@ public:
 	// Updates all children
 	void Update();
 };
+
+extern Twinkie gTwinkie;

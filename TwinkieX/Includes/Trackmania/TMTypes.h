@@ -339,8 +339,20 @@ struct CMwMemberInfoProc : CMwMemberInfo
 		return OutParams;
 	}
 };
+
+struct CFastStringInt
+{
+	wchar_t* CStr;
+	uint32_t Count;
+};
 // GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #elif defined(GAMEBOX)
+struct CFastStringInt
+{
+	uint32_t Count;
+	wchar_t* CStr;
+};
+
 // Information about a class' member
 // This class is shared between TM1, TMO, TMS, TMSX and ESWC
 struct CMwMemberInfo
@@ -634,8 +646,6 @@ public:
 };
 
 #ifdef TMCN
-
-
 template <typename WantedType>
 consteval
 CMwStack::eItemType TypeToStackItemType()
@@ -669,7 +679,6 @@ CMwStack::eItemType TypeToStackItemType()
 		static_assert(false and "Must provide a valid and implemented type for TypeToStackItemType");
 	}
 }
-
 #endif
 
 #pragma warning(pop) // C4100

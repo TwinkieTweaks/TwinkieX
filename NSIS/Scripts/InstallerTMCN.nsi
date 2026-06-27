@@ -16,4 +16,5 @@ Section ""
     SetOutPath $INSTDIR
     File "..\..\Builds\x64\TMCN\TwinkieTMCN.dll"
     File "..\ReleaseDeps\TMCN\dinput8.dll"
+    File "..\ReleaseDeps\TMCN\discord_game_sdk.dll"
 SectionEnd
