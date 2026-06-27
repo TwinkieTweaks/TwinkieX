@@ -1,17 +1,16 @@
 // Precompiled headers.
 #include "pch.h"
 
+#include <DiscordGameSDK/DiscordStuff.h>
+
 // Class definition for the Twinkie class used by (Twinkie gTwinkie).
 #include <Twinkie/Twinkie.h>
 
 #include "Exports/Exports.h"
 
-// The global Twinkie object, used to manage all other managers.
-Twinkie gTwinkie;
-
 // This is a separate thread that runs when the DLL is attached.
 // It is used to initialize all hooks for the global Twinkie object (Twinkie gTwinkie).
-static DWORD WINAPI InitializerThread(LPVOID lpParameter)
+static DWORD WINAPI InitializerThread([[maybe_unused]] LPVOID lpParameter)
 {
     TwinkUiState::UiMgr = &gTwinkie.UiMgr;
 
@@ -41,11 +40,8 @@ static DWORD WINAPI InitializerThread(LPVOID lpParameter)
     // After knowing that everything is initialized, we update everything
     gTwinkie.Update();
 
-    // This is just to use the unused (lpParameter) parameter. It is expected to be (NULL).
-    if (lpParameter != NULL)
-    {
-        return FALSE;
-    }
+    // Create Nelly, the Discore Game SDK Core
+    discord::Core::Create(DISCORD_APP_ID, DiscordCreateFlags_NoRequireDiscord, &gNelly);
 
     // The return value indicates the success/failure of the thread. TRUE is successful.
     return TRUE;

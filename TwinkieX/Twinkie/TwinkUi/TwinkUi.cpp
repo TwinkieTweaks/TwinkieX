@@ -10,6 +10,9 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 // Class definition for the TwinkUi class, along with module headers.
 #include <Twinkie/TwinkUi/TwinkUi.h>
 
+// Discord
+#include <DiscordGameSDK/DiscordStuff.h>
+
 // Namespace
 
 namespace TwinkUiState
@@ -597,6 +600,74 @@ void TwinkUi::Render()
 			FilePicker = nullptr;
 		}
 	}
+
+	// If Discord is initalized
+	if (gNelly)
+	{
+		auto& ActivityMgr = gNelly->ActivityManager();
+		
+		auto Map = TrackmaniaMgr->ParamGet<CMwNod*>(TrackmaniaMgr->GetApp(),
+#ifdef MANIAPLANET
+			"RootMap"
+#else
+			"Challenge"
+#endif
+		);
+		auto Activity = discord::Activity();
+		if (!Map)
+		{
+			Activity.SetState("In-game");
+
+			ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
+			gNelly->RunCallbacks();
+
+			return;
+		}
+
+		Activity.SetState("Playing a map");
+
+		// Because in older games, the editor is always active, even if you're just playing a map in TA.
+#ifdef MANIAPLANET
+		auto Editor = TrackmaniaMgr->ParamGet<CMwNod*>(TrackmaniaMgr->GetApp(), "Editor");
+
+		if (Editor)
+		{
+			Activity.SetState("Editing a map");
+		}
+#endif
+
+		CFastStringInt* pMapNameStr = TrackmaniaMgr->ParamGet<CFastStringInt>(Map,
+#ifdef MANIAPLANET
+			"MapName"
+#else
+			"ChallengeName"
+#endif
+		);
+
+		if (!pMapNameStr)
+		{
+			ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
+			gNelly->RunCallbacks();
+
+			return;
+		}
+
+		char8_t MapNameUTF8[257] = {};
+
+#ifdef TMCN
+#pragma warning(push)
+#pragma warning(disable : 4267)
+#endif
+		WideCharToMultiByte(CP_UTF8, 0, pMapNameStr->CStr, pMapNameStr->Count, (char*)MapNameUTF8, 256, NULL, NULL);
+#ifdef TMCN
+#pragma warning(pop)
+#endif
+
+		Activity.SetDetails((char*)MapNameUTF8);
+		ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
+	}
+
+	gNelly->RunCallbacks();
 }
 
 // END Methods

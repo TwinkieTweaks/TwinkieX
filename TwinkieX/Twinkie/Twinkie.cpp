@@ -3,6 +3,10 @@
 
 // Includes class definitions for the Twinkie class, used by (Twinkie gTwinkie).
 #include <Twinkie/Twinkie.h>
+#include <DiscordGameSDK/DiscordStuff.h>
+
+// The global Twinkie object, used to manage all other managers.
+Twinkie gTwinkie;
 
 // Behaviors
 
@@ -52,6 +56,9 @@ Twinkie::~Twinkie()
 #endif
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+
+	// Goodbye, Nelly.
+	delete gNelly;
 }
 
 // END Behaviors

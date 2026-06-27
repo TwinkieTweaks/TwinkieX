@@ -71,4 +71,16 @@
 
 #include <vector>
 
-#include <codecvt>
+#include <atomic>
+
+#ifdef X64
+#pragma comment (lib, "Includes/DiscordGameSDK/x64/discord_game_sdk.dll.lib")
+#elif defined(X86)
+#pragma comment (lib, "Includes/DiscordGameSDK/x86/discord_game_sdk.dll.lib")
+#else
+#error No defined arch.
+#endif
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <DiscordGameSDK/discord.h>
+#undef _CRT_SECURE_NO_WARNINGS

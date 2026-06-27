@@ -701,6 +701,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Exports\Exports.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\achievement_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\activity_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\application_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\core.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\discord.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\DiscordStuff.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\event.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\ffi.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\image_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\lobby_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\network_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\overlay_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\relationship_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\SECRETS.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\storage_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\store_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\types.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\user_manager.h" />
+    <ClInclude Include="Includes\DiscordGameSDK\voice_manager.h" />
     <ClInclude Include="Includes\GlyphTable\IconsForkAwesome.h" />
     <ClInclude Include="Includes\GlyphTable\IconsKenney.h" />
     <ClInclude Include="Includes\imgui\imconfig.h" />
@@ -734,6 +753,21 @@
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Exports\Exports.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\achievement_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\activity_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\application_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\core.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\DiscordStuff.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\image_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\lobby_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\network_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\overlay_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\relationship_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\storage_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\store_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\types.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\user_manager.cpp" />
+    <ClCompile Include="Includes\DiscordGameSDK\voice_manager.cpp" />
     <ClCompile Include="Includes\imgui\imgui.cpp" />
     <ClCompile Include="Includes\imgui\imgui_demo.cpp" />
     <ClCompile Include="Includes\imgui\imgui_draw.cpp" />

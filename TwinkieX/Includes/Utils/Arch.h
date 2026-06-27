@@ -34,16 +34,28 @@
 
 #ifdef TMCN
 #define GAME "TMCN"
+#define GAMELOWER "tmcn"
+#define GAMEFULL "TrackmaniaChina"
 #elif defined(TM1)
 #define GAME "TM1"
+#define GAMELOWER "tm1"
+#define GAMEFULL "TrackMania (2003)"
 #elif defined(TMO)
 #define GAME "TMO"
+#define GAMELOWER "tmo"
+#define GAMEFULL "TrackMania Original"
 #elif defined(TMS)
 #define GAME "TMS"
+#define GAMELOWER "tms"
+#define GAMEFULL "TrackMania Sunrise"
 #elif defined(TMSX)
 #define GAME "TMSX"
+#define GAMELOWER "tmsx"
+#define GAMEFULL "TrackMania Sunrise eXtreme"
 #elif defined(ESWC)
 #define GAME "ESWC"
+#define GAMELOWER "eswc"
+#define GAMEFULL "TrackMania Nations ESWC"
 #else
 #error "No target game defined."
 #endif
