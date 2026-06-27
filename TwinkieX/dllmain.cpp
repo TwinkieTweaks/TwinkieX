@@ -40,15 +40,19 @@ static DWORD WINAPI InitializerThread([[maybe_unused]] LPVOID lpParameter)
     // After knowing that everything is initialized, we update everything
     gTwinkie.Update();
 
-    // Create Nelly, the Discore Game SDK Core
-    discord::Core::Create(DISCORD_APP_ID, DiscordCreateFlags_NoRequireDiscord, &gNelly);
+    // Create Nelly, the Discord Game SDK Core
+    discord::Result NellyCreationResult = discord::Core::Create(DISCORD_APP_ID, DiscordCreateFlags_NoRequireDiscord, &gNelly);
+    if (NellyCreationResult != discord::Result::Ok)
+    {
+        gNelly = nullptr;
+    }
 
     // The return value indicates the success/failure of the thread. TRUE is successful.
     return TRUE;
 }
 
 // DllMain runs when the DLL is attached/detached to a process.
-BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, LPVOID lpReserved)
+BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, [[maybe_unused]] LPVOID lpReserved)
 {
     // Disables any subsequent (DLL_THREAD_ATTACH/DETACH) CallReasons for DllMain.
     DisableThreadLibraryCalls(hModule);
@@ -70,6 +74,5 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD CallReason, LPVOID lpReserved)
         break;
     }
 
-	// This is just to use the unused (lpReserved) parameter. It is expected to be (NULL).
-    return lpReserved ? TRUE : TRUE;
+    return TRUE;
 }

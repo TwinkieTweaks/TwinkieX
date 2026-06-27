@@ -665,9 +665,10 @@ void TwinkUi::Render()
 
 		Activity.SetDetails((char*)MapNameUTF8);
 		ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
+	
+		gNelly->RunCallbacks();
 	}
 
-	gNelly->RunCallbacks();
 }
 
 // END Methods
