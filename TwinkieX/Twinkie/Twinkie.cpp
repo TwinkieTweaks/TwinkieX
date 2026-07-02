@@ -56,9 +56,6 @@ Twinkie::~Twinkie()
 #endif
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
-
-	// Goodbye, Nelly.
-	delete gNelly;
 }
 
 // END Behaviors

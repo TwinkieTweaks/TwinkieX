@@ -40,13 +40,6 @@ static DWORD WINAPI InitializerThread([[maybe_unused]] LPVOID lpParameter)
     // After knowing that everything is initialized, we update everything
     gTwinkie.Update();
 
-    // Create Nelly, the Discord Game SDK Core
-    discord::Result NellyCreationResult = discord::Core::Create(DISCORD_APP_ID, DiscordCreateFlags_NoRequireDiscord, &gNelly);
-    if (NellyCreationResult != discord::Result::Ok)
-    {
-        gNelly = nullptr;
-    }
-
     // The return value indicates the success/failure of the thread. TRUE is successful.
     return TRUE;
 }

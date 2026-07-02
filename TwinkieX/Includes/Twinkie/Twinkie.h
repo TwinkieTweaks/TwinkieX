@@ -6,6 +6,8 @@
 // Class definition for TwinkUi, used in (this->UiMgr).
 #include <Twinkie/TwinkUi/TwinkUi.h>
 
+// Class definition for TwinkDiscordRP, the Discord Rich Presence manager, used in (this->DiscordMgr).
+
 // The Veridian settings manager
 #include <Veridian/Veridian.h>
 
