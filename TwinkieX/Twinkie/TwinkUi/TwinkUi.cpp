@@ -101,8 +101,10 @@ __declspec(noinline) TwinkUi::~TwinkUi()
 
 // Methods
 
-__declspec(noinline) void TwinkUi::Update()
+__declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolderPath)
 {
+	this->DocumentsFolderPath = pDocumentsFolderPath;
+
 	// Get the device from the game
 	TwinkUiState::Device = (DirectXDevice*)this->TrackmaniaMgr->GetDirectXDevice();
 
@@ -513,7 +515,7 @@ void TwinkUi::Render()
 						FilePicker = nullptr;
 					}
 
-					FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickModule);
+					FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickModule, DocumentsFolderPath / "TwinkieX\\Fonts");
 				}
 				if (MenuItem("Settings", "", ShowSettings))
 				{

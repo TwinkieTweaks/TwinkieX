@@ -97,6 +97,9 @@ public:
 	// The current font path.
 	std::u8string FontPath = u8"";
 
+	// The Documents folder path.
+	std::filesystem::path DocumentsFolderPath;
+
 	// The current font itself.
 	ImFont* Font = nullptr;
 
@@ -124,7 +127,7 @@ public:
 	void Render();
 
 	// Updates the internal hooks to be up-to-date
-	void Update();
+	void Update(std::filesystem::path DocumentsFolderPath);
 };
 
 #ifdef GAMEBOX

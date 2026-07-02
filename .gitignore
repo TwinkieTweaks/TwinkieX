@@ -367,3 +367,6 @@ FodyWeavers.xsd
 /TwinkieX/Includes/DiscordSocialSDK/SECRETS.h
 /TwinkieX/Includes/DiscordGameSDK/x64/discord_game_sdk.dll
 /TwinkieX/Includes/DiscordGameSDK/x86/discord_game_sdk.dll
+
+# Auto-generated version file
+/TwinkieX/Includes/Version.h

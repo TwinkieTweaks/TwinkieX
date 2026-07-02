@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ "development" ]
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
@@ -64,4 +67,25 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: Installer-${{ matrix.config }}-${{ matrix.platform }}
-        path: ${{ github.workspace }}/NSIS/Scripts/Output/
+        path: ${{ github.workspace }}/NSIS/Scripts/Output/*.exe
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: installers
+          pattern: Installer-*
+          merge-multiple: true
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: installers/*.exe
+          body_path: ReleaseNotes.md
