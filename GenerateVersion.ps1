@@ -6,7 +6,7 @@ param (
 # Try to get the latest git tag, fallback to "unknown" if git fails
 $gitVersion = "unknown"
 try {
-    $gitVersion = git describe --tags --always --dirty 2>$null
+    $gitVersion = (git describe --tags 2>$null) -replace '-[0-9]+-', '-'
     if ($LASTEXITCODE -ne 0) { $gitVersion = "unknown" }
 } catch { }
 

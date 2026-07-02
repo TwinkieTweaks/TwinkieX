@@ -69,12 +69,26 @@ namespace TwinkUiState
 
 __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 {
+	wchar_t* Buffer = nullptr;
+	SHGetKnownFolderPath(FOLDERID_LocalDocuments, 0, NULL, (wchar_t**)&Buffer);
+
+	if (not Buffer) throw;
+
+	DocumentsFolderPath = Buffer;
+	CoTaskMemFree(Buffer);
+
+	Veridian::InitContext(DocumentsFolderPath / "TwinkieX\\Twinkie.ini");
+
 	// Set the trackmania manager reference for later use
 	this->TrackmaniaMgr = &TrackmaniaMgr;
 
 	this->DiscordMgr = new TwinkDiscordRP(TrackmaniaMgr);
 
 	this->Modules.push_back(new AppExplorerModule(TrackmaniaMgr));
+	this->Modules.push_back(new AboutModule(TrackmaniaMgr));
+#ifdef GAMEBOX
+	this->Modules.push_back(new InputDisplayModule(TrackmaniaMgr));
+#endif
 #ifdef TMCN
 	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr));
 	this->Modules.push_back(new VehicleExplorer(TrackmaniaMgr));
@@ -152,7 +166,7 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 	// Set our new window process
 	TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
 	unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
-	WindowStyle |= WS_SIZEBOX | WS_THICKFRAME;
+	WindowStyle |= WS_OVERLAPPEDWINDOW;
 	SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
 
 	// Before hooking, make sure that our memory is writable
