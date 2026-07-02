@@ -29,9 +29,7 @@ public:
 	// The UI manager.
 	TwinkUi UiMgr = TwinkUi(TrackmaniaMgr);
 
-	// The handle to the Discord thread.
-	HANDLE DiscordThread = INVALID_HANDLE_VALUE;
-
+	// Self-explanatory
 	std::filesystem::path DocumentsFolderLocation;
 
 	// Behaviors

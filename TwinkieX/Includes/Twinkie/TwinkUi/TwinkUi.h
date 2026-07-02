@@ -86,7 +86,7 @@ public:
 	// The Trackmania manager, set by (class Twinkie) to (TrackmaniaMgr Twinkie::TrackmaniaMgr)
 	TwinkTrackmania* TrackmaniaMgr = nullptr;
 
-	// The Discord Rich Presense manager
+	// The Discord Rich Presence manager, managed by this class
 	TwinkDiscordRP* DiscordMgr = nullptr;
 
 	std::vector<IModule*> Modules = {};

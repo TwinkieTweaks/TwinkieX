@@ -71,7 +71,7 @@
 
 #include <vector>
 
-#include <atomic>
+#include <cstdlib>
 
 #ifdef X64
 #pragma comment (lib, "Includes/DiscordGameSDK/x64/discord_game_sdk.dll.lib")
