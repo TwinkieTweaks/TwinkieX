@@ -93,6 +93,8 @@ __declspec(noinline) TwinkUi::~TwinkUi()
 	}
 
 	delete DiscordMgr;
+
+	if (FilePicker) delete FilePicker;
 }
 
 // END Behaviors
@@ -253,10 +255,13 @@ void InitImGui(DirectXDevice* Device)
 
 static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, HWND C, LPVOID D)
 {
+	bool MustUpdateFont = false;
+
 	if (!TwinkUiState::ImGuiInit)
 	{
 		InitImGui(pDevice);
 		TwinkUiState::ImGuiInit = true;
+		MustUpdateFont = true;
 	}
 
 	IDirect3DStateBlock9* pStateBlock = NULL;
@@ -274,13 +279,9 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
-		if (not TwinkUiState::ImGuiInit)
+		if (MustUpdateFont and not TwinkUiState::UiMgr->FontPath.empty())
 		{
-			if (not TwinkUiState::UiMgr->FontPath.empty())
-			{
-				TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF((char*)TwinkUiState::UiMgr->FontPath.c_str());
-			}
-			TwinkUiState::ImGuiInit = true;
+			TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF((char*)TwinkUiState::UiMgr->FontPath.c_str());
 		}
 
 		TwinkUiState::UiMgr->Render();

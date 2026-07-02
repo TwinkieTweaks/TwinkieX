@@ -555,17 +555,6 @@ namespace Veridian
     // NOTE: Cornball
     extern VSetCtx* VastVeridian;
 
-    class VSetCtxDtor
-    {
-    public:
-        ~VSetCtxDtor()
-        {
-            delete VastVeridian;
-        }
-    };
-
-    extern VSetCtxDtor VastVeridianDtor;
-
     void InitContext(std::filesystem::path Filepath);
 
     template <typename T>

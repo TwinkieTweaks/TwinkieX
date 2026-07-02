@@ -4,7 +4,6 @@
 namespace Veridian
 {
     VSetCtx* VastVeridian = nullptr;
-    VSetCtxDtor VastVeridianDtor;
 
     VSetCtx::VSetCtx(std::filesystem::path Filepath)
     {
@@ -225,9 +224,16 @@ namespace Veridian
 
         if (ImGui::BeginChild("##SettingsSidebar", { 150.f, 0.f }, ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX))
         {
+            if (ImGui::Selectable(DefaultSectionName.c_str(), DefaultSectionName == ActiveSection))
+            {
+                ActiveSection = DefaultSectionName;
+            }
+
             for (auto& SecPair : VastVeridian->Settings)
             {
                 if (RegisteredSettingsPerSection[SecPair.first] == 0) continue;
+
+                if (SecPair.first == DefaultSectionName) continue;
 
                 if (ImGui::Selectable(SecPair.first.c_str(), SecPair.first == ActiveSection))
                 {

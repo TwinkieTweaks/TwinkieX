@@ -49,13 +49,17 @@ Twinkie::Twinkie()
 
 Twinkie::~Twinkie()
 {
+	delete Veridian::VastVeridian;
+
 #ifdef MANIAPLANET
 	ImGui_ImplDX11_Shutdown();
-#else
-	ImGui_ImplDX9_Shutdown();
-#endif
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
+#else
+	ImGui::DestroyContext();
+	ImGui_ImplWin32_Shutdown();
+	ImGui_ImplDX9_Shutdown();
+#endif
 }
 
 // END Behaviors

@@ -8,6 +8,11 @@
 
 #include "Exports/Exports.h"
 
+extern "C" static void ExitFunc()
+{
+    gTwinkie.~Twinkie();
+}
+
 // This is a separate thread that runs when the DLL is attached.
 // It is used to initialize all hooks for the global Twinkie object (Twinkie gTwinkie).
 static DWORD WINAPI InitializerThread([[maybe_unused]] LPVOID lpParameter)
@@ -39,6 +44,8 @@ static DWORD WINAPI InitializerThread([[maybe_unused]] LPVOID lpParameter)
 
     // After knowing that everything is initialized, we update everything
     gTwinkie.Update();
+
+    std::atexit(ExitFunc);
 
     // The return value indicates the success/failure of the thread. TRUE is successful.
     return TRUE;
