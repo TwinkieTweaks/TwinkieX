@@ -1,6 +1,15 @@
 // Precompiled headers.
 #include "pch.h"
 
+// imgui (just for intellisense)
+#ifdef GAMEBOX
+#include <imgui/imgui_impl_dx9.h>
+#else
+#include <imgui/imgui_impl_dx11.h>
+#endif
+
+#include <imgui/imgui_impl_win32.h>
+
 // External dear ImGui WndProc handler declaration
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -63,6 +72,8 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 	// Set the trackmania manager reference for later use
 	this->TrackmaniaMgr = &TrackmaniaMgr;
 
+	this->DiscordMgr = new TwinkDiscordRP(TrackmaniaMgr);
+
 	this->Modules.push_back(new AppExplorerModule(TrackmaniaMgr));
 #ifdef TMCN
 	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr));
@@ -80,6 +91,8 @@ __declspec(noinline) TwinkUi::~TwinkUi()
 	{
 		delete Module;
 	}
+
+	delete DiscordMgr;
 }
 
 // END Behaviors
@@ -583,7 +596,7 @@ void TwinkUi::Render()
 					char8_t UTF8FontPath[1025];
 #ifdef TMCN
 #pragma warning(push)
-#pragma warning(disable : 4267)
+#pragma warning(disable : 4267) // warning that fires when casting size_t to int in 64-bit
 #endif
 					WideCharToMultiByte(CP_UTF8, 0, FilePicker->FinalPath.c_str(), FilePicker->FinalPath.length(), (char*)UTF8FontPath, 1024, NULL, NULL);
 #ifdef TMCN
@@ -601,77 +614,7 @@ void TwinkUi::Render()
 		}
 	}
 
-	// If Discord is initalized
-	if (gNelly)
-	{
-		auto& ActivityMgr = gNelly->ActivityManager();
-		
-		auto Map = TrackmaniaMgr->ParamGet<CMwNod*>(TrackmaniaMgr->GetApp(),
-#ifdef MANIAPLANET
-			"RootMap"
-#else
-			"Challenge"
-#endif
-		);
-		auto Activity = discord::Activity();
-		if (!Map)
-		{
-			Activity.SetState("In-game");
-
-			ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
-			gNelly->RunCallbacks();
-
-			return;
-		}
-
-		Activity.SetState("Playing a map");
-
-		// Because in older games, the editor is always active, even if you're just playing a map in TA.
-#ifdef MANIAPLANET
-		auto Editor = TrackmaniaMgr->ParamGet<CMwNod*>(TrackmaniaMgr->GetApp(), "Editor");
-
-		if (Editor)
-		{
-			Activity.SetState("Editing a map");
-		}
-#endif
-
-		// TODO: TM1 uses a different format for strings, see TMTypes.h
-		CFastStringInt* pMapNameStr = TrackmaniaMgr->ParamGet<CFastStringInt>(Map,
-#ifdef MANIAPLANET
-			"MapName"
-#else
-			"ChallengeName"
-#endif
-		);
-
-		if (!pMapNameStr)
-		{
-			ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
-			gNelly->RunCallbacks();
-
-			return;
-		}
-
-#ifndef TM1
-#ifdef TMCN
-#pragma warning(push)
-#pragma warning(disable : 4267)
-#endif
-		char8_t MapNameUTF8[257] = {};
-		WideCharToMultiByte(CP_UTF8, 0, pMapNameStr->CStr, pMapNameStr->Count, (char*)MapNameUTF8, 256, NULL, NULL);
-#ifdef TMCN
-#pragma warning(pop)
-#endif
-		Activity.SetDetails((char*)MapNameUTF8);
-#else
-		Activity.SetDetails(pMapNameStr->CStr);
-#endif
-		ActivityMgr.UpdateActivity(Activity, []([[maybe_unused]] discord::Result) {});
-	
-		gNelly->RunCallbacks();
-	}
-
+	DiscordMgr->Update();
 }
 
 // END Methods

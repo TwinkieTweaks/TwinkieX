@@ -20,9 +20,3 @@
 #else
 #error "No target game defined."
 #endif
-
-//extern std::shared_ptr<discordpp::Client> gDiscordClient;
-//extern discordpp::Activity gDiscordActivity;
-
-// Nelly, the Discord Game SDK core
-extern discord::Core* gNelly;

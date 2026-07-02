@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Twinkie/TwinkDiscordRP/TwinkDiscordRP.h>
+	
 // Modules
 #include <Modules/AppExplorerModule/AppExplorerModule.h>
 #ifdef TMCN
@@ -83,6 +85,9 @@ class TwinkUi
 public:
 	// The Trackmania manager, set by (class Twinkie) to (TrackmaniaMgr Twinkie::TrackmaniaMgr)
 	TwinkTrackmania* TrackmaniaMgr = nullptr;
+
+	// The Discord Rich Presense manager
+	TwinkDiscordRP* DiscordMgr = nullptr;
 
 	std::vector<IModule*> Modules = {};
 

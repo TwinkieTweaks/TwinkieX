@@ -234,9 +234,8 @@ namespace Veridian
                     ActiveSection = SecPair.first;
                 }
             }
-
-            ImGui::EndChild();
         }
+        ImGui::EndChild();
 
         ImGui::SameLine();
 
