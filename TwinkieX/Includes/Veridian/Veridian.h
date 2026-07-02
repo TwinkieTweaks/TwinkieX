@@ -387,7 +387,7 @@ namespace Veridian
 
         std::string GetAsString()
         {
-            if (not Value) return "";
+            if (not Value) return SettingStr;
 
             switch (Type)
             {
