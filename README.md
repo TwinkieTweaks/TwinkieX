@@ -13,6 +13,7 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 - **Window resize patch** for older Trackmania games. *(still WIP)*
 - A **nod explorer** for viewing game classes
 - Support for **Trackmania coloring syntax in ImGui**
+- **Discord Rich Presence** integration
 
 ## Features (yet to be made)
 - **Versioning**
