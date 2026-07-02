@@ -5,7 +5,8 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
 {
     using enum TwinkFilePicker::FilePickerPurpose;
 
-    TwinkFilePicker* FilePicker = static_cast<TwinkFilePickerThreadParam*>(param)->FilePicker;
+    auto ThreadParam = static_cast<TwinkFilePickerThreadParam*>(param);
+    TwinkFilePicker* FilePicker = ThreadParam->FilePicker;
     HWND hWindow = TwinkUiState::Window;
 
     wchar_t FilePathBuffer[513] = {};
@@ -32,6 +33,7 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
                 L"TrueType Font file\0*.TTF\0"
                 L"All Files\0*.*\0"
                 ;
+            OpenFileNameStruct.lpstrInitialDir = ThreadParam->TwinkieFontsPath.c_str();
             break;
         }
         case NoPurpose:
@@ -63,9 +65,9 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
     return 0;
 }
 
-TwinkFilePicker::TwinkFilePicker(FilePickerPurpose Purpose) : Purpose(Purpose)
+TwinkFilePicker::TwinkFilePicker(FilePickerPurpose Purpose, std::filesystem::path TwinkieFontsPath) : Purpose(Purpose)
 {
-    TwinkFilePickerThreadParam* ThreadParams = new TwinkFilePickerThreadParam{ this };
+    TwinkFilePickerThreadParam* ThreadParams = new TwinkFilePickerThreadParam{ this, TwinkieFontsPath };
     auto hThread = CreateThread(nullptr, 0, TwinkFilePickerThread, ThreadParams, 0, nullptr);
 
     if (hThread)

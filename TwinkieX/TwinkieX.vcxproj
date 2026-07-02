@@ -318,6 +318,11 @@
     <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
+  <ItemDefinitionGroup>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy Bypass -NoProfile -NonInteractive -File "$(SolutionDir)GenerateVersion.ps1" -OutputPath "$(ProjectDir)Includes\Version.h"</Command>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>EnableAllWarnings</WarningLevel>
@@ -782,7 +787,7 @@
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
-    <ClCompile Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePicker.cpp" />
+    <ClCompile Include="Twinkie\TwinkFilePicker\TwinkFilePicker.cpp" />
     <ClCompile Include="Includes\Utils\Offsets.cpp" />
     <ClCompile Include="Includes\Veridian\Veridian.cpp" />
     <ClCompile Include="pch.cpp">

@@ -233,7 +233,7 @@
     <ClCompile Include="Includes\Veridian\Veridian.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePicker.cpp">
+    <ClCompile Include="Twinkie\TwinkFilePicker\TwinkFilePicker.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\DiscordGameSDK\DiscordStuff.cpp">

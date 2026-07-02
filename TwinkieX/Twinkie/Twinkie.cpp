@@ -17,10 +17,10 @@ Twinkie::Twinkie()
 
 	if (not Buffer) throw;
 
-	DocumentsFolderLocation = Buffer;
+	DocumentsFolderPath = Buffer;
 	CoTaskMemFree(Buffer);
 
-	Veridian::InitContext(DocumentsFolderLocation / "TwinkieX\\Twinkie.ini");
+	Veridian::InitContext(DocumentsFolderPath / "TwinkieX\\Twinkie.ini");
 
 	Veridian::Register("Twinkie", "UiVisible", "Show UI", Veridian::VSettingType::VBool, &TwinkUiState::RenderUi);
 
@@ -31,7 +31,7 @@ Twinkie::Twinkie()
 		if (ImGui::Button("Pick font file"))
 		{
 			if (this->UiMgr.FilePicker) delete this->UiMgr.FilePicker;
-			this->UiMgr.FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickFont);
+			this->UiMgr.FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickFont, DocumentsFolderPath / "TwinkieX\\Fonts");
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("X"))
@@ -56,9 +56,12 @@ Twinkie::~Twinkie()
 	ImGui_ImplWin32_Shutdown();
 	ImGui::DestroyContext();
 #else
-	ImGui::DestroyContext();
-	ImGui_ImplWin32_Shutdown();
 	ImGui_ImplDX9_Shutdown();
+
+	// PLEASE NOTE: DX9 shutdown IMMEDIATELY shuts down the current process. ANY CODE PAST THIS POINT WILL NOT BE RUN ON DX9.
+
+	ImGui_ImplWin32_Shutdown();
+	ImGui::DestroyContext();
 #endif
 }
 
@@ -68,7 +71,7 @@ Twinkie::~Twinkie()
 
 void Twinkie::Update()
 {
-	this->UiMgr.Update();
+	this->UiMgr.Update(DocumentsFolderPath);
 }
 
 // END Methods

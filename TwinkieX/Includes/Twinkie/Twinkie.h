@@ -30,7 +30,7 @@ public:
 	TwinkUi UiMgr = TwinkUi(TrackmaniaMgr);
 
 	// Self-explanatory
-	std::filesystem::path DocumentsFolderLocation;
+	std::filesystem::path DocumentsFolderPath;
 
 	// Behaviors
 
