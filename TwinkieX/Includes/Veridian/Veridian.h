@@ -262,7 +262,14 @@ namespace Veridian
     };
 
     class VSetting;
-    using VSettingExtraRender = std::function<bool(VSetting*)>;
+    using VSettingRenderFn = std::function<bool(VSetting*)>;
+
+    struct VSettingRenderFnStruct
+    {
+        VSettingRenderFn BeforeRender = nullptr;
+        VSettingRenderFn Render = nullptr;
+        VSettingRenderFn AfterRender = nullptr;
+    };
 
     class VSetting
     {
@@ -295,37 +302,37 @@ namespace Veridian
         std::string FacingName;
         std::string Section;
         VValue* Value = nullptr;
-        VSettingExtraRender ExtraRenderFn = nullptr;
+        VSettingRenderFnStruct ExtraRenderFn{};
 
         template <typename T> T Get()
         {
             if constexpr (std::is_same_v<T, int64_t>)
             {
-                return this->Value.Int;
+                return this->Value->Int;
             }
             else if constexpr (std::is_same_v<T, uint64_t>)
             {
-                return this->Value.UInt;
+                return this->Value->UInt;
             }
             else if constexpr (std::is_same_v<T, float>)
             {
-                return this->Value.Float;
+                return this->Value->Float;
             }
             else if constexpr (std::is_same_v<T, std::string> or std::is_same_v<T, std::string&>)
             {
-                return this->Value.String;
+                return this->Value->String;
             }
             else if constexpr (std::is_same_v<T, ::VVec2> or std::is_same_v<T, ImVec2>)
             {
-                return this->Value.Vec2;
+                return this->Value->Vec2;
             }
             else if constexpr (std::is_same_v<T, ::VVec3>)
             {
-                return this->Value.Vec3;
+                return this->Value->Vec3;
             }
             else if constexpr (std::is_same_v<T, ::VVec4>)
             {
-                return this->Value.Vec4;
+                return this->Value->Vec4;
             }
             else if constexpr (std::is_same_v<T, ImVec4>)
             {
@@ -333,7 +340,7 @@ namespace Veridian
             }
             else if constexpr (std::is_same_v<T, bool>)
             {
-                return this->Value.Bool;
+                return this->Value->Bool;
             }
             else
             {
@@ -341,35 +348,35 @@ namespace Veridian
             }
         }
 
-        template <typename T> void Set(T& Value)
+        template <typename T> void Set(T Value)
         {
             if constexpr (std::is_same_v<T, int64_t>)
             {
-                this->Value.Int = Value;
+                this->Value->Int = Value;
             }
             else if constexpr (std::is_same_v<T, uint64_t>)
             {
-                this->Value.UInt = Value;
+                this->Value->UInt = Value;
             }
             else if constexpr (std::is_same_v<T, float>)
             {
-                this->Value.Float = Value;
+                this->Value->Float = Value;
             }
-            else if constexpr (std::is_same_v<T, std::string> or std::is_same_v<T, std::string&>)
+            else if constexpr (std::is_same_v<T, std::string> or std::is_same_v<T, std::string&> or std::is_same_v<T, const char*> or std::is_same_v<T, char*>)
             {
-                this->Value.String = Value;
+                this->Value->String = Value;
             }
             else if constexpr (std::is_same_v<T, ::VVec2> or std::is_same_v<T, ImVec2>)
             {
-                this->Value.Vec2 = Value;
+                this->Value->Vec2 = Value;
             }
             else if constexpr (std::is_same_v<T, ::VVec3>)
             {
-                this->Value.Vec3 = Value;
+                this->Value->Vec3 = Value;
             }
             else if constexpr (std::is_same_v<T, ::VVec4>)
             {
-                this->Value.Vec4 = Value;
+                this->Value->Vec4 = Value;
             }
             else if constexpr (std::is_same_v<T, ImVec4>)
             {
@@ -466,7 +473,8 @@ namespace Veridian
                 }
                 case VSettingType::VString:
                 {
-                    Value->String = SettingStr;
+                    delete Value;
+                    Value = (VValue*) & SettingStr;
                     break;
                 }
                 case VSettingType::VVec2:
@@ -519,7 +527,7 @@ namespace Veridian
         std::filesystem::path Filepath;
 
         template <typename T>
-        VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, T* Value, bool Hidden = false, VSettingExtraRender ExtraRenderFn = {})
+        VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, T* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {})
         {
             if (this->Settings.contains(Section))
             {
@@ -558,7 +566,7 @@ namespace Veridian
     void InitContext(std::filesystem::path Filepath);
 
     template <typename T>
-    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, T* Value, bool Hidden = false, VSettingExtraRender ExtraRenderFn = {})
+    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, T* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {})
     {
         return VastVeridian->Register(Section, Name, FacingName, Type, Value, Hidden, ExtraRenderFn);
     }

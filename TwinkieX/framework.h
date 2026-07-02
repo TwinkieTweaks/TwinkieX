@@ -1,4 +1,7 @@
 #pragma once
+
+#include <Version.h>
+
 #pragma warning(disable : 4738 5045 4710)
 
 // Exclude rarely-used stuff from Windows headers
@@ -72,6 +75,8 @@
 #include <vector>
 
 #include <cstdlib>
+
+#include <Veridian/Veridian.h>
 
 #ifdef X64
 #pragma comment (lib, "Includes/DiscordGameSDK/x64/discord_game_sdk.dll.lib")

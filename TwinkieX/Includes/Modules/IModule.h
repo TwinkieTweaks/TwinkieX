@@ -17,7 +17,7 @@ public:
 	// A reference to the TrackmaniaMgr
 	TwinkTrackmania* Twinkie = nullptr;
 
-	// Controls whether or not the module is enabled.
+	// Controls whether or not the module is enabled. Use sparingly, as disabling an enabled module makes it unable to render anything.
 	bool Enabled = true;
 
 	// Behaviors
@@ -36,7 +36,7 @@ public:
 	// Called every frame, but only when the Twinkie interface is visible
 	virtual void RenderInterface() {};
 
-	// Called every frame to render the module's menu item (under Twinkie > Modules)
+	// Called every frame to render the module's menu item (under Modules)
 	virtual void RenderMenu() {};
 
 	// Called every frame to render the module's menu item (alongside Twinkie, Modules, Debug)

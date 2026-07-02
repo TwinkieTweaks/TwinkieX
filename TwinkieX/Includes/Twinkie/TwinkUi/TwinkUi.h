@@ -4,6 +4,10 @@
 	
 // Modules
 #include <Modules/AppExplorerModule/AppExplorerModule.h>
+#include <Modules/AboutModule/AboutModule.h>
+#ifdef GAMEBOX
+#include <Modules/InputDisplayModule/InputDisplayModule.h>
+#endif
 #ifdef TMCN
 #include <Modules/AddictionUnlimiterModule/AddictionUnlimiter.h>
 #include <Modules/VehicleExplorerModule/VehicleExplorerModule.h>

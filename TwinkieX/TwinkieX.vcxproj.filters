@@ -165,6 +165,15 @@
     <ClInclude Include="Includes\Twinkie\TwinkDiscordRP\TwinkDiscordRP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Modules\AboutModule\AboutModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Modules\InputDisplayModule\InputDisplayModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -282,6 +291,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Twinkie\TwinkDiscordRP\TwinkDiscordRP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Modules\AboutModule\AboutModule.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Modules\InputDisplayModule\InputDisplayModule.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

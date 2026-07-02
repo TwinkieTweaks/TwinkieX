@@ -84,6 +84,11 @@ namespace Veridian
     {
         if (Setting.Hidden) return;
 
+        if (Setting.ExtraRenderFn.BeforeRender)
+        {
+            Setting.ExtraRenderFn.BeforeRender(&Setting);
+        }
+
         static std::map<VSettingType, ImGuiDataType> VeridianToImGui =
         {
             {VSettingType::VInt, ImGuiDataType_S64},
@@ -91,9 +96,9 @@ namespace Veridian
             {VSettingType::VFloat, ImGuiDataType_Float}
         };
 
-        char TempBuffer[513] = "\0";
+        char TempBuffer[513] = {};
 
-        if (Setting.Value != nullptr)
+        if (Setting.Value != nullptr and not Setting.ExtraRenderFn.Render)
         {
             if (Setting.Type == VSettingType::VString)
             {
@@ -127,7 +132,7 @@ namespace Veridian
                 break;
             }
         }
-        else
+        else if (Setting.Value == nullptr)
         {
             static int64_t Int = 0;
             static uint64_t UInt = 0;
@@ -145,11 +150,7 @@ namespace Veridian
             switch (Setting.Type)
             {
             case VSettingType::VUInt:
-                ImGui::InputScalar(Setting.FacingName.c_str(), VeridianToImGui[Setting.Type], &UInt);
-                break;
             case VSettingType::VInt:
-                ImGui::InputScalar(Setting.FacingName.c_str(), VeridianToImGui[Setting.Type], &Int);
-                break;
             case VSettingType::VFloat:
                 ImGui::InputScalar(Setting.FacingName.c_str(), VeridianToImGui[Setting.Type], &Float);
                 break;
@@ -180,10 +181,14 @@ namespace Veridian
 
             ImGui::EndDisabled();
         }
-
-        if (Setting.ExtraRenderFn)
+        else if (Setting.ExtraRenderFn.Render)
         {
-            Setting.ExtraRenderFn(&Setting);
+            Setting.ExtraRenderFn.Render(&Setting);
+        }
+
+        if (Setting.ExtraRenderFn.AfterRender)
+        {
+            Setting.ExtraRenderFn.AfterRender(&Setting);
         }
     }
 

@@ -33,29 +33,29 @@
 #endif
 
 #ifdef TMCN
-#define GAME "TMCN"
-#define GAMELOWER "tmcn"
-#define GAMEFULL "TrackmaniaChina"
+#define TWINKIEX_GAME "TMCN"
+#define TWINKIEX_GAMELOWER "tmcn"
+#define TWINKIEX_GAMEFULL "TrackmaniaChina"
 #elif defined(TM1)
-#define GAME "TM1"
-#define GAMELOWER "tm1"
-#define GAMEFULL "TrackMania (2003)"
+#define TWINKIEX_GAME "TM1"
+#define TWINKIEX_GAMELOWER "tm1"
+#define TWINKIEX_GAMEFULL "TrackMania (2003)"
 #elif defined(TMO)
-#define GAME "TMO"
-#define GAMELOWER "tmo"
-#define GAMEFULL "TrackMania Original"
+#define TWINKIEX_GAME "TMO"
+#define TWINKIEX_GAMELOWER "tmo"
+#define TWINKIEX_GAMEFULL "TrackMania Original"
 #elif defined(TMS)
-#define GAME "TMS"
-#define GAMELOWER "tms"
-#define GAMEFULL "TrackMania Sunrise"
+#define TWINKIEX_GAME "TMS"
+#define TWINKIEX_GAMELOWER "tms"
+#define TWINKIEX_GAMEFULL "TrackMania Sunrise"
 #elif defined(TMSX)
-#define GAME "TMSX"
-#define GAMELOWER "tmsx"
-#define GAMEFULL "TrackMania Sunrise eXtreme"
+#define TWINKIEX_GAME "TMSX"
+#define TWINKIEX_GAMELOWER "tmsx"
+#define TWINKIEX_GAMEFULL "TrackMania Sunrise eXtreme"
 #elif defined(ESWC)
-#define GAME "ESWC"
-#define GAMELOWER "eswc"
-#define GAMEFULL "TrackMania Nations ESWC"
+#define TWINKIEX_GAME "ESWC"
+#define TWINKIEX_GAMELOWER "eswc"
+#define TWINKIEX_GAMEFULL "TrackMania Nations ESWC"
 #else
 #error "No target game defined."
 #endif
