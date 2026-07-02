@@ -593,7 +593,7 @@ void TwinkUi::Render()
 				}
 				case PickFont:
 				{
-					char8_t UTF8FontPath[1025];
+					char8_t UTF8FontPath[1025]{};
 #ifdef TMCN
 #pragma warning(push)
 #pragma warning(disable : 4267) // warning that fires when casting size_t to int in 64-bit
