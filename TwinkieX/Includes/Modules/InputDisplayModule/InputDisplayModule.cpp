@@ -38,6 +38,8 @@ InputDisplayModule::InputDisplayModule(TwinkTrackmania& TrackmaniaMgr)
 	Register("Dashboard", "ColorBrakeI", "Brake (inactive)", VSettingType::VVec4, &ColorBrakeI);
 	Register("Dashboard", "ColorBackground", "Background", VSettingType::VVec4, &ColorBackground);
 
+	Register("Dashboard", "ShowInputDisplay", "ShowInputDisplay", VSettingType::VBool, &ShowInputDisplay, true);
+
 	if (StyleName == "") StyleName = DashboardStyleNames[0];
 }
 
