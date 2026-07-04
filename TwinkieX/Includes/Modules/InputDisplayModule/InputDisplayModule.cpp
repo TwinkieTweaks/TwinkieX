@@ -19,7 +19,8 @@ InputDisplayModule::InputDisplayModule(TwinkTrackmania& TrackmaniaMgr)
 	this->Name = "Input display";
 	this->ID = "InputDisplayModule";
 
-	Veridian::Register("Dashboard", "Style", "Style", VSettingType::VString, &StyleName, false, { .Render = [this](Veridian::VSetting* Setting) {
+	Register("Dashboard", "Style", "Style", VSettingType::VString, &StyleName, false, { .Render = [this](VSetting* Setting) {
+		ImGui::SeparatorText("Style");
 		StyleIdx = std::string(DashboardStyleNames[0]) == StyleName ? 0 : (std::string(DashboardStyleNames[1]) == StyleName ? 1 : 2);
 		StyleName = DashboardStyleNames[StyleIdx];
 		ImGui::Combo("Style", &StyleIdx, DashboardStyleNames, IM_ARRAYSIZE(DashboardStyleNames));
@@ -27,15 +28,15 @@ InputDisplayModule::InputDisplayModule(TwinkTrackmania& TrackmaniaMgr)
 		return true;
 		} });
 
-	Veridian::Register("Dashboard", "TMVizDim", "Force TMViz Dimensions", VSettingType::VBool, &ForceTMVizDimensions);
+	Register("Dashboard", "TMVizDim", "Force TMViz Dimensions", VSettingType::VBool, &ForceTMVizDimensions);
 	
-	Veridian::Register("Dashboard", "ColorSteer", "ColorSteer", VSettingType::VVec4, &ColorSteer);
-	Veridian::Register("Dashboard", "ColorSteerI", "ColorSteerI", VSettingType::VVec4, &ColorSteerI);
-	Veridian::Register("Dashboard", "ColorAccel", "ColorAccel", VSettingType::VVec4, &ColorAccel);
-	Veridian::Register("Dashboard", "ColorAccelI", "ColorAccelI", VSettingType::VVec4, &ColorAccelI);
-	Veridian::Register("Dashboard", "ColorBrake", "ColorBrake", VSettingType::VVec4, &ColorBrake);
-	Veridian::Register("Dashboard", "ColorBrakeI", "ColorBrakeI", VSettingType::VVec4, &ColorBrakeI);
-	Veridian::Register("Dashboard", "ColorBackground", "ColorBackground", VSettingType::VVec4, &ColorBackground);
+	Register("Dashboard", "ColorSteer", "Steer", VSettingType::VVec4, &ColorSteer, false, { .BeforeRender = [](VSetting*) { ImGui::SeparatorText("Colors"); return true; }});
+	Register("Dashboard", "ColorSteerI", "Steer (inactive)", VSettingType::VVec4, &ColorSteerI);
+	Register("Dashboard", "ColorAccel", "Acceleration", VSettingType::VVec4, &ColorAccel);
+	Register("Dashboard", "ColorAccelI", "Acceleration (inactive)", VSettingType::VVec4, &ColorAccelI);
+	Register("Dashboard", "ColorBrake", "Brake", VSettingType::VVec4, &ColorBrake);
+	Register("Dashboard", "ColorBrakeI", "Brake (inactive)", VSettingType::VVec4, &ColorBrakeI);
+	Register("Dashboard", "ColorBackground", "Background", VSettingType::VVec4, &ColorBackground);
 
 	if (StyleName == "") StyleName = DashboardStyleNames[0];
 }
