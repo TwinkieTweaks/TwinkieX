@@ -86,9 +86,7 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 
 	this->Modules.push_back(new AppExplorerModule(TrackmaniaMgr));
 	this->Modules.push_back(new AboutModule(TrackmaniaMgr));
-#ifdef GAMEBOX
 	this->Modules.push_back(new InputDisplayModule(TrackmaniaMgr));
-#endif
 #ifdef TMCN
 	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr));
 	this->Modules.push_back(new VehicleExplorer(TrackmaniaMgr));

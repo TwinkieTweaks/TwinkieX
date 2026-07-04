@@ -274,8 +274,10 @@ namespace Veridian
     class VSetting
     {
         friend class VSetCtx;
+        friend struct VSettingSorter;
 
         std::string SettingStr;
+        size_t Idx;
 
     public:
         VSetting()
@@ -511,7 +513,6 @@ namespace Veridian
             }
         }
     };
-
     class VSetCtx
     {
     public:
@@ -523,17 +524,24 @@ namespace Veridian
         VSetCtx operator=(VSetCtx&&) = delete;
         ~VSetCtx();
 
-        std::map<std::string, std::map<std::string, VSetting>> Settings;
+        struct Inner
+        {
+            std::unordered_map<std::string, VSetting> Values;
+            std::vector<std::string> Order;
+        };
+
+        std::unordered_map<std::string, Inner> SettingValues;
+        std::vector<std::string> SettingOrder;
         std::filesystem::path Filepath;
 
         template <typename T>
         VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, T* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {})
         {
-            if (this->Settings.contains(Section))
+            if (this->SettingValues.contains(Section))
             {
-                if (this->Settings[Section].contains(Name))
+                if (this->SettingValues[Section].Values.contains(Name))
                 {
-                    VSetting& ExistingSetting = this->Settings[Section][Name];
+                    VSetting& ExistingSetting = this->SettingValues[Section].Values[Name];
                     ExistingSetting.Type = Type;
                     ExistingSetting.SetFromString();
 
@@ -541,7 +549,11 @@ namespace Veridian
                 }
             }
 
-            VSetting& NewSettingRef = this->Settings[Section][Name];
+            if (std::find(SettingOrder.begin(), SettingOrder.end(), Section) == SettingOrder.end()) SettingOrder.push_back(Section);
+            if (std::find(SettingValues[Section].Order.begin(), SettingValues[Section].Order.end(), Name) == SettingValues[Section].Order.end())
+                SettingValues[Section].Order.push_back(Name);
+
+            VSetting& NewSettingRef = this->SettingValues[Section].Values[Name];
 
             NewSettingRef.Name = Name;
             NewSettingRef.FacingName = FacingName;
@@ -552,7 +564,7 @@ namespace Veridian
             NewSettingRef.ExtraRenderFn = ExtraRenderFn;
             NewSettingRef.Value = reinterpret_cast<VValue*>(Value);
 
-            return this->Settings[Section][Name];
+            return this->SettingValues[Section].Values[Name];
         }
 
     private:

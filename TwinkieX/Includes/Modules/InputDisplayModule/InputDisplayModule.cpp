@@ -1,5 +1,4 @@
 #include "pch.h"
-#include <Veridian/Veridian.h>
 #include <Modules/InputDisplayModule/InputDisplayModule.h>
 
 const char* DashboardStyleNames[] = { "Pad", "Keyboard", "TMViz" };
@@ -14,17 +13,30 @@ ImVec2 InputDisplayModule::Lerp(ImVec2 A, ImVec2 B, float T)
 
 InputDisplayModule::InputDisplayModule(TwinkTrackmania& TrackmaniaMgr)
 {
+	using namespace Veridian;
+
 	this->Twinkie = &TrackmaniaMgr;
 	this->Name = "Input display";
 	this->ID = "InputDisplayModule";
 
-	Veridian::Register("Dashboard", "Style", "Style", Veridian::VSettingType::VString, &StyleName, false, { .Render = [this](Veridian::VSetting* Setting) {
+	Veridian::Register("Dashboard", "Style", "Style", VSettingType::VString, &StyleName, false, { .Render = [this](Veridian::VSetting* Setting) {
 		StyleIdx = std::string(DashboardStyleNames[0]) == StyleName ? 0 : (std::string(DashboardStyleNames[1]) == StyleName ? 1 : 2);
 		StyleName = DashboardStyleNames[StyleIdx];
 		ImGui::Combo("Style", &StyleIdx, DashboardStyleNames, IM_ARRAYSIZE(DashboardStyleNames));
 		Setting->Set(DashboardStyleNames[StyleIdx]);
 		return true;
 		} });
+
+	Veridian::Register("Dashboard", "TMVizDim", "Force TMViz Dimensions", VSettingType::VBool, &ForceTMVizDimensions);
+	
+	Veridian::Register("Dashboard", "ColorSteer", "ColorSteer", VSettingType::VVec4, &ColorSteer);
+	Veridian::Register("Dashboard", "ColorSteerI", "ColorSteerI", VSettingType::VVec4, &ColorSteerI);
+	Veridian::Register("Dashboard", "ColorAccel", "ColorAccel", VSettingType::VVec4, &ColorAccel);
+	Veridian::Register("Dashboard", "ColorAccelI", "ColorAccelI", VSettingType::VVec4, &ColorAccelI);
+	Veridian::Register("Dashboard", "ColorBrake", "ColorBrake", VSettingType::VVec4, &ColorBrake);
+	Veridian::Register("Dashboard", "ColorBrakeI", "ColorBrakeI", VSettingType::VVec4, &ColorBrakeI);
+	Veridian::Register("Dashboard", "ColorBackground", "ColorBackground", VSettingType::VVec4, &ColorBackground);
+
 	if (StyleName == "") StyleName = DashboardStyleNames[0];
 }
 
@@ -110,10 +122,16 @@ void InputDisplayModule::Render()
 		return;
 	}
 
-	auto Player = (*Players)[0];
-	if (not Player) return;
+	CMwNod* FinalPlayer = nullptr;
+	for (auto& Player : *Players)
+	{
+		if (not Player) continue;
+		FinalPlayer = Player;
+		break;
+	}
+	if (not FinalPlayer) return;
 
-	auto Vehicle = ReadAddr(CMwNod*, ((uintptr_t)Player) + 0x9F0);
+	auto Vehicle = ReadAddr(CMwNod*, ((uintptr_t)FinalPlayer) + 0x9F0);
 	if (not Vehicle) return;
 
 	InputInfo.Steer = ReadAddr(float, ((uintptr_t)Vehicle) + 0xA0);
