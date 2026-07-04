@@ -3,12 +3,17 @@
 <p align="center">
     <a href="https://discord.gg/kRZ4MdCkVf">
         <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff" />
+        <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/build.yml
+" />
+        <img src="https://img.shields.io/github/v/release/TwinkieTweaks/TwinkieX
+" />
     </a>
 </p>
 
 A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, and TMCN.
 
 ## Features (currently implemented)
+- **Automatic** GitHub release and versioning
 - **Settings** and preferences management
 - **Window resize patch** for older Trackmania games. *(still WIP)*
 - A **nod explorer** for viewing game classes
@@ -16,8 +21,6 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 - **Discord Rich Presence** integration
 
 ## Features (yet to be made)
-- **Versioning**
-- **Installer upload** to GitHub releases
 - On-the-fly **module import** for C++ modules
 - Basic **Angelscript scripting** support for modules
 
