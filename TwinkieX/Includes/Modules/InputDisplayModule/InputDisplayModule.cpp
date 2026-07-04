@@ -49,17 +49,76 @@ void InputDisplayModule::Render()
 	} InputInfo;
 
 #ifdef GAMEBOX
-#ifndef TM1
+#if !(defined(TM1) || defined(TMO))
 	auto Race = Twinkie->ParamGet<CMwNod*>(Twinkie->GetApp(), "CurrentRace");
 	if (not Race) return;
 
 	auto Car = Twinkie->ParamGet<CMwNod*>(Race, "LocalPlayerMobil");
 	if (not Car) return;
-#else
+#elif defined(TM1)
+	auto Races = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Twinkie->ParamGet<CMwNod*>(Twinkie->GetApp(), "Races"), "Nods");
+
+	CMwNod* FinalRaceNod = nullptr;
+	for (auto& RaceNod : *Races)
+	{
+		auto Players = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(RaceNod, "Players");
+		if (Players->Size != 0)
+		{
+			FinalRaceNod = RaceNod;
+			break;
+		}
+	}
+	if (not FinalRaceNod) return;
+
+	auto pPlayersBuffer = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(FinalRaceNod, "Players");
+	if (not pPlayersBuffer) return;
+	auto PlayersBuffer = *pPlayersBuffer;
+
+	auto Car = Twinkie->ParamGet<CMwNod*>(*PlayersBuffer[0], "Mobil");
+	if (not Car) return;
+#elif defined(TMO)
+	auto Race = Twinkie->ParamGet<CMwNod*>(Twinkie->GetApp(), "CurrentRace");
+	if (not Race) return;
+
+	auto pPlayersBuffer = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Race, "Players");
+	if (not pPlayersBuffer) return;
+	auto PlayersBuffer = *pPlayersBuffer;
+
+	auto Car = Twinkie->ParamGet<CMwNod*>(*PlayersBuffer[0], "Mobil");
+	if (not Car) return;
 #endif
 	InputInfo.Steer = *Twinkie->ParamGet<float>(Car, "InputSteer");
 	InputInfo.Gas = *Twinkie->ParamGet<float>(Car, "InputGas");
 	InputInfo.Brake = *Twinkie->ParamGet<float>(Car, "InputBrake");
+#elif defined(TMCN)
+	auto Playground = Twinkie->ParamGet<CMwNod*>(Twinkie->GetApp(), "CurrentPlayground");
+
+	if (not Playground)
+	{
+		return;
+	}
+
+	auto Arena = Twinkie->ParamGet<CMwNod*>(Playground, "Arena");
+	if (not Arena)
+	{
+		return;
+	}
+
+	auto Players = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Arena, "Players");
+	if (not Players)
+	{
+		return;
+	}
+
+	auto Player = (*Players)[0];
+	if (not Player) return;
+
+	auto Vehicle = ReadAddr(CMwNod*, ((uintptr_t)Player) + 0x9F0);
+	if (not Vehicle) return;
+
+	InputInfo.Steer = ReadAddr(float, ((uintptr_t)Vehicle) + 0xA0);
+	InputInfo.Gas = ReadAddr(float, ((uintptr_t)Vehicle) + 0x98);
+	InputInfo.Brake = ReadAddr(float, ((uintptr_t)Vehicle) + 0x9C);
 #endif
 
 	int DashboardWindowFlags = ImGuiWindowFlags_NoTitleBar;
