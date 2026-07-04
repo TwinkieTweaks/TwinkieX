@@ -27,8 +27,6 @@ You are welcome to contribute to this project.
 
 ## Notes
 1. **TMS** is still **not supported**.
-2. There is no release so far, you will have to build it on your own
-3. If you want TwinkieX to be injected on game boot, you will have to do that yourself.
 
 ## Screenshots
 ![](Media/Screenshots/AllGames.png)
