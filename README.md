@@ -1,16 +1,16 @@
 ![TwinkieX Banner](Media/Banner/TwinkieXBanner1920x720.png) 
 
 <p align="center">
-    <a href="https://discord.gg/kRZ4MdCkVf">
+    <a href="https://discord.gg/kRZ4MdCkVf" style="text-decoration: none;">
         <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff&color=f0f" />
     </a>
-    <a href="https://github.com/TwinkieTweaks/TwinkieX/actions/workflows/build.yml">
+    <a href="https://github.com/TwinkieTweaks/TwinkieX/actions/workflows/build.yml" style="text-decoration: none;">
         <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/build.yml?color=f0f" />
     </a>
-    <a href="https://github.com/TwinkieTweaks/TwinkieX/releases">
+    <a href="https://github.com/TwinkieTweaks/TwinkieX/releases" style="text-decoration: none;">
         <img src="https://img.shields.io/github/v/release/TwinkieTweaks/TwinkieX?color=f0f" />
     </a>
-    <a href="https://github.com/TwinkieTweaks/TwinkieX/releases">
+    <a href="https://github.com/TwinkieTweaks/TwinkieX/releases" style="text-decoration: none;">
         <img src="https://img.shields.io/github/downloads/TwinkieTweaks/TwinkieX/total?color=f0f" />
     </a>
 </p>
