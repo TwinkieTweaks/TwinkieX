@@ -2,7 +2,7 @@
 
 <p align="center">
     <a href="https://discord.gg/kRZ4MdCkVf">
-        <img src="https://img.shields.io/discord/1364918007008202752?color=f0f?logo=discord&logoColor=fff" />
+        <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff&color=f0f" />
     </a>
     <a href="https://github.com/TwinkieTweaks/TwinkieX/actions/workflows/build.yml">
         <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/build.yml?color=f0f" />
