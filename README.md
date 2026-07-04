@@ -3,11 +3,11 @@
 <p align="center">
     <a href="https://discord.gg/kRZ4MdCkVf">
         <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff" />
+    </a>
         <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/build.yml
 " />
         <img src="https://img.shields.io/github/v/release/TwinkieTweaks/TwinkieX
 " />
-    </a>
 </p>
 
 A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, and TMCN.
