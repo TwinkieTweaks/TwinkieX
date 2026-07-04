@@ -2,6 +2,7 @@
 
 #include <Twinkie/TwinkTrackmania/TwinkTrackmania.h>
 #include <imgui/imgui.h>
+#include <Veridian/Veridian.h>
 
 // The module interface base-class.
 class IModule

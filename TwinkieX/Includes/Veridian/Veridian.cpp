@@ -45,9 +45,9 @@ namespace Veridian
                 std::string Name = Line.substr(0, EqualsSign);
                 std::string Result = Line.substr(EqualsSign + 1);
 
-                Settings[CurrentSector][Name] = VSetting();
+                SettingValues[CurrentSector].Values[Name] = VSetting();
 
-                VSetting& NewSetting = Settings[CurrentSector][Name];
+                VSetting& NewSetting = SettingValues[CurrentSector].Values[Name];
 
                 NewSetting.Name = Name;
                 NewSetting.SettingStr = Result;
@@ -60,13 +60,13 @@ namespace Veridian
         FileStream.clear();
         FileStream.seekp(0);
 
-        for (auto& Sector : Settings)
+        for (auto& Sector : SettingValues)
         {
             FileStream << "[" << Sector.first << "]\n";
 
-            for (auto& Setting : Settings[Sector.first])
+            for (auto& Setting : SettingValues[Sector.first].Order)
             {
-                FileStream << Setting.second.Name << "=" << Setting.second.GetAsString() << "\n";
+                FileStream << SettingValues[Sector.first].Values[Setting].Name << "=" << SettingValues[Sector.first].Values[Setting].GetAsString() << "\n";
             }
 
             FileStream << "\n";
@@ -194,19 +194,19 @@ namespace Veridian
 
     void RenderSetting(std::string Section, std::string Name)
     {
-        if (not VastVeridian->Settings.contains(Section)) return;
-        if (not VastVeridian->Settings[Section].contains(Name)) return;
+        if (not VastVeridian->SettingValues.contains(Section)) return;
+        if (not VastVeridian->SettingValues[Section].Values.contains(Name)) return;
 
-        RenderSetting(VastVeridian->Settings[Section][Name]);
+        RenderSetting(VastVeridian->SettingValues[Section].Values[Name]);
     }
 
     void RenderSection(std::string Section)
     {
-        if (not VastVeridian->Settings.contains(Section)) return;
+        if (not VastVeridian->SettingValues.contains(Section)) return;
 
-        for (auto& SetPair : VastVeridian->Settings.at(Section))
+        for (auto& SetPair : VastVeridian->SettingValues.at(Section).Order)
         {
-            if (SetPair.second.Registered) RenderSetting(SetPair.second);
+            if (VastVeridian->SettingValues[Section].Values[SetPair].Registered) RenderSetting(VastVeridian->SettingValues[Section].Values[SetPair]);
         }
     }
 
@@ -216,13 +216,13 @@ namespace Veridian
 
         std::map<std::string, size_t> RegisteredSettingsPerSection = {};
 
-        for (auto& SecPair : VastVeridian->Settings)
+        for (auto& Section : VastVeridian->SettingOrder)
         {
-            for (auto& SetPair : SecPair.second)
+            for (auto& Setting : VastVeridian->SettingValues[Section].Order)
             {
-                if (SetPair.second.Registered and not SetPair.second.Hidden)
+                if (VastVeridian->SettingValues[Section].Values[Setting].Registered and not VastVeridian->SettingValues[Section].Values[Setting].Hidden)
                 {
-                    RegisteredSettingsPerSection[SecPair.first]++;
+                    RegisteredSettingsPerSection[Section]++;
                 }
             }
         }
@@ -234,15 +234,15 @@ namespace Veridian
                 ActiveSection = DefaultSectionName;
             }
 
-            for (auto& SecPair : VastVeridian->Settings)
+            for (auto& Section : VastVeridian->SettingOrder)
             {
-                if (RegisteredSettingsPerSection[SecPair.first] == 0) continue;
+                if (RegisteredSettingsPerSection[Section] == 0) continue;
 
-                if (SecPair.first == DefaultSectionName) continue;
+                if (Section == DefaultSectionName) continue;
 
-                if (ImGui::Selectable(SecPair.first.c_str(), SecPair.first == ActiveSection))
+                if (ImGui::Selectable(Section.c_str(), Section == ActiveSection))
                 {
-                    ActiveSection = SecPair.first;
+                    ActiveSection = Section;
                 }
             }
         }
