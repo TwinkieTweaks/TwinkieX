@@ -1,1 +1,2 @@
-Initial release of TwinkieX.
+- Fixed crashes related to intro for older games
+- Added release notes

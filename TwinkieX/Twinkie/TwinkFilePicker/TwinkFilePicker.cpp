@@ -62,6 +62,8 @@ DWORD WINAPI TwinkFilePickerThread(LPVOID param)
             reinterpret_cast<LPARAM>(WndProcParam));
     }
 
+    SetCurrentDirectory(ThreadParam->TwinkieFontsPath.remove_filename().c_str());
+
     return 0;
 }
 

@@ -83,6 +83,9 @@ jobs:
           path: installers
           pattern: Installer-*
           merge-multiple: true
+      
+      - name: Download release notes
+        run: wget https://raw.githubusercontent.com/TwinkieTweaks/TwinkieX/refs/heads/development/ReleaseNotes.md
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

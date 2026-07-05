@@ -583,6 +583,7 @@ void AppExplorerModule::RenderInterface()
 			SetWindowPos(GetMousePos());
 		}
 		
+		if (NodInfo)
 		{
 			std::string Copyable = NodInfo->Name;
 			if (Selectable((std::string("Copy: ") + Copyable).c_str()))
@@ -590,9 +591,10 @@ void AppExplorerModule::RenderInterface()
 				SetClipboardText(Copyable.c_str());
 				NodInfoPopup = false;
 			}
+
+			RenderNodInfoClassInfo(NodInfo->ClassInfo);
 		}
 		
-		RenderNodInfoClassInfo(NodInfo->ClassInfo);
 
 		End();
 	}

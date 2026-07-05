@@ -5,6 +5,18 @@ namespace Veridian
 {
     VSetCtx* VastVeridian = nullptr;
 
+    std::unordered_map<VSettingType, size_t> TypeToSize = {
+        {VSettingType::VInt, sizeof(int64_t)},
+        {VSettingType::VUInt, sizeof(uint64_t)},
+        {VSettingType::VFloat, sizeof(float)},
+        {VSettingType::VString, sizeof(std::string)},
+        {VSettingType::VVec2, sizeof(VVec2)},
+        {VSettingType::VVec3, sizeof(VVec3)},
+        {VSettingType::VVec4, sizeof(VVec4)},
+        {VSettingType::VBool, sizeof(bool)},
+        {VSettingType::VUnknown, (size_t)-1LL}
+    };
+
     VSetCtx::VSetCtx(std::filesystem::path Filepath)
     {
         this->Filepath = Filepath;
@@ -73,6 +85,38 @@ namespace Veridian
         }
 
         FileStream.close();
+    }
+
+    VSetting& VSetCtx::Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden, VSettingRenderFnStruct ExtraRenderFn)
+    {
+        if (this->SettingValues.contains(Section))
+        {
+            if (this->SettingValues[Section].Values.contains(Name))
+            {
+                VSetting& ExistingSetting = this->SettingValues[Section].Values[Name];
+                ExistingSetting.Type = Type;
+                ExistingSetting.SetFromString();
+
+                if (Value and ExistingSetting.Value) memcpy_s(Value, TypeToSize[Type], ExistingSetting.Value, TypeToSize[Type]);
+            }
+        }
+
+        if (std::find(SettingOrder.begin(), SettingOrder.end(), Section) == SettingOrder.end()) SettingOrder.push_back(Section);
+        if (std::find(SettingValues[Section].Order.begin(), SettingValues[Section].Order.end(), Name) == SettingValues[Section].Order.end())
+            SettingValues[Section].Order.push_back(Name);
+
+        VSetting& NewSettingRef = this->SettingValues[Section].Values[Name];
+
+        NewSettingRef.Name = Name;
+        NewSettingRef.FacingName = FacingName;
+        NewSettingRef.Section = Section;
+        NewSettingRef.Type = Type;
+        NewSettingRef.Registered = true;
+        NewSettingRef.Hidden = Hidden;
+        NewSettingRef.ExtraRenderFn = ExtraRenderFn;
+        NewSettingRef.Value = reinterpret_cast<VValue*>(Value);
+
+        return this->SettingValues[Section].Values[Name];
     }
 
     void InitContext(std::filesystem::path Filepath)
@@ -255,5 +299,10 @@ namespace Veridian
         RenderSection(ActiveSection);
 
         ImGui::EndGroup();
+    }
+
+    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden, VSettingRenderFnStruct ExtraRenderFn)
+    {
+        return VastVeridian->Register(Section, Name, FacingName, Type, Value, Hidden, ExtraRenderFn);
     }
 }
