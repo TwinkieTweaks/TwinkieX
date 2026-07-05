@@ -1,2 +1,1 @@
-- Fixed crashes related to intro for older games
-- Added release notes
+- Fixed resize patch for TM1.0

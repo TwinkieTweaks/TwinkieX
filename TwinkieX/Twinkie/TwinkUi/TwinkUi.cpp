@@ -199,35 +199,30 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		}
 		break;
 	case WM_PAINT:
-		// Only trigger if we are actually initialized
 		if (TwinkUiState::ImGuiInit)
 		{
-			// Get the implicit swap chain (index 0)
 			IDirect3DSwapChain9* pSwapChain = nullptr;
 			if (SUCCEEDED(TwinkUiState::Device->GetSwapChain(0, &pSwapChain)))
 			{
 				D3DPRESENT_PARAMETERS d3dpp = {};
-				// Populate d3dpp with current settings
 				if (SUCCEEDED(pSwapChain->GetPresentParameters(&d3dpp)))
 				{
-					// Update only the dimensions
 					d3dpp.BackBufferWidth = TwinkUiState::WindowWidth;
 					d3dpp.BackBufferHeight = TwinkUiState::WindowHeight;
 
-					// Carry out the Reset
 					ImGui_ImplDX9_InvalidateDeviceObjects();
 
-					HRESULT hr = TwinkUiState::Device->Reset(&d3dpp);
-					if (SUCCEEDED(hr))
-					{
-						ImGui_ImplDX9_CreateDeviceObjects();
-					}
+					TwinkUiState::Device->Reset(&d3dpp);
+
+					ImGui_ImplDX9_CreateDeviceObjects();
 
 					unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
 					WindowStyle |= WS_SIZEBOX | WS_THICKFRAME;
 					SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
+
+					VirtualWrite(O_V_PRESENT, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkPresent);
 				}
-				pSwapChain->Release(); // Don't forget to release the COM object
+				pSwapChain->Release();
 			}
 		}
 		break;
