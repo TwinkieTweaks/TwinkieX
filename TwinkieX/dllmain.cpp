@@ -12,7 +12,7 @@
 // It is used to initialize all hooks for the global Twinkie object (Twinkie gTwinkie).
 static DWORD WINAPI InitializerThread([[maybe_unused]] LPVOID lpParameter)
 {
-    TwinkUiState::UiMgr = &gTwinkie.UiMgr;
+    TwinkUiState::UiMgr = gTwinkie.UiMgr;
     if (GetAsyncKeyState(VK_PAUSE) < 0) return FALSE;
 
     // While the game is not initialized, wait

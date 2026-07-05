@@ -27,7 +27,7 @@ public:
 	TwinkTrackmania TrackmaniaMgr;
 
 	// The UI manager.
-	TwinkUi UiMgr = TwinkUi(TrackmaniaMgr);
+	TwinkUi* UiMgr = nullptr;
 
 	// Self-explanatory
 	std::filesystem::path DocumentsFolderPath;

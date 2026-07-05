@@ -396,6 +396,8 @@ namespace Veridian
             {
                 throw std::exception("unknown type");
             }
+
+            this->SettingStr = GetAsString();
         }
 
         std::string GetAsString()

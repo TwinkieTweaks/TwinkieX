@@ -28,6 +28,9 @@ InputDisplayModule::InputDisplayModule(TwinkTrackmania& TrackmaniaMgr)
 		return true;
 		} });
 
+	StyleIdx = std::string(DashboardStyleNames[0]) == StyleName ? 0 : (std::string(DashboardStyleNames[1]) == StyleName ? 1 : 2);
+	StyleName = DashboardStyleNames[StyleIdx];
+
 	Register("Dashboard", "TMVizDim", "Force TMViz Dimensions", VSettingType::VBool, &ForceTMVizDimensions);
 	
 	Register("Dashboard", "ColorSteer", "Steer", VSettingType::VVec4, &ColorSteer, false, { .BeforeRender = [](VSetting*) { ImGui::SeparatorText("Colors"); return true; }});
