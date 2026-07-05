@@ -1,14 +1,24 @@
 ![TwinkieX Banner](Media/Banner/TwinkieXBanner1920x720.png) 
 
 <p align="center">
-    <a href="https://discord.gg/kRZ4MdCkVf">
-        <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff" />
+    <a href="https://discord.gg/kRZ4MdCkVf" style="text-decoration: none;">
+        <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff&color=f0f" />
+    </a>
+    <a href="https://github.com/TwinkieTweaks/TwinkieX/actions/workflows/build.yml" style="text-decoration: none;">
+        <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/build.yml?color=f0f" />
+    </a>
+    <a href="https://github.com/TwinkieTweaks/TwinkieX/releases" style="text-decoration: none;">
+        <img src="https://img.shields.io/github/v/release/TwinkieTweaks/TwinkieX?color=f0f" />
+    </a>
+    <a href="https://github.com/TwinkieTweaks/TwinkieX/releases" style="text-decoration: none;">
+        <img src="https://img.shields.io/github/downloads/TwinkieTweaks/TwinkieX/total?color=f0f" />
     </a>
 </p>
 
 A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, and TMCN.
 
 ## Features (currently implemented)
+- **Automatic** GitHub release and versioning
 - **Settings** and preferences management
 - **Window resize patch** for older Trackmania games. *(still WIP)*
 - A **nod explorer** for viewing game classes
@@ -16,8 +26,6 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 - **Discord Rich Presence** integration
 
 ## Features (yet to be made)
-- **Versioning**
-- **Installer upload** to GitHub releases
 - On-the-fly **module import** for C++ modules
 - Basic **Angelscript scripting** support for modules
 
@@ -26,8 +34,6 @@ You are welcome to contribute to this project.
 
 ## Notes
 1. **TMS** is still **not supported**.
-2. There is no release so far, you will have to build it on your own
-3. If you want TwinkieX to be injected on game boot, you will have to do that yourself.
 
 ## Screenshots
 ![](Media/Screenshots/AllGames.png)
