@@ -130,7 +130,9 @@ namespace Veridian
     enum class VSettingType
     {
         VUnknown = 0,
+        // 64-bit integer
         VInt,
+        // 64-bit unsigned integer
         VUInt,
         VFloat,
         VString,
@@ -139,6 +141,8 @@ namespace Veridian
         VVec4,
         VBool,
     };
+
+    extern std::unordered_map<VSettingType, size_t> TypeToSize;
 
     union VValue
     {
@@ -534,38 +538,7 @@ namespace Veridian
         std::vector<std::string> SettingOrder;
         std::filesystem::path Filepath;
 
-        template <typename T>
-        VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, T* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {})
-        {
-            if (this->SettingValues.contains(Section))
-            {
-                if (this->SettingValues[Section].Values.contains(Name))
-                {
-                    VSetting& ExistingSetting = this->SettingValues[Section].Values[Name];
-                    ExistingSetting.Type = Type;
-                    ExistingSetting.SetFromString();
-
-                    if (Value and ExistingSetting.Value) *Value = *reinterpret_cast<T*>(ExistingSetting.Value);
-                }
-            }
-
-            if (std::find(SettingOrder.begin(), SettingOrder.end(), Section) == SettingOrder.end()) SettingOrder.push_back(Section);
-            if (std::find(SettingValues[Section].Order.begin(), SettingValues[Section].Order.end(), Name) == SettingValues[Section].Order.end())
-                SettingValues[Section].Order.push_back(Name);
-
-            VSetting& NewSettingRef = this->SettingValues[Section].Values[Name];
-
-            NewSettingRef.Name = Name;
-            NewSettingRef.FacingName = FacingName;
-            NewSettingRef.Section = Section;
-            NewSettingRef.Type = Type;
-            NewSettingRef.Registered = true;
-            NewSettingRef.Hidden = Hidden;
-            NewSettingRef.ExtraRenderFn = ExtraRenderFn;
-            NewSettingRef.Value = reinterpret_cast<VValue*>(Value);
-
-            return this->SettingValues[Section].Values[Name];
-        }
+        VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {});
 
     private:
         std::fstream FileStream;
@@ -577,11 +550,7 @@ namespace Veridian
 
     void InitContext(std::filesystem::path Filepath);
 
-    template <typename T>
-    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, T* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {})
-    {
-        return VastVeridian->Register(Section, Name, FacingName, Type, Value, Hidden, ExtraRenderFn);
-    }
+    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {});
 
     void RenderSetting(VSetting& Setting);
     void RenderSetting(std::string Section, std::string Name);

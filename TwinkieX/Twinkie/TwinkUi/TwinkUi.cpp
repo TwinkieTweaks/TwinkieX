@@ -107,6 +107,8 @@ __declspec(noinline) TwinkUi::~TwinkUi()
 	delete DiscordMgr;
 
 	if (FilePicker) delete FilePicker;
+
+	delete Veridian::VastVeridian;
 }
 
 // END Behaviors
@@ -349,6 +351,8 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			ID3D11Texture2D* pBackBuffer;
 			pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
 
+			if (not pBackBuffer) return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
+
 			// Get the color format from the swap chain's back buffer for use with the render target view
 			DXGI_FORMAT BackBufferColorFmt;
 			{
@@ -438,19 +442,18 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 		TwinkUiState::MainRenderTargetView = nullptr; // Good practice to null it out
 	}
 
-	HRESULT resizeBuffers = TwinkUiState::oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
+	HRESULT oResizeBuffersResult = TwinkUiState::oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 
-	ID3D11Texture2D* pBuffer;
+	ID3D11Texture2D* pBackBuffer;
 
-	HRESULT pSwapChainBuffer = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBuffer);
-	if (pSwapChainBuffer != S_OK)
+	HRESULT BufferResult = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
+	if (BufferResult != S_OK or not pBackBuffer)
 	{
-		// TODO: Perform error handling here!
+		return oResizeBuffersResult;
 	}
 
-	// --- STRIP sRGB SUFFIX ---
 	D3D11_TEXTURE2D_DESC desc;
-	pBuffer->GetDesc(&desc);
+	pBackBuffer->GetDesc(&desc);
 	DXGI_FORMAT BackBufferColorFmt = desc.Format;
 
 	if (BackBufferColorFmt == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
@@ -465,17 +468,16 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 	D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
 	RenderTargetViewDesc.Format = BackBufferColorFmt;
 	RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-	// -------------------------
 
 	// Pass our explicit descriptor instead of NULL
-	HRESULT pDeviceRenderTarget = TwinkUiState::Device->CreateRenderTargetView(pBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
+	HRESULT pDeviceRenderTarget = TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
 	if (pDeviceRenderTarget != S_OK)
 	{
-		// TODO: Perform error handling here!
+		return oResizeBuffersResult;
 	}
 
 	// Release buffer
-	pBuffer->Release();
+	pBackBuffer->Release();
 
 	// Set Rendertarget
 	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::MainRenderTargetView, NULL);
@@ -491,7 +493,7 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 	TwinkUiState::Context->RSSetViewports(1, &vp);
 
 	// Return resizeBuffers
-	return resizeBuffers;
+	return oResizeBuffersResult;
 }
 #endif
 

@@ -47,7 +47,7 @@ Twinkie::Twinkie()
 
 Twinkie::~Twinkie()
 {
-	delete Veridian::VastVeridian;
+	if (not TwinkUiState::ImGuiInit) return;
 
 #ifdef MANIAPLANET
 	ImGui_ImplDX11_Shutdown();

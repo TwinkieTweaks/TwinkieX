@@ -1,6 +1,8 @@
 // Precompiled headers.
 #include "pch.h"
 
+#include <windows.h>
+
 // Class definition for the TwinkTrackmania class, that also includes extra headers for Trackmania.
 #include <Twinkie/TwinkTrackmania/TwinkTrackmania.h>
 
@@ -57,6 +59,13 @@ CInputPort* TwinkTrackmania::GetInputPort()
 	return ReadAddr(CInputPort*, (uintptr_t)GetApp() + O_M_CTRACKMANIA_INPUTPORT);
 }
 
+#ifdef GAMEBOX
+bool TwinkTrackmania::GetIsIntroOver()
+{
+	return ReadAddr(bool, this->ExeBaseAddr + O_ISINTROOVER);
+}
+#endif
+
 #ifdef MANIAPLANET
 uintptr_t TwinkTrackmania::GetDirectXSwapChain()
 {
@@ -95,14 +104,14 @@ void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
 	{
 		if (Stack->m_ExtraItemsCapacity != 0 and Stack->m_pExtraItems)
 		{
-			realloc(Stack->m_pExtraItems, (Stack->m_ExtraItemsCapacity + 1) * sizeof(CMwStack::Item));
+			Stack->m_pExtraItems = (CMwStack::Item*)realloc(Stack->m_pExtraItems, (Stack->m_ExtraItemsCapacity + 1) * sizeof(CMwStack::Item));
 		}
 		else if (Stack->m_ExtraItemsCapacity == 0)
 		{
 			if (Stack->m_pExtraItems) free(Stack->m_pExtraItems);
 			Stack->m_pExtraItems = (CMwStack::Item*)malloc((Stack->m_ExtraItemsCapacity + 1) * sizeof(CMwStack::Item));
 		}
-		Stack->m_pExtraItems[Stack->m_ExtraItemsCapacity] = CMwStack::Item{ MemberInfo, CMwStack::ITEM_MEMBER };
+		if (Stack->m_pExtraItems) Stack->m_pExtraItems[Stack->m_ExtraItemsCapacity] = CMwStack::Item{ MemberInfo, CMwStack::ITEM_MEMBER };
 		Stack->m_ExtraItemsCapacity++;
 		Stack->m_Size++;
 	}

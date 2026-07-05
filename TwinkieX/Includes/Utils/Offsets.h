@@ -60,6 +60,8 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // NOTE: Null on purpose for TM1.0. Get the DirectX device from the viewport instead.
 #define O_D3DDEVICE 0x0
 
+#define O_ISINTROOVER 0x5159F4
+
 // Offsets to members
 
 // Exclusive to TM1.0, since the app is not a global but a child of a global CMwNodMain*.
@@ -89,6 +91,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // Globals
 #define O_APP 0x0
 #define O_D3DDEVICE 0x0
+#define O_ISINTROOVER 0x0
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 0
@@ -107,6 +110,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // Globals
 #define O_APP 0x7CCE50
 #define O_D3DDEVICE 0x7AA3BC
+#define O_ISINTROOVER 0x78BE8C
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 80
@@ -125,6 +129,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // Globals
 #define O_APP 0x7C8084
 #define O_D3DDEVICE 0x7A4AAC
+#define O_ISINTROOVER 0x7A4B04
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 80
@@ -143,6 +148,7 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // Globals
 #define O_APP 0x8AEE50
 #define O_D3DDEVICE 0x8B0DCC
+#define O_ISINTROOVER 0x8BE1D4
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 0

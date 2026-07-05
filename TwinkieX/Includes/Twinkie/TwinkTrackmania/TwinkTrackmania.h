@@ -44,6 +44,11 @@ public:
 	// Gets the game's input port, for mouse and keyboard events (always CDx8InputPort or similar)
 	__declspec(noinline) CInputPort* GetInputPort();
 
+#ifdef GAMEBOX
+	// Sees if the intro when launching the game is over or not. Only for GAMEBOX
+	__declspec(noinline) bool GetIsIntroOver();
+#endif
+
 	// Not for direct use. Use ParamGet instead.
 	template<typename ReturnT>
 	GetterReturnT<typename ReturnT> VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo);
