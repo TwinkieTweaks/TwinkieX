@@ -36,7 +36,9 @@ You are welcome to contribute to this project.
 1. **TMS** is still **not supported**.
 
 ## Screenshots
-![](Media/Screenshots/AllGames.png)
+![](Media/Screenshots/TMCN.png)
+![](Media/Screenshots/TMSX.png)
+![](Media/Screenshots/Discord.png)
 
 ## Support
 There aren't any financial ways you can support TwinkieTweaks with, but we will be happy with a star!
