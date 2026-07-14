@@ -34,6 +34,7 @@ You are welcome to contribute to this project.
 
 ## Notes
 1. **TMS** is still **not supported**.
+2. **Do not launch in fullscreen** if you're not playing TMCN.
 
 ## Screenshots
 ![](Media/Screenshots/TMCN.png)
