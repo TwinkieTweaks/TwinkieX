@@ -334,7 +334,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
-      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -359,6 +359,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -383,6 +384,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -407,6 +409,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -431,6 +434,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -455,6 +459,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -479,6 +484,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -503,6 +509,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -525,6 +532,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -549,6 +557,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -573,6 +582,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -597,6 +607,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -621,6 +632,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -645,6 +657,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -669,6 +682,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -693,6 +707,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
       <AdditionalIncludeDirectories>$(SolutionDir)/TwinkieX/Includes</AdditionalIncludeDirectories>
+      <AdditionalOptions>/wd4820 /wd5219 /wd26819 /wd28182 /wd4191 /wd4365 /FS %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

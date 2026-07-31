@@ -52,8 +52,7 @@ jobs:
           /p:Configuration=${{ matrix.config }} `
           /p:Platform=${{ matrix.platform }} `
           /p:IncludePath="${{ github.workspace }}/TwinkieX/Includes" `
-          /m `
-          /FS
+          /m
 
     - name: Install NSIS
       uses: negrutiu/nsis-install@v2
