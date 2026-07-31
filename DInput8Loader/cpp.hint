@@ -1,2 +1,0 @@
-#define DINPUT8LOADER_API __declspec(dllexport)
-#define DINPUT8LOADER_API __declspec(dllimport)
