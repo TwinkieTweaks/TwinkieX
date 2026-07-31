@@ -66,7 +66,7 @@ jobs:
     - name: Package built DLLs
       shell: pwsh
       run: |
-        $platform = $(if (${{ matrix.platform }} -eq "x86") { echo "Win32" } else { echo ${{ matrix.platform }} })
+        $platform = $(if ("${{ matrix.platform }}" -eq "x86") { echo "Win32" } else { echo ${{ matrix.platform }} })
         tar -a -c -f "${{ github.workspace }}/NSIS/Scripts/Output/${{ matrix.config }}.zip" -C "${{ github.workspace }}/Builds/$platform" "${{ matrix.config }}"
 
     - name: Upload Artifact
