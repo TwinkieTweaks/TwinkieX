@@ -165,13 +165,13 @@
     <ClInclude Include="Includes\Twinkie\TwinkDiscordRP\TwinkDiscordRP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\Version.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Includes\Modules\AboutModule\AboutModule.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Includes\Modules\InputDisplayModule\InputDisplayModule.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
