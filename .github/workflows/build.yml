@@ -52,7 +52,8 @@ jobs:
           /p:Configuration=${{ matrix.config }} `
           /p:Platform=${{ matrix.platform }} `
           /p:IncludePath="${{ github.workspace }}/TwinkieX/Includes" `
-          /m
+          /m `
+          /FS
 
     - name: Install NSIS
       uses: negrutiu/nsis-install@v2
@@ -65,7 +66,9 @@ jobs:
     
     - name: Package built DLLs
       shell: pwsh
-      run: tar -a -c -f "${{ github.workspace }}/NSIS/Scripts/Output/${{ matrix.config }}.zip" -C "${{ github.workspace }}/Builds/${{ matrix.platform }}" "${{ matrix.config }}"
+      run: |
+        $platform = $(if (${{ matrix.platform }} -eq "x86") { echo "Win32" } else { echo ${{ matrix.platform }} })
+        tar -a -c -f "${{ github.workspace }}/NSIS/Scripts/Output/${{ matrix.config }}.zip" -C "${{ github.workspace }}/Builds/$platform" "${{ matrix.config }}"
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
