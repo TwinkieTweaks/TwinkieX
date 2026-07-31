@@ -15,7 +15,7 @@ Twinkie::Twinkie()
 	UiMgr = new TwinkUi(TrackmaniaMgr);
 
 	wchar_t* Buffer = nullptr;
-	SHGetKnownFolderPath(FOLDERID_LocalDocuments, 0, NULL, (wchar_t**)&Buffer);
+	SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, (wchar_t**)&Buffer);
 
 	if (not Buffer) throw;
 
