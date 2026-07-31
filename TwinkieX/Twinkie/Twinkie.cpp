@@ -10,6 +10,7 @@ Twinkie gTwinkie;
 
 // Behaviors
 
+// Ctor and initializer, also registers some settings for TwinkUi
 Twinkie::Twinkie()
 {
 	UiMgr = new TwinkUi(TrackmaniaMgr);
