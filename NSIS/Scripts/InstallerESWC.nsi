@@ -15,7 +15,7 @@ InstallDir "$LOCALAPPDATA\Nadeo\Trackmania Nations ESWC\"
 Section ""
     SetOutPath $INSTDIR
     File "..\..\Builds\Win32\ESWC\TwinkieESWC.dll"
-    File "..\ReleaseDeps\ESWC\dinput8.dll"
+    File "..\..\Builds\Win32\ESWC\dinput8.dll"
     File "..\ReleaseDeps\ESWC\discord_game_sdk.dll"
     SetOutPath "$DOCUMENTS\TwinkieX\"
     File /r "..\ReleaseDeps\DocumentsFolder\Fonts"
