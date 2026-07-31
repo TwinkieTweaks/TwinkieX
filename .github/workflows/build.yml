@@ -23,7 +23,7 @@ jobs:
             platform: x86
           - config: TMSX
             platform: x86
-          - config: TM1
+          - config: TM1.0
             platform: x86
   
     steps:
@@ -62,12 +62,17 @@ jobs:
       run: |
         New-Item -ItemType Directory -Force -Path "${{ github.workspace }}/NSIS/Scripts/Output"
         makensis "${{ github.workspace }}/NSIS/Scripts/Installer${{ matrix.config }}.nsi"
+    
+    - name: Package built DLLs
+      shell: pwsh
+      run: tar -a -c -f "${{ github.workspace }}/NSIS/Scripts/Output/${{ matrix.config }}.zip" -C "${{ github.workspace }}/Builds/${{ matrix.platform }}" "${{ matrix.config }}"
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: Installer-${{ matrix.config }}-${{ matrix.platform }}
-        path: ${{ github.workspace }}/NSIS/Scripts/Output/*.exe
+        path: ${{ github.workspace }}/NSIS/Scripts/Output/*
+          
 
   release:
     needs: build
@@ -90,5 +95,5 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: installers/*.exe
+          files: installers/*
           body_path: ReleaseNotes.md
