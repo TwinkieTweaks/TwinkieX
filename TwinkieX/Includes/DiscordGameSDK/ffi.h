@@ -1102,9 +1102,13 @@ static
     params->achievement_version = DISCORD_ACHIEVEMENT_MANAGER_VERSION;
 }
 
-enum EDiscordResult DISCORD_API DiscordCreate(DiscordVersion version,
-                                              struct DiscordCreateParams* params,
-                                              struct IDiscordCore** result);
+// Twinkie loads discord as an optional dependency on start-up, so we'll have to get the function manually later on
+//enum EDiscordResult DISCORD_API DiscordCreate(DiscordVersion version,
+//                                              struct DiscordCreateParams* params,
+//                                              struct IDiscordCore** result);
+
+typedef enum EDiscordResult(DISCORD_API* DiscordCreateFn)(DiscordVersion, struct DiscordCreateParams*, struct IDiscordCore**);
+extern DiscordCreateFn DiscordCreate;
 
 #ifdef __cplusplus
 }

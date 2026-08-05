@@ -5,6 +5,8 @@
 
 #include "types.h"
 
+DiscordCreateFn DiscordCreate = NULL;
+
 #include <cstring>
 #include <memory>
 

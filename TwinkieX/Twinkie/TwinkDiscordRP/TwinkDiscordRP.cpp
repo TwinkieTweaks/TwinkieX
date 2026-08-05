@@ -5,6 +5,22 @@ TwinkDiscordRP::TwinkDiscordRP(TwinkTrackmania& TrackmaniaMgr)
 {
     this->TrackmaniaMgr = &TrackmaniaMgr;
 
+	HMODULE DiscordDLL = LoadLibraryA("discord_game_sdk.dll");
+
+	if (!DiscordDLL)
+	{
+		Nelly = nullptr;
+		return;
+	}
+
+	DiscordCreate = reinterpret_cast<DiscordCreateFn>(GetProcAddress(DiscordDLL, "DiscordCreate"));
+
+	if (!DiscordCreate)
+	{
+		Nelly = nullptr;
+		return;
+	}
+
     discord::Result NellyCreationResult = discord::Core::Create(DISCORD_APP_ID, DiscordCreateFlags_NoRequireDiscord, &Nelly);
     if (NellyCreationResult != discord::Result::Ok)
     {
