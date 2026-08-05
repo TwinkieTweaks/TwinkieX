@@ -70,7 +70,7 @@ namespace TwinkUiState
 __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 {
 	wchar_t* Buffer = nullptr;
-	SHGetKnownFolderPath(FOLDERID_LocalDocuments, 0, NULL, (wchar_t**)&Buffer);
+	SHGetKnownFolderPath(FOLDERID_Documents, 0, NULL, (wchar_t**)&Buffer);
 
 	if (not Buffer) throw;
 
