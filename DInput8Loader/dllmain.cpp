@@ -4,7 +4,7 @@
 static HMODULE gRealDInputDll = NULL;
 static FARPROC gRealDInput8CreateFn = NULL;
 
-extern "C" __declspec(dllexport) HRESULT WINAPI DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, const void* riidltf, void** ppvOut, void* punkOuter)
+extern "C" __declspec(dllexport) HRESULT __stdcall DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, const void* riidltf, void** ppvOut, void* punkOuter)
 {
     if (!gRealDInput8CreateFn)
     {
