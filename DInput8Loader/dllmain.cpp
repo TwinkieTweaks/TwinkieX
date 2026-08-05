@@ -4,6 +4,7 @@
 static HMODULE gRealDInputDll = NULL;
 static FARPROC gRealDInput8CreateFn = NULL;
 
+#pragma comment(linker, "/EXPORT:DirectInput8Create=_DirectInput8Create@20")
 extern "C" __declspec(dllexport) HRESULT __stdcall DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, const void* riidltf, void** ppvOut, void* punkOuter)
 {
     if (!gRealDInput8CreateFn)

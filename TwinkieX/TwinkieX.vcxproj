@@ -241,81 +241,81 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ESWC|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TM1|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMCN|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMO|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMS|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMSX|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ESWC|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TM1|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMCN|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMO|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMS|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMSX|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
-    <IntDir>$(SolutionDir)Intermediates\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup>
