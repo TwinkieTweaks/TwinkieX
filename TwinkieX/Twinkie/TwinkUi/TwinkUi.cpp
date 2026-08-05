@@ -119,6 +119,10 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 {
 	this->DocumentsFolderPath = pDocumentsFolderPath;
 
+	ImGuiIO& ImGuiIo = ImGui::GetIO();
+
+	ImGuiIo.IniFilename = pDocumentsFolderPath.string().c_str();
+
 	// Get the device from the game
 	TwinkUiState::Device = (DirectXDevice*)this->TrackmaniaMgr->GetDirectXDevice();
 

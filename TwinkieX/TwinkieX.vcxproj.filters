@@ -307,8 +307,4 @@
     <None Include="Includes\DiscordGameSDK\x64\discord_game_sdk.dll" />
     <None Include="Includes\DiscordGameSDK\x86\discord_game_sdk.dll" />
   </ItemGroup>
-  <ItemGroup>
-    <Library Include="Includes\DiscordGameSDK\x64\discord_game_sdk.dll.lib" />
-    <Library Include="Includes\DiscordGameSDK\x86\discord_game_sdk.dll.lib" />
-  </ItemGroup>
 </Project>
