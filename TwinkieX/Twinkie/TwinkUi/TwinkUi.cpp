@@ -119,10 +119,6 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 {
 	this->DocumentsFolderPath = pDocumentsFolderPath;
 
-	ImGuiIO& ImGuiIo = ImGui::GetIO();
-
-	ImGuiIo.IniFilename = pDocumentsFolderPath.string().c_str();
-
 	// Get the device from the game
 	TwinkUiState::Device = (DirectXDevice*)this->TrackmaniaMgr->GetDirectXDevice();
 
@@ -263,6 +259,10 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 void InitImGui(DirectXDevice* Device)
 {
 	ImGui::CreateContext();
+
+	ImGuiIO& ImGuiIo = ImGui::GetIO();
+
+	ImGuiIo.IniFilename = (TwinkUiState::UiMgr->DocumentsFolderPath / L"imgui.ini").string().c_str();
 
 	ImGui_ImplWin32_Init(TwinkUiState::Window);
 	ImGui_ImplDX9_Init(Device);
