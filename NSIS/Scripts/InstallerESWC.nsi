@@ -2,7 +2,7 @@
 
 Name "TwinkieX for ESWC"
 OutFile "Output/TwinkieXESWC.exe"
-InstallDir "$LOCALAPPDATA\Nadeo\Trackmania Nations ESWC\"
+InstallDir "$PROGRAMFILES32\Nadeo\Trackmania Nations ESWC\"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"

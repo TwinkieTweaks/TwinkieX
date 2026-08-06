@@ -2,7 +2,7 @@
 
 Name "TwinkieX for TMCN"
 OutFile "Output/TwinkieXTMCN.exe"
-InstallDir "$LOCALAPPDATA\TrackmaniaChina\"
+InstallDir "$PROGRAMFILES32\TrackmaniaChina\"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"

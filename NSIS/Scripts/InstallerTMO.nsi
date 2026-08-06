@@ -2,7 +2,7 @@
 
 Name "TwinkieX for TMO"
 OutFile "Output/TwinkieXTMO.exe"
-InstallDir "$LOCALAPPDATA\TrackMania Original\"
+InstallDir "$PROGRAMFILES32\TrackMania Original\"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"
