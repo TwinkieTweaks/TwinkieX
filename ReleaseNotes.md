@@ -1,3 +1,3 @@
-Thanks to Juesto for raising awareness about these issues:
+Thanks to Juesto for helping with these issues:
 
-- Fixed Discord Game SDK library not being optional (now optional)
+- Setting default installer location to Program Files accordingly.
