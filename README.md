@@ -29,6 +29,12 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 - On-the-fly **module import** for C++ modules
 - Basic **Angelscript scripting** support for modules
 
+## Special thanks
+- [GreffMASTER](https://github.com/GreffMASTER), and his [TMStuff](https://github.com/GreffMASTER/TMStuff) project for providing insight into TM1.0 and general GameBox technical details
+- [BigBang1112](https://github.com/BigBang1112), and [brokenphilip](https://github.com/brokenphilip) for helping with technical details
+- All testers and bug reporters
+- You <3
+
 ## Contribute
 You are welcome to contribute to this project.
 
