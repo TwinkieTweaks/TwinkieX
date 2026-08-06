@@ -2,7 +2,7 @@
 
 Name "TwinkieX for TM1.0"
 OutFile "Output/TwinkieXTM1.exe"
-InstallDir "$LOCALAPPDATA\TrackMania\"
+InstallDir "$PROGRAMFILES32\TrackMania\"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"

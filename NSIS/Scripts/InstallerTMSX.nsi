@@ -2,7 +2,7 @@
 
 Name "TwinkieX for TMSX"
 OutFile "Output/TwinkieXTMSX.exe"
-InstallDir "$LOCALAPPDATA\TrackMania Sunrise\"
+InstallDir "$PROGRAMFILES32\TrackMania Sunrise\"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\..\LICENSE"
