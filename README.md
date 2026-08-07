@@ -15,7 +15,7 @@
     </a>
 </p>
 
-A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, and TMCN.
+A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, TMU, and TMCN.
 
 ## Features (currently implemented)
 - **Automatic** GitHub release and versioning
@@ -39,7 +39,7 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 You are welcome to contribute to this project.
 
 ## Notes
-1. **TMS** is still **not supported**.
+1. **TMS** and **TMU** are still **not supported**.
 2. **Do not launch in fullscreen** if you're not playing TMCN.
 
 ## Screenshots
