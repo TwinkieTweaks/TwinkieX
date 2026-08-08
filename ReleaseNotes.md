@@ -1,3 +1,2 @@
-Thanks to Juesto for helping with these issues:
-
-- Setting default installer destination to Program Files accordingly.
+- Added TMU support
+- Fixed input display not caring about being enabled or not
