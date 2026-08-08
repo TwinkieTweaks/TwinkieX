@@ -21,6 +21,13 @@ extern "C" __declspec(dllexport) HRESULT __stdcall DirectInput8Create(HINSTANCE 
     return reinterpret_cast<HRESULT(WINAPI*)(HINSTANCE, DWORD, const void*, void**, void*)>(gRealDInput8CreateFn)(hinst, dwVersion, riidltf, ppvOut, punkOuter);
 }
 
+DWORD WINAPI DllMainThread(void* Param)
+{
+    LoadLibraryA(TWINKIEX_DLL);
+
+    return TRUE;
+}
+
 BOOL APIENTRY DllMain( HMODULE hModule,
                        DWORD  ul_reason_for_call,
                        LPVOID lpReserved
@@ -31,7 +38,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     case DLL_PROCESS_ATTACH:
     {
         DisableThreadLibraryCalls(hModule);
-        LoadLibraryA(TWINKIEX_DLL);
+        CreateThread(0, 0, DllMainThread, 0, 0, 0);
         break;
     }
     case DLL_THREAD_ATTACH:

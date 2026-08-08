@@ -62,7 +62,11 @@ CInputPort* TwinkTrackmania::GetInputPort()
 #ifdef GAMEBOX
 bool TwinkTrackmania::GetIsIntroOver()
 {
+#ifndef TMU
 	return ReadAddr(bool, this->ExeBaseAddr + O_ISINTROOVER);
+#else
+	return true;
+#endif
 }
 #endif
 

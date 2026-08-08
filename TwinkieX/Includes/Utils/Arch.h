@@ -15,7 +15,7 @@
 
 // Define GAMEBOX for TM1, TMO, TMS, TMSX and ESWC, since those are all Gamebox games
 // Technically, TMCN is also built on Gamebox, but we separate it to Maniaplanet because of its differences to the rest
-#if defined(TM1) || defined(TMO) || defined(TMS) || defined(TMSX) || defined(ESWC)
+#if defined(TM1) || defined(TMO) || defined(TMS) || defined(TMSX) || defined(ESWC) || defined(TMU)
 // GAMEBOX is for TM1, TMO, TMS, TMSX and ESWC
 #define GAMEBOX
 #elif defined(TMCN)
@@ -28,7 +28,7 @@
 #error "TM1, TMO, TMS, TMSX and ESWC are only supported on x86 architecture."
 #endif
 
-#if !defined(TMCN) && !defined(TM1) && !defined(TMO) && !defined(TMS) && !defined(TMSX) && !defined(ESWC)
+#if !defined(TMCN) && !defined(TM1) && !defined(TMO) && !defined(TMS) && !defined(TMSX) && !defined(ESWC) && !defined(TMU)
 #error "No target game defined. Please define one of the following: TMCN, TM1, TMO, TMS, TMSX, ESWC."
 #endif
 
@@ -56,6 +56,10 @@
 #define TWINKIEX_GAME "ESWC"
 #define TWINKIEX_GAMELOWER "eswc"
 #define TWINKIEX_GAMEFULL "TrackMania Nations ESWC"
+#elif defined(TMU)
+#define TWINKIEX_GAME "TMU"
+#define TWINKIEX_GAMELOWER "tmu"
+#define TWINKIEX_GAMEFULL "Trackmania United"
 #else
 #error "No target game defined."
 #endif

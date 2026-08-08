@@ -19,6 +19,8 @@ jobs:
             platform: x64
           - config: ESWC
             platform: x86
+          - config: TMU
+            platform: x86
           - config: TMO
             platform: x86
           - config: TMSX

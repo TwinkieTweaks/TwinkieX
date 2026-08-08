@@ -162,4 +162,24 @@ __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, ui
 // Vtable indices
 #define O_V_PRESENT 17
 
+#elif defined(TMU)
+
+// Globals
+#define O_APP 0x8292C4
+#define O_D3DDEVICE 0x8237AC
+// TMU has no intro
+#define O_ISINTROOVER 0x0
+
+// Offsets to members
+#define O_M_CTRACKMANIA_VIEWPORT 0
+#define O_M_CTRACKMANIA_INPUTPORT 0x58
+
+#define O_M_CINPUTPORT_CONNECTEDDEVICES 0x28
+#define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
+
+#define O_M_CINPUTDEVICE_ISDISABLED 0x0
+
+// Vtable indices
+#define O_V_PRESENT 17
+
 #endif

@@ -17,6 +17,8 @@
 #define DISCORD_APP_ID 1520352680260931645ULL
 #elif defined(ESWC)
 #define DISCORD_APP_ID 1520353733261656134ULL
+#elif defined(TMU)
+#define DISCORD_APP_ID 1535605022023225425ULL
 #else
 #error "No target game defined."
 #endif

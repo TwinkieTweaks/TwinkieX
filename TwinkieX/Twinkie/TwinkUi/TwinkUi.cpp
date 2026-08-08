@@ -165,9 +165,12 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 
 	// Set our new window process
 	TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
+	// TMU already resizes the window by itself
+#ifndef TMU
 	unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
 	WindowStyle |= WS_OVERLAPPEDWINDOW;
 	SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
+#endif
 
 	// Before hooking, make sure that our memory is writable
 	Unprotect(VirtualPtr(O_V_PRESENT, (uintptr_t)TwinkUiState::Device), sizeof(uintptr_t));
@@ -187,6 +190,7 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	switch (uMsg)
 	{
 #ifdef GAMEBOX
+#ifndef TMU
 	case WM_SIZE:
 		if (wParam != SIZE_MINIMIZED)
 		{
@@ -226,6 +230,7 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 			}
 		}
 		break;
+#endif
 #endif
 	case WM_FILE_SELECTED:
 	{
