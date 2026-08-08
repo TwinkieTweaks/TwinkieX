@@ -330,7 +330,13 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 						}
 						break;
 					}
-
+#ifndef TMCN
+					case CMwMemberInfo::REALRANGE:
+#endif
+#ifdef TMU
+					// oh god
+					case CMwMemberInfo::IDBUFFERCAT:
+#endif
 					case CMwMemberInfo::REAL:
 					{
 						float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo, IsNodImpersistent);

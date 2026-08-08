@@ -57,10 +57,9 @@ void InputDisplayModule::RenderMenu()
 
 void InputDisplayModule::Render()
 {
-#ifdef TMU
-	return;
-#endif
 	using namespace ImGui;
+
+	if (!ShowInputDisplay) return;
 
 	struct
 	{
@@ -108,9 +107,15 @@ void InputDisplayModule::Render()
 	auto Car = Twinkie->ParamGet<CMwNod*>(*PlayersBuffer[0], "Mobil");
 	if (not Car) return;
 #endif
+#ifndef TMU
 	InputInfo.Steer = *Twinkie->ParamGet<float>(Car, "InputSteer");
 	InputInfo.Gas = *Twinkie->ParamGet<float>(Car, "InputGas");
 	InputInfo.Brake = *Twinkie->ParamGet<float>(Car, "InputBrake");
+#else
+	InputInfo.Steer = ReadAddr(float, (uintptr_t)Car + 0x58);
+	InputInfo.Gas = ReadAddr(float, (uintptr_t)Car + 0x50);
+	InputInfo.Brake = ReadAddr(float, (uintptr_t)Car + 0x54);
+#endif
 #elif defined(TMCN)
 	auto Playground = Twinkie->ParamGet<CMwNod*>(Twinkie->GetApp(), "CurrentPlayground");
 
