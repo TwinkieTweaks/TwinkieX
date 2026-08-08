@@ -245,7 +245,9 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
 
 							std::string ElementNameSingular =
+#ifndef TMU
 								MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+#endif
 								MemberInfoArray->MemberName;
 							std::string ArrayName = std::format("CFastBuffer<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
 
@@ -291,7 +293,9 @@ void AppExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
 
 							std::string ElementNameSingular =
+#ifndef TMU
 								MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+#endif
 								MemberInfoArray->MemberName;
 							std::string ArrayName = std::format("CFastArray<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
 

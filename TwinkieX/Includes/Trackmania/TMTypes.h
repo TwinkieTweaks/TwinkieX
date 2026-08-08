@@ -510,12 +510,24 @@ struct CMwClassInfo
 	CMwMemberInfo** end() const;
 };
 
+
 // Info of a CLASS type member
 struct CMwMemberInfoClass : CMwMemberInfo
 {
+#ifndef TMU
 	uint32_t Pad0;
-	uint32_t Pad1;
+#else
 	CMwClassInfo* ClassInfo;
+#endif
+
+	uint32_t Pad1;
+
+#ifndef TMU
+	CMwClassInfo* ClassInfo;
+#else
+	uint32_t Pad0;
+#endif
+
 	uint32_t Pad2;
 };
 
@@ -528,11 +540,19 @@ struct CMwMemberInfoClassArray : CMwMemberInfo
 
 	uint32_t Pad2;
 
+#ifndef TMU
 	const char* ElementNameSingular;
+#else
+	CMwClassInfo* ArrayClassInfo;
+#endif
 
 	uint32_t Pad3;
 
+#ifndef TMU
 	CMwClassInfo* ArrayClassInfo;
+#else
+	uint32_t Pad4;
+#endif
 };
 #endif
 

@@ -57,6 +57,9 @@ void InputDisplayModule::RenderMenu()
 
 void InputDisplayModule::Render()
 {
+#ifdef TMU
+	return;
+#endif
 	using namespace ImGui;
 
 	struct
