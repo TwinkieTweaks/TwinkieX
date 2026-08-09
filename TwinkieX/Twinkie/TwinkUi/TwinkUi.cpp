@@ -263,7 +263,7 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 #ifdef GAMEBOX
 void InitImGui(DirectXDevice* Device)
 {
-	static std::string ImGuiIniFilePath = (TwinkUiState::UiMgr->DocumentsFolderPath / L"imgui.ini").string();
+	static std::string ImGuiIniFilePath = (TwinkUiState::UiMgr->DocumentsFolderPath / L"TwinkieX\\imgui.ini").string();
 
 	ImGui::CreateContext();
 
