@@ -372,6 +372,21 @@
     <ClInclude Include="Includes\Gecko\Exports\Reflection\Reflection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\TwinkLogs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\ILoggert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\CppLoggert\CppLoggert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\TwinkLoggert\TwinkLoggert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -669,6 +684,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\Exports\Reflection\Reflection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Twinkie\TwinkLogs\TwinkLogs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\CppLoggert\CppLoggert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\ILoggert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\TwinkLoggert\TwinkLoggert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

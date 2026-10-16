@@ -1,13 +1,6 @@
 #include "pch.h"
 #include <Modules/AboutModule/AboutModule.h>
 
-AboutModule::AboutModule(TwinkTrackmania& TrackmaniaMgr)
-{
-	this->Twinkie = &TrackmaniaMgr;
-	this->Name = "About";
-	this->ID = "AboutModule";
-}
-
 AboutModule::~AboutModule() {}
 
 void AboutModule::RenderInterface()

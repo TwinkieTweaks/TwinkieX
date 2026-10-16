@@ -11,11 +11,12 @@ ImVec2 InputDisplayModule::Lerp(ImVec2 A, ImVec2 B, float T)
 	return A2 + ((B2 - A2) * T);
 }
 
-InputDisplayModule::InputDisplayModule(TwinkTrackmania& TrackmaniaMgr)
+InputDisplayModule::InputDisplayModule(TwinkTrackmania& TrackmaniaMgr, ILoggert& Loggert)
 {
 	using namespace Veridian;
 
 	this->Twinkie = &TrackmaniaMgr;
+	this->Loggert = &Loggert;
 	this->Name = "Input display";
 	this->ID = "InputDisplayModule";
 	this->StyleName = DashboardStyleNames[0];

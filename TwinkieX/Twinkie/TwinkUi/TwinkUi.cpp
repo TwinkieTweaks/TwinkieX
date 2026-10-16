@@ -29,6 +29,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 namespace TwinkUiState
 {
+
 	// The original present function definition for the device.
 	PresentFn oPresent = 0;
 
@@ -89,14 +90,15 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 	// Set the trackmania manager reference for later use
 	this->TrackmaniaMgr = &TrackmaniaMgr;
 
+	// TODO: Make a loggert for discord RP
 	this->DiscordMgr = new TwinkDiscordRP(TrackmaniaMgr);
 
-	this->Modules.push_back(new NodExplorerModule(TrackmaniaMgr));
-	this->Modules.push_back(new AboutModule(TrackmaniaMgr));
-	this->Modules.push_back(new InputDisplayModule(TrackmaniaMgr));
+	this->Modules.push_back(new NodExplorerModule(TrackmaniaMgr, LoggertCpp));
+	this->Modules.push_back(new AboutModule(TrackmaniaMgr, LoggertCpp));
+	this->Modules.push_back(new InputDisplayModule(TrackmaniaMgr, LoggertCpp));
 #ifdef TMCN
-	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr));
-	this->Modules.push_back(new VehicleExplorer(TrackmaniaMgr));
+	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr, LoggertCpp));
+	this->Modules.push_back(new VehicleExplorer(TrackmaniaMgr, LoggertCpp));
 #endif
 }
 
@@ -544,6 +546,8 @@ void TwinkUi::Render()
 
 	if (TwinkUiState::RenderUi)
 	{
+		static bool ShowLogs = true;
+
 		if (BeginMainMenuBar())
 		{
 			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
@@ -596,6 +600,8 @@ void TwinkUi::Render()
 
 				Module->RenderMenuMain();
 			}
+
+			Logger.Render();
 
 			PopItemFlag();
 

@@ -94,5 +94,7 @@
 #include <angelscript/sdk/add_on/scriptstdstring/scriptstdstring.h>
 #include <angelscript/sdk/add_on/scriptarray/scriptarray.h>
 #include <chrono>
+#include <iostream>
+#include <sstream>
 
 using namespace std::chrono_literals;

@@ -14,6 +14,8 @@ Twinkie gTwinkie;
 // Ctor and initializer, also registers some settinfreopen_s((FILE**)stdout, "CONOUT$", "wb", stdout);gs for TwinkUi
 Twinkie::Twinkie()
 {
+	LoggertTwink.print(u8"Good morning, sunshine!");
+
 #ifndef NDEBUG
 	AllocConsole();
 	freopen_s((FILE**)stdout, "CONOUT$", "w", stdout);

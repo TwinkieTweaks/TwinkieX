@@ -918,6 +918,11 @@
     <ClInclude Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePicker.h" />
     <ClInclude Include="Includes\Twinkie\TwinkFilePicker\TwinkFilePickerExports.h" />
     <ClInclude Include="Includes\Twinkie\TwinkIo\TwinkIo.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\CppLoggert\CppLoggert.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\ILoggert.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\TwinkLoggert\TwinkLoggert.h" />
+    <ClInclude Include="Includes\Twinkie\TwinkLogs\TwinkLogs.h" />
     <ClInclude Include="Includes\Twinkie\TwinkUi\TwinkUi.h" />
     <ClInclude Include="Includes\Utils\Arch.h" />
     <ClInclude Include="Includes\framework.h" />
@@ -1019,6 +1024,10 @@
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.cpp" />
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\CppLoggert\CppLoggert.cpp" />
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\ILoggert.cpp" />
+    <ClCompile Include="Includes\Twinkie\TwinkLogs\TwinkLoggert\TwinkLoggert.cpp" />
     <ClCompile Include="Twinkie\TwinkFilePicker\TwinkFilePicker.cpp" />
     <ClCompile Include="Includes\Utils\Offsets.cpp" />
     <ClCompile Include="Includes\Veridian\Veridian.cpp" />
@@ -1046,6 +1055,7 @@
     <ClCompile Include="Twinkie\TwinkDiscordRP\TwinkDiscordRP.cpp" />
     <ClCompile Include="Twinkie\Twinkie.cpp" />
     <ClCompile Include="Twinkie\TwinkIo\TwinkIo.cpp" />
+    <ClCompile Include="Twinkie\TwinkLogs\TwinkLogs.cpp" />
     <ClCompile Include="Twinkie\TwinkTrackmania\TwinkTrackmania.cpp" />
     <ClCompile Include="Twinkie\TwinkUi\TwinkUi.cpp" />
   </ItemGroup>

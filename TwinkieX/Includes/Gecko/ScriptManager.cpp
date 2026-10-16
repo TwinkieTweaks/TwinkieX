@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "ScriptManager.h"
 
+#include <Twinkie/TwinkLogs/AngelscriptLoggert/AngelscriptLoggert.h>
+
 #include "Exports/Global/Global.h"
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
@@ -48,6 +50,11 @@ namespace Gecko
 		}
 	}
 
+	static std::u8string FromStr(const std::string& that)
+	{
+		return (char8_t*)that.c_str();
+	}
+
 	void MessageCallback(const asSMessageInfo* msg, void* param)
 	{
 #ifdef _DEBUG
@@ -57,14 +64,14 @@ namespace Gecko
 		else if (msg->type == asMSGTYPE_INFORMATION)
 			type = "INFO";
 		printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
-#else
-		// TODO: Better error handling
 #endif
-	}
-
-	static std::u8string FromStr(const std::string& that)
-	{
-		return (char8_t*)that.c_str();
+		auto message = FromStr(std::format("{} ({}, {}) : {} : {}", msg->section, msg->row, msg->col, type, msg->message));
+		if (msg->type == asMSGTYPE_WARNING)
+			LoggertAngelscript.warn (message);
+		else if (msg->type == asMSGTYPE_INFORMATION)
+			LoggertAngelscript.print(message);
+		else
+			LoggertAngelscript.error(message);
 	}
 
 	ScriptManager::ScriptManager()
@@ -251,7 +258,7 @@ namespace Gecko
 			NewScript.SourceCode = FromStr(SourceCodeStream.str());
 			NewScript.Name = FilePath.filename().u8string();
 
-			Scripts.push_back(NewScript);
+			Scripts.push_back(std::move(NewScript));
 		}
 		catch (...)
 		{
@@ -270,7 +277,7 @@ namespace Gecko
 			NewScript.SourceCode = Source;
 			NewScript.Name = ScriptName;
 
-			Scripts.push_back(NewScript);
+			Scripts.push_back(std::move(NewScript));
 		}
 		catch (...)
 		{

@@ -8,7 +8,7 @@ class AboutModule : public IModule
 
 public:
 	AboutModule() = delete;
-	AboutModule(TwinkTrackmania&);
+	AboutModule(TwinkTrackmania& Twinkie, ILoggert& Loggert) : IModule{ Twinkie, Loggert, "AboutModule", "About" } {};
 
 	virtual ~AboutModule();
 	virtual void RenderInterface() override;

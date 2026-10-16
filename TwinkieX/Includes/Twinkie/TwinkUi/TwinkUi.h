@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Twinkie/TwinkLogs/TwinkLogs.h>
 #include <Twinkie/TwinkDiscordRP/TwinkDiscordRP.h>
 #include <Twinkie/TwinkIo/TwinkIo.h>
 
@@ -92,6 +93,9 @@ namespace TwinkUiState
 // The UI manager type, used by (TwinkUi gTwinkie.UiMgr).
 class TwinkUi
 {
+	TwinkUi operator=(TwinkUi) = delete;
+	TwinkUi& operator=(TwinkUi&) = delete;
+	TwinkUi&& operator=(TwinkUi&&) = delete;
 public:
 	// The Trackmania manager, set by (class Twinkie) to (TrackmaniaMgr Twinkie::TrackmaniaMgr)
 	TwinkTrackmania* TrackmaniaMgr = nullptr;
@@ -127,6 +131,8 @@ public:
 
 	// True if the current font is set to be destroyed/removed.
 	bool DestroyCurrentFont = false;
+
+	TwinkLogs Logger;
 
 	// Behaviors
 

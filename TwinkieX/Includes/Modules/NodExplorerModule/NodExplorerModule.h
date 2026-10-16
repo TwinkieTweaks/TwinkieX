@@ -57,12 +57,7 @@ class NodExplorerModule : public IModule
 	bool HasSetWindowPositionForPopup = false;
 
 public:
-	NodExplorerModule(TwinkTrackmania& Twinkie)
-	{
-		this->Twinkie = &Twinkie;
-		this->Name = "NodExplorer";
-		this->ID = "NodExplorer";
-	};
+	NodExplorerModule(TwinkTrackmania& Twinkie, ILoggert& Loggert) : IModule{ Twinkie, Loggert, "NodExplorerModule", "Nod Explorer" } {};
 
 	virtual ~NodExplorerModule() = default;
 
