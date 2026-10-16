@@ -33,10 +33,16 @@ void TwinkLogs::PullFromLoggerts()
 {
 	for (auto& Loggert : Loggerts)
 	{
+		Loggert->LoggertStreamForPreview.seekg(0);
+		Loggert->LoggertStreamForFile.seekg(0);
+
 		LogPreview << Loggert->LoggertStreamForPreview.str();
 		LogFile << Loggert->LoggertStreamForFile.str();
 
+		Loggert->LoggertStreamForPreview.str("");
 		Loggert->LoggertStreamForPreview.clear();
+		
+		Loggert->LoggertStreamForFile.str("");
 		Loggert->LoggertStreamForFile.clear();
 	}
 }
@@ -45,10 +51,12 @@ void TwinkLogs::Render()
 {
 	using namespace ImGui;
 
+	PullFromLoggerts();
+
 	Begin("Logs##Twinkie");
 
-	auto LastPos = LogPreview.tellp();
-	LogPreview.seekp(0);
+	auto LastPos = LogPreview.tellg();
+	LogPreview.seekg(0);
 
 	std::string Line;
 	while (std::getline(LogPreview, Line))
@@ -56,7 +64,10 @@ void TwinkLogs::Render()
 		Text(Line.c_str());
 	}
 
-	LogPreview.seekp(LastPos);
+	// clear doesn't clear the stream and i think someone deserves a real good firing from the c++ standard committee
+	// clear removes any flags like "is eof" and "has read failed"
+	LogPreview.clear();
+	LogPreview.seekg(LastPos);
 
 	End();
 }

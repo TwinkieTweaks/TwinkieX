@@ -16,19 +16,42 @@ namespace Gecko::Exports::Global
 		if (For) yield();
 	}
 
-	void print([[maybe_unused]] std::string& Str)
+	void trace(std::u8string& Str)
 	{
-#ifdef _DEBUG
-		std::cout << "[AS] " << Str << '\n';
-#endif
+		LoggertAngelscript.trace(Str);
 	}
+
+	void print(std::u8string& Str)
+	{
+		LoggertAngelscript.print(Str);
+	}
+
+	void warn(std::u8string& Str)
+	{
+		LoggertAngelscript.warn(Str);
+	}
+
+	void error(std::u8string& Str)
+	{
+		LoggertAngelscript.error(Str);
+	}
+
+	// TODO: Research if angelscript exception throwing is built-in
+	//void _throw(std::u8string& Str)
+	//{
+	//	LoggertAngelscript.error(Str);
+	//}
 
 	void Registrar(asIScriptEngine* Engine)
 	{
 		RegisterStdString(Engine);
 		RegisterScriptArray(Engine, true);
 
+		Engine->RegisterGlobalFunction("void trace(const string &in)", asFUNCTION(trace), asCALL_CDECL);
 		Engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(print), asCALL_CDECL);
+		Engine->RegisterGlobalFunction("void warn(const string &in)", asFUNCTION(warn), asCALL_CDECL);
+		Engine->RegisterGlobalFunction("void error(const string &in)", asFUNCTION(error), asCALL_CDECL);
+		// TODO: Research if angelscript exception throwing is built-in
 		Engine->RegisterGlobalFunction("void yield()", asFUNCTION(yield), asCALL_CDECL);
 		Engine->RegisterGlobalFunction("void yield(uint)", asFUNCTION(yieldFor), asCALL_CDECL);
 	}

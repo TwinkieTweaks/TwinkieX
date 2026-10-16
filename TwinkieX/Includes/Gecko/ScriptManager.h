@@ -2,6 +2,8 @@
 #include "pch.h"
 #include "Script.h"
 
+#include <Twinkie/TwinkLogs/AngelscriptLoggert/AngelscriptLoggert.h>
+
 namespace Gecko
 {
 	void ScriptCtxLineCallback(asIScriptContext* Ctx, std::chrono::time_point<std::chrono::system_clock>* Timeout);

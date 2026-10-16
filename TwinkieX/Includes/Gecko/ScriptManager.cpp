@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "ScriptManager.h"
 
-#include <Twinkie/TwinkLogs/AngelscriptLoggert/AngelscriptLoggert.h>
-
 #include "Exports/Global/Global.h"
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
@@ -57,12 +55,12 @@ namespace Gecko
 
 	void MessageCallback(const asSMessageInfo* msg, void* param)
 	{
-#ifdef _DEBUG
 		const char* type = "ERR ";
 		if (msg->type == asMSGTYPE_WARNING)
 			type = "WARN";
 		else if (msg->type == asMSGTYPE_INFORMATION)
 			type = "INFO";
+#ifdef _DEBUG
 		printf("%s (%d, %d) : %s : %s\n", msg->section, msg->row, msg->col, type, msg->message);
 #endif
 		auto message = FromStr(std::format("{} ({}, {}) : {} : {}", msg->section, msg->row, msg->col, type, msg->message));
@@ -77,9 +75,7 @@ namespace Gecko
 	ScriptManager::ScriptManager()
 	{
 		Engine->SetEngineProperty(asEP_PROPERTY_ACCESSOR_MODE, 2);
-#ifdef _DEBUG
 		Engine->SetMessageCallback(asFUNCTION(MessageCallback), nullptr, asCALL_CDECL);
-#endif
 
 		Exports::Trackmania::Registrar(Engine);
 		Exports::Global::Registrar(Engine);

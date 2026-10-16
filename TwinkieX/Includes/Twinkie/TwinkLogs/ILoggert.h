@@ -22,8 +22,14 @@ public:
 	std::u8string Tag;
 	std::u8string Icon;
 
+	bool ResetColorForMessage = false;
+
 	ILoggert();
-	ILoggert(std::u8string ColorTag, std::u8string Tag, std::u8string Icon) : ColorTag(ColorTag), Tag(Tag), Icon(Icon) {};
+	ILoggert(std::u8string ColorTag, std::u8string Tag, std::u8string Icon, bool ResetColorForMessage = false) : 
+		ColorTag(ColorTag), 
+		Tag(Tag), 
+		Icon(Icon), 
+		ResetColorForMessage(ResetColorForMessage) {};
 
 	virtual ~ILoggert() {};
 
