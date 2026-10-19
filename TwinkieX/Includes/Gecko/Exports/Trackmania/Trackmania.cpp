@@ -498,6 +498,5 @@ namespace Gecko::Exports::Trackmania
 
 	void Cleanup()
 	{
-		GetApp()->ReferenceCount--;
 	}
 }

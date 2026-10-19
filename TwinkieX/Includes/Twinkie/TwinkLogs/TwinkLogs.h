@@ -12,10 +12,11 @@ class TwinkLogs
 	TwinkLogs&& operator=(TwinkLogs&&) = delete;
 
 	friend class TwinkUi;
+	friend class Twinkie;
 
 protected:
 	std::stringstream LogPreview;
-	std::ofstream LogFile;
+	std::fstream LogFile;
 
 	std::vector<ILoggert*> Loggerts;
 
@@ -23,6 +24,7 @@ private:
 	void Clear();
 	void PullFromLoggerts();
 	void Render();
+	void UpdateLogFileLoc(std::filesystem::path& Loc);
 
 public:
 	TwinkLogs();

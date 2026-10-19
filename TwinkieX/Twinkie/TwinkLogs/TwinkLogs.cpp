@@ -10,7 +10,8 @@ TwinkLogs::TwinkLogs()
 
 TwinkLogs::~TwinkLogs()
 {
-	// TODO: Save logs
+	LogFile.flush();
+	LogFile.close();
 }
 
 void TwinkLogs::push_back(ILoggert* Loggert)
@@ -53,7 +54,17 @@ void TwinkLogs::Render()
 
 	PullFromLoggerts();
 
-	Begin("Logs##Twinkie");
+	Begin("Logs##Twinkie", nullptr, ImGuiWindowFlags_MenuBar);
+
+	BeginMenuBar();
+
+	if (MenuItem("Clear"))
+	{
+		LogPreview.str("");
+		LogPreview.clear();
+	}
+
+	EndMenuBar();
 
 	auto LastPos = LogPreview.tellg();
 	LogPreview.seekg(0);
@@ -70,4 +81,22 @@ void TwinkLogs::Render()
 	LogPreview.seekg(LastPos);
 
 	End();
+}
+
+void TwinkLogs::UpdateLogFileLoc(std::filesystem::path& DocumentsFolderLoc)
+{
+	auto LogFileLoc = DocumentsFolderLoc / "TwinkieX\\TwinkieX.log";
+
+	if (std::filesystem::exists(LogFileLoc))
+	{
+		std::filesystem::rename(LogFileLoc, DocumentsFolderLoc / "TwinkieX\\TwinkieX-Old.log");
+	}
+	else
+	{
+		// make the file
+		// TODO: something better maybe??
+		std::ofstream(LogFileLoc).close();
+	}
+
+	LogFile.open(LogFileLoc, std::ios::out);
 }

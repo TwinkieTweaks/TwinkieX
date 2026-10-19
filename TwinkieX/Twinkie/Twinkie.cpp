@@ -29,6 +29,8 @@ Twinkie::Twinkie()
 	DocumentsFolderPath = Buffer;
 	CoTaskMemFree(Buffer);
 
+	UiMgr->Logger.UpdateLogFileLoc(DocumentsFolderPath);
+
 	Veridian::Register("Twinkie", "UiVisible", "Show UI", Veridian::VSettingType::VBool, &TwinkUiState::RenderUi,  true);
 
 	Veridian::Register("Twinkie", "UiScale", "UI Scale", Veridian::VSettingType::VFloat, &this->UiMgr->UiScale);

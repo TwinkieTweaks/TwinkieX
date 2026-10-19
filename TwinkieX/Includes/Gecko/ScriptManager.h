@@ -80,8 +80,10 @@ namespace Gecko
 		Script* GetActiveScript();
 		asIScriptContext* GetActiveContext();
 
+		void RenderDevMenu();
 		void BuildAll();
 		void BuildScript(Script&);
+		bool ReloadScript(Script&);
 		void BuildScriptByCallback(Script&, CallbackType);
 		void RunAll(CallbackType CallbackType);
 		Script* GetScriptFromCtx(asIScriptContext* Ctx);

@@ -282,4 +282,48 @@ namespace Gecko
 
 		return true;
 	}
+
+	bool ScriptManager::ReloadScript(Script& Script)
+	{
+		try
+		{
+			std::ostringstream SourceCodeStream;
+			std::ifstream ScriptFile(Script.ScriptPath);
+
+			SourceCodeStream << ScriptFile.rdbuf();
+
+			Script.SourceCode = FromStr(SourceCodeStream.str());
+		}
+		catch (...)
+		{
+			return false;
+		}
+
+		return true;
+	}
+
+	void ScriptManager::RenderDevMenu()
+	{
+		using namespace ImGui;
+
+		if (BeginMenu("Developer"))
+		{
+			if (BeginMenu("Reload module"))
+			{
+				for (auto& Module : Scripts)
+				{
+					if (MenuItem((const char*)Module.Name.c_str()))
+					{
+						ReloadScript(Module);
+						BuildScript(Module);
+					}
+				}
+
+				ImGui::EndMenu();
+			}
+			// TODO: Rest
+
+			ImGui::EndMenu();
+		}
+	}
 }

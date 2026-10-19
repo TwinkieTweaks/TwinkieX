@@ -125,6 +125,159 @@ __declspec(noinline) TwinkUi::~TwinkUi()
 // END Behaviors
 
 // Methods
+void TwinkUi::Render()
+{
+	using namespace ImGui;
+
+	IoMgr.Sync();
+
+	if (IsKeyPressed(ImGuiKey_F3, false))
+	{
+		TwinkUiState::RenderUi = !TwinkUiState::RenderUi;
+	}
+
+	if (Font) PushFont(Font, GetStyle().FontSizeBase * UiScale);
+
+	if (not ModuleQueue.empty())
+	{
+		for (auto& Module : this->ModuleQueue)
+		{
+			Modules.push_back(Module);
+			Veridian::Register("Modules", Module->ID, Module->Name, Veridian::VSettingType::VBool, &Module->Enabled);
+		}
+		ModuleQueue = {};
+	}
+
+	if (TwinkUiState::RenderUi)
+	{
+		static bool ShowLogs = true;
+
+		if (BeginMainMenuBar())
+		{
+			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
+
+			if (BeginMenu("$f0fTwinkie##Twinkie"))
+			{
+				if (MenuItem("Include module"))
+				{
+					if (FilePicker)
+					{
+						delete FilePicker;
+						FilePicker = nullptr;
+					}
+
+					FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickModule, DocumentsFolderPath / "TwinkieX\\Fonts");
+				}
+				if (MenuItem("Settings", "", ShowSettings))
+				{
+					ShowSettings = !ShowSettings;
+				}
+				if (BeginMenu("Modules"))
+				{
+					for (auto& Module : this->Modules)
+					{
+						if (MenuItem(Module->Name, "", Module->Enabled))
+						{
+							Module->Enabled = !Module->Enabled;
+						}
+					}
+					ImGui::EndMenu();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			Gecko::TheScriptManager->RenderDevMenu();
+
+			if (BeginMenu("Modules##Twinkie"))
+			{
+				for (auto& Module : this->Modules)
+				{
+					if (!Module->Enabled) continue;
+
+					Module->RenderMenu();
+				}
+
+				ImGui::EndMenu();
+			}
+
+			for (auto& Module : this->Modules)
+			{
+				if (!Module->Enabled) continue;
+
+				Module->RenderMenuMain();
+			}
+
+			Logger.Render();
+
+			PopItemFlag();
+
+			ImGui::EndMainMenuBar();
+		}
+	}
+
+	if (ShowSettings)
+	{
+		if (Begin("Settings##Twinkie", &ShowSettings))
+		{
+			Veridian::RenderAll("Twinkie");
+		}
+		End();
+	}
+
+	for (auto& Module : this->Modules)
+	{
+		if (!Module->Enabled) continue;
+
+		Module->Render();
+		if (TwinkUiState::RenderUi) Module->RenderInterface();
+	}
+
+	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Render);
+
+	if (Font) PopFont();
+
+	// ============== NO IMGUI DRAW CALLS PAST THIS POINT==============
+
+	if (FilePicker)
+	{
+		if (FilePicker->Done)
+		{
+			using enum TwinkFilePicker::FilePickerPurpose;
+
+			switch (FilePicker->Purpose)
+			{
+				case PickModule:
+				{
+					LoadLibrary(FilePicker->FinalPath.c_str());
+					break;
+				}
+				case PickFont:
+				{
+					char8_t UTF8FontPath[1025]{};
+#ifdef TMCN
+#pragma warning(push)
+#pragma warning(disable : 4267) // warning that fires when casting size_t to int in 64-bit
+#endif
+					WideCharToMultiByte(CP_UTF8, 0, FilePicker->FinalPath.c_str(), FilePicker->FinalPath.length(), (char*)UTF8FontPath, 1024, NULL, NULL);
+#ifdef TMCN
+#pragma warning(pop)
+#endif
+					Font = GetIO().Fonts->AddFontFromFileTTF((char*)UTF8FontPath);
+					FontPath = UTF8FontPath;
+					break;
+				}
+				case NoPurpose: break;
+			}
+
+			delete FilePicker;
+			FilePicker = nullptr;
+		}
+	}
+
+	DiscordMgr->Update();
+}
+
 
 __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolderPath)
 {
@@ -424,7 +577,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui_ImplDX11_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-			
+
 	if (not TwinkUiState::ImGuiInit)
 	{
 		if (not TwinkUiState::UiMgr->FontPath.empty())
@@ -520,155 +673,5 @@ HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width
 	return oResizeBuffersResult;
 }
 #endif
-
-void TwinkUi::Render()
-{
-	using namespace ImGui;
-
-	IoMgr.Sync();
-
-	if (IsKeyPressed(ImGuiKey_F3, false))
-	{
-		TwinkUiState::RenderUi = !TwinkUiState::RenderUi;
-	}
-
-	if (Font) PushFont(Font, GetStyle().FontSizeBase * UiScale);
-
-	if (not ModuleQueue.empty())
-	{
-		for (auto& Module : this->ModuleQueue)
-		{
-			Modules.push_back(Module);
-			Veridian::Register("Modules", Module->ID, Module->Name, Veridian::VSettingType::VBool, &Module->Enabled);
-		}
-		ModuleQueue = {};
-	}
-
-	if (TwinkUiState::RenderUi)
-	{
-		static bool ShowLogs = true;
-
-		if (BeginMainMenuBar())
-		{
-			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
-
-			if (BeginMenu("$f0fTwinkie##Twinkie"))
-			{
-				if (MenuItem("Include module"))
-				{
-					if (FilePicker)
-					{
-						delete FilePicker;
-						FilePicker = nullptr;
-					}
-
-					FilePicker = new TwinkFilePicker(TwinkFilePicker::FilePickerPurpose::PickModule, DocumentsFolderPath / "TwinkieX\\Fonts");
-				}
-				if (MenuItem("Settings", "", ShowSettings))
-				{
-					ShowSettings = !ShowSettings;
-				}
-				if (BeginMenu("Modules"))
-				{
-					for (auto& Module : this->Modules)
-					{
-						if (MenuItem(Module->Name, "", Module->Enabled))
-						{
-							Module->Enabled = !Module->Enabled;
-						}
-					}
-					ImGui::EndMenu();
-				}
-				ImGui::EndMenu();
-			}
-
-			if (BeginMenu("Modules##Twinkie"))
-			{
-				for (auto& Module : this->Modules)
-				{
-					if (!Module->Enabled) continue;
-
-					Module->RenderMenu();
-				}
-
-				ImGui::EndMenu();
-			}
-
-			for (auto& Module : this->Modules)
-			{
-				if (!Module->Enabled) continue;
-
-				Module->RenderMenuMain();
-			}
-
-			Logger.Render();
-
-			PopItemFlag();
-
-			ImGui::EndMainMenuBar();
-		}
-	}
-
-	if (ShowSettings)
-	{
-		if (Begin("Settings##Twinkie", &ShowSettings))
-		{
-			Veridian::RenderAll("Twinkie");
-		}
-		End();
-	}
-
-	for (auto& Module : this->Modules)
-	{
-		if (!Module->Enabled) continue;
-
-		Module->Render();
-		if (TwinkUiState::RenderUi) Module->RenderInterface();
-	}
-
-	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Render);
-
-	if (Font) PopFont();
-
-	// ============== NO IMGUI DRAW CALLS PAST THIS POINT==============
-
-	if (FilePicker)
-	{
-		if (FilePicker->Done)
-		{
-			using enum TwinkFilePicker::FilePickerPurpose;
-
-			switch (FilePicker->Purpose)
-			{
-				case PickModule:
-				{
-					LoadLibrary(FilePicker->FinalPath.c_str());
-					break;
-				}
-				case PickFont:
-				{
-					char8_t UTF8FontPath[1025]{};
-#ifdef TMCN
-#pragma warning(push)
-#pragma warning(disable : 4267) // warning that fires when casting size_t to int in 64-bit
-#endif
-					WideCharToMultiByte(CP_UTF8, 0, FilePicker->FinalPath.c_str(), FilePicker->FinalPath.length(), (char*)UTF8FontPath, 1024, NULL, NULL);
-#ifdef TMCN
-#pragma warning(pop)
-#endif
-					Font = GetIO().Fonts->AddFontFromFileTTF((char*)UTF8FontPath);
-					FontPath = UTF8FontPath;
-					break;
-				}
-				case NoPurpose: break;
-			}
-
-			delete FilePicker;
-			FilePicker = nullptr;
-		}
-	}
-
-	DiscordMgr->Update();
-}
 
 // END Methods
