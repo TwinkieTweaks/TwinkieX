@@ -15,7 +15,21 @@
 	LoggertStreamForFile << MessageFormattedFile; \
 }
 
-ILoggert_MakeFn(trace, "$f0f", "[d]")
+#define ILoggert_MakeFnExtraColored(name, color, tag) void ILoggert::##name(std::u8string str) \
+{ \
+    std::string sStr((const char*)str.c_str()); \
+	std::string sColorTag((const char*)ColorTag.c_str()); \
+	std::string sIcon((const char*)Icon.c_str()); \
+	std::string sTag((const char*)Tag.c_str()); \
+	\
+    std::string MessageFormattedPrev = std::format(color tag " {}[{}{}] " color "{}\n", sColorTag, sIcon, sTag, sStr); \
+	std::string MessageFormattedFile = std::format(tag " {}[{}{}] {}\n", sColorTag, sIcon, sTag, sStr); \
+	\
+	LoggertStreamForPreview << MessageFormattedPrev; \
+	LoggertStreamForFile << MessageFormattedFile; \
+}
+
+ILoggert_MakeFnExtraColored(trace, "$999", "[d]")
 ILoggert_MakeFn(print, "$35e", "[i]")
-ILoggert_MakeFn(warn,  "$ff0", "[w]")
-ILoggert_MakeFn(error, "$f00", "[e]")
+ILoggert_MakeFnExtraColored(warn,  "$ff0", "[w]")
+ILoggert_MakeFnExtraColored(error, "$f00", "[e]")

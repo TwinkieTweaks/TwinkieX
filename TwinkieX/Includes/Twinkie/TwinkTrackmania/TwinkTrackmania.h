@@ -152,8 +152,8 @@ TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGe
 
 	struct
 	{
-		ReturnTypeT pReturnValue;
-		ReturnT Storage;
+		ReturnTypeT pReturnValue{};
+		ReturnT Storage{};
 	} Result;
 
 	CMwStack Stack = CMwStack();

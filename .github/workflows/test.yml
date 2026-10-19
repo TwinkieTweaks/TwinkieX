@@ -1,0 +1,57 @@
+name: Test
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - config: TMCN
+            platform: x64
+          - config: ESWC
+            platform: x86
+          - config: TMU
+            platform: x86
+          - config: TMO
+            platform: x86
+          - config: TMSX
+            platform: x86
+          - config: TM1
+            platform: x86
+  
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Restore file timestamps
+      uses: chetan/git-restore-mtime-action@v2
+
+    - name: Cache intermediate files
+      uses: actions/cache@v4
+      with:
+        path: Intermediates
+        key: ${{ runner.os }}-msbuild-${{ matrix.config }}-${{ matrix.platform }}-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-msbuild-${{ matrix.config }}-${{ matrix.platform }}-
+
+    - name: Add MSBuild to PATH
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build Project
+      run: |
+        msbuild TwinkieX.sln `
+          /p:Configuration=${{ matrix.config }} `
+          /p:Platform=${{ matrix.platform }} `
+          /p:IncludePath="${{ github.workspace }}/TwinkieX/Includes" `
+          /p:PathMap="${{ github.workspace }}=C:/Dev/" `
+          /m

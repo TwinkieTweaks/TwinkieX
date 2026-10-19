@@ -1,7 +1,5 @@
 #pragma once
 
-#include <Version.h>
-
 #pragma warning(disable : 4738 5045 4710)
 
 // Must be defined before anything (directly or transitively) includes <dinput.h>
