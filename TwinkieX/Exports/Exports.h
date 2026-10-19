@@ -4,7 +4,7 @@
 #include <Twinkie/TwinkLogs/CppLoggert/CppLoggert.h>
 #include <imgui/imgui.h>
 
-using ModuleCreateFn = IModule * (*)(TwinkTrackmania*, ImGuiContext*, ILoggert*);
+using ModuleCreateFn = IModule * (*)(TwinkTrackmania*, ILoggert*);
 
 extern Twinkie gTwinkie;
 

@@ -30,7 +30,7 @@
 
 // TM1, TMO, TMS, TMSX and ESWC are x86 games
 #if defined(GAMEBOX) and defined(X64)
-#error "TM1, TMO, TMS, TMSX and ESWC are only supported on x86 architecture."
+#error "TM1, TMO, TMS, TMSX, TMU and ESWC are only supported on x86 architecture."
 #endif
 
 #if !defined(TMCN) && !defined(TM1) && !defined(TMO) && !defined(TMS) && !defined(TMSX) && !defined(ESWC) && !defined(TMU)
