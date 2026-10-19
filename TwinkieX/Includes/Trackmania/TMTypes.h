@@ -18,7 +18,7 @@ struct CFastBufferGen
 	uint32_t Capacity = 0;
 #elif defined(GAMEBOX)
 	uint32_t Size = 0;
-	T* Ptr = nullptr;
+	void* Ptr = nullptr;
 	uint32_t Capacity = 0;
 #endif
 
