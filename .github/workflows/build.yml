@@ -54,7 +54,7 @@ jobs:
           /p:Configuration=${{ matrix.config }} `
           /p:Platform=${{ matrix.platform }} `
           /p:IncludePath="${{ github.workspace }}/TwinkieX/Includes" `
-          /p:PathMap="${{ github.workspace }}=C:/Dev/" `
+          /p:PathMap="${{ github.workspace }}=/TwinkieX/" `
           /m
 
     - name: Install NSIS
