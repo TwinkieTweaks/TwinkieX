@@ -64,9 +64,9 @@ struct CFastBuffer
 	const T* begin() const { return Ptr; }
 	const T* end() const { return Ptr + Size; }
 
-	operator CFastBufferGen* ()
+	operator CFastBufferGen ()
 	{
-		return reinterpret_cast<CFastBufferGen*>(this);
+		return *reinterpret_cast<CFastBufferGen*>(this);
 	}
 };
 
@@ -123,9 +123,9 @@ struct CFastArray
 	const T* begin() const { return Ptr; }
 	const T* end() const { return Ptr + Size; }
 
-	operator CFastArrayGen*()
+	operator CFastArrayGen ()
 	{
-		return reinterpret_cast<CFastArrayGen*>(this);
+		return *reinterpret_cast<CFastArrayGen*>(this);
 	}
 };
 

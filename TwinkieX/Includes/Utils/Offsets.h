@@ -59,12 +59,13 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 // Globals
 
 // NOTE: For TM1.0, "APP" refers to the global object of type CMwNodMain*.
-#define O_APP 0x0097b108
+#define O_APP 0x97b108
 
 // NOTE: Null on purpose for TM1.0. Get the DirectX device from the viewport instead.
 #define O_D3DDEVICE 0x0
 
 #define O_ISINTROOVER 0x5159F4
+#define O_ENGINEMGR 0x580494
 
 // Offsets to members
 
@@ -115,6 +116,7 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_APP 0x7CCE50
 #define O_D3DDEVICE 0x7AA3BC
 #define O_ISINTROOVER 0x78BE8C
+#define O_ENGINEMGR 0x78ABD0
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 80
@@ -134,6 +136,7 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_APP 0x7C8084
 #define O_D3DDEVICE 0x7A4AAC
 #define O_ISINTROOVER 0x7A4B04
+#define O_ENGINEMGR 0x785E30
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 80
@@ -153,6 +156,7 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_APP 0x8AEE50
 #define O_D3DDEVICE 0x8B0DCC
 #define O_ISINTROOVER 0x8BE1D4
+#define O_ENGINEMGR 0x8960E4
 
 // Offsets to members
 #define O_M_CTRACKMANIA_VIEWPORT 0
