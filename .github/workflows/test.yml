@@ -3,8 +3,20 @@ name: Test
 on:
   push:
     branches: [ "development" ]
+    paths:
+      - 'TwinkieX/**'
+      - '.github/**'
+      - 'TwinkieX.sln'
+      - 'GenerateVersion.ps1'
+      - '.gitignore'
   pull_request:
     branches: [ "development" ]
+    paths:
+      - 'TwinkieX/**'
+      - '.github/**'
+      - 'TwinkieX.sln'
+      - 'GenerateVersion.ps1'
+      - '.gitignore'
   workflow_dispatch:
 
 jobs:
