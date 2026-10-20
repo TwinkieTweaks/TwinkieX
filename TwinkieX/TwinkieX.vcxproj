@@ -903,6 +903,7 @@
     <ClInclude Include="Includes\angelscript\sdk\angelscript\source\as_tokenizer.h" />
     <ClInclude Include="Includes\angelscript\sdk\angelscript\source\as_typeinfo.h" />
     <ClInclude Include="Includes\angelscript\sdk\angelscript\source\as_variablescope.h" />
+    <ClInclude Include="Includes\ccpp.h" />
     <ClInclude Include="Includes\DiscordGameSDK\achievement_manager.h" />
     <ClInclude Include="Includes\DiscordGameSDK\activity_manager.h" />
     <ClInclude Include="Includes\DiscordGameSDK\application_manager.h" />

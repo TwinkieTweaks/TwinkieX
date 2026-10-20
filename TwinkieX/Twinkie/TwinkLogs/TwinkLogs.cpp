@@ -85,16 +85,14 @@ void TwinkLogs::Render()
 
 void TwinkLogs::UpdateLogFileLoc(std::filesystem::path& DocumentsFolderLoc)
 {
-	auto LogFileLoc = DocumentsFolderLoc / "TwinkieX\\TwinkieX.log";
+	auto LogFileLoc = DocumentsFolderLoc / "TwinkieX\\Twinkie" TWINKIEX_GAME ".log";
 
 	if (std::filesystem::exists(LogFileLoc))
 	{
-		std::filesystem::rename(LogFileLoc, DocumentsFolderLoc / "TwinkieX\\TwinkieX-Old.log");
+		std::filesystem::rename(LogFileLoc, DocumentsFolderLoc / "TwinkieX\\Twinkie" TWINKIEX_GAME "-Old.log");
 	}
 	else
 	{
-		// make the file
-		// TODO: something better maybe??
 		std::ofstream(LogFileLoc).close();
 	}
 

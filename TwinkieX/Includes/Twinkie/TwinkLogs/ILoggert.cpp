@@ -9,7 +9,7 @@
 	std::string sTag((const char*)Tag.c_str()); \
 	\
     std::string MessageFormattedPrev = std::format(color tag " {}[{}{}] $g{}\n", sColorTag, sIcon, sTag, sStr); \
-	std::string MessageFormattedFile = std::format(tag " {}[{}{}] {}\n", sColorTag, sIcon, sTag, sStr); \
+	std::string MessageFormattedFile = std::format(tag " [{}{}] {}\n", sIcon, sTag, sStr); \
 	\
 	LoggertStreamForPreview << MessageFormattedPrev; \
 	LoggertStreamForFile << MessageFormattedFile; \
@@ -23,7 +23,7 @@
 	std::string sTag((const char*)Tag.c_str()); \
 	\
     std::string MessageFormattedPrev = std::format(color tag " {}[{}{}] " color "{}\n", sColorTag, sIcon, sTag, sStr); \
-	std::string MessageFormattedFile = std::format(tag " {}[{}{}] {}\n", sColorTag, sIcon, sTag, sStr); \
+	std::string MessageFormattedFile = std::format(tag " [{}{}] {}\n", sIcon, sTag, sStr); \
 	\
 	LoggertStreamForPreview << MessageFormattedPrev; \
 	LoggertStreamForFile << MessageFormattedFile; \

@@ -387,6 +387,9 @@
     <ClInclude Include="Includes\Twinkie\TwinkLogs\TwinkLoggert\TwinkLoggert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\ccpp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">

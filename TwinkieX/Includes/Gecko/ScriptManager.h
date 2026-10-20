@@ -79,6 +79,8 @@ namespace Gecko
 
 		Script* GetActiveScript();
 		asIScriptContext* GetActiveContext();
+		Script* GetScriptFromCtx(asIScriptContext* Ctx);
+		bool IsExecutingRenderCallback();
 
 		void RenderDevMenu();
 		void BuildAll();
@@ -86,9 +88,8 @@ namespace Gecko
 		bool ReloadScript(Script&);
 		void BuildScriptByCallback(Script&, CallbackType);
 		void RunAll(CallbackType CallbackType);
-		Script* GetScriptFromCtx(asIScriptContext* Ctx);
 		bool AddFromFile(const std::filesystem::path& FilePath);
-		bool AddFromSource(std::u8string Source, std::u8string ScriptName);
+		bool AddFromSource(std::u8string Source, std::u8string ScriptName, std::filesystem::path Filepath = "");
 	};
 
 	extern ScriptManager* TheScriptManager;

@@ -1,6 +1,9 @@
 #include "pch.h"
 #include "ScriptManager.h"
 
+#define CCPP_IMPL
+#include <ccpp.h>
+
 #include "Exports/Global/Global.h"
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
@@ -125,6 +128,22 @@ namespace Gecko
 		Ctx->Prepare(CallbackFn);
 	}
 
+	bool ScriptManager::IsExecutingRenderCallback()
+	{
+		switch (ActiveCallbackType)
+		{
+		case CallbackType::Render:
+		case CallbackType::RenderInterface:
+		case CallbackType::RenderMenu:
+		case CallbackType::RenderMenuMain:
+		case CallbackType::RenderSettings:
+		case CallbackType::RenderEarly:
+			return true;
+		default:
+			return false;
+		}
+	}
+
 	void ScriptManager::BuildScript(Script& Script)
 	{
 		if (Engine->GetModule((const char*)Script.Name.c_str()))
@@ -243,18 +262,14 @@ namespace Gecko
 	{
 		try
 		{
-			Script NewScript;
-			NewScript.ScriptPath = FilePath;
 			std::ostringstream SourceCodeStream;
 
 			std::ifstream ScriptFile(FilePath);
 
 			SourceCodeStream << ScriptFile.rdbuf();
 
-			NewScript.SourceCode = FromStr(SourceCodeStream.str());
-			NewScript.Name = FilePath.filename().u8string();
-
-			Scripts.push_back(std::move(NewScript));
+			// TODO: Error checking
+			AddFromSource(FromStr(SourceCodeStream.str()), FilePath.filename().u8string(), FilePath);
 		}
 		catch (...)
 		{
@@ -264,14 +279,47 @@ namespace Gecko
 		return true;
 	}
 
-	bool ScriptManager::AddFromSource(std::u8string Source, std::u8string ScriptName)
+	bool ScriptManager::AddFromSource(std::u8string Source, std::u8string ScriptName, std::filesystem::path FilePath)
 	{
 		try
 		{
 			Script NewScript;
-			NewScript.ScriptPath = ScriptName;
-			NewScript.SourceCode = Source;
+			NewScript.ScriptPath = FilePath.empty() ? ScriptName : FilePath;
 			NewScript.Name = ScriptName;
+
+			ccpp::processor Preprocessor;
+
+			{
+				Preprocessor.add_define(TWINKIEX_GAME);
+#ifdef TMCN
+				Preprocessor.add_define("TMNEXT");
+#endif
+#ifdef _DEBUG
+				Preprocessor.add_define("DEVELOPER");
+#endif
+#ifdef X86
+				Preprocessor.add_define("MANIA32");
+#else
+				Preprocessor.add_define("MANIA64");
+#endif
+				// TODO: Maybe add a signature toggle?
+				Preprocessor.add_define("SIG_DEVELOPER");
+
+				auto NtDll = LoadLibrary(L"ntdll.dll");
+				if (NtDll && GetProcAddress(NtDll, "wine_get_version"))
+					Preprocessor.add_define("WINDOWS_WINE");
+
+				Preprocessor.add_define("WINDOWS");
+			}
+
+			// ...ugh
+			char* Buffer = new char[Source.size() + 1];
+			strcpy_s(Buffer, Source.size() + 1, (const char*)Source.c_str());
+
+			Preprocessor.process(Buffer, Source.size());
+			NewScript.SourceCode = (char8_t*)Buffer;
+
+			delete[] Buffer;
 
 			Scripts.push_back(std::move(NewScript));
 		}
@@ -292,7 +340,39 @@ namespace Gecko
 
 			SourceCodeStream << ScriptFile.rdbuf();
 
-			Script.SourceCode = FromStr(SourceCodeStream.str());
+			ccpp::processor Preprocessor;
+
+			{
+				Preprocessor.add_define(TWINKIEX_GAME);
+#ifdef TMCN
+				Preprocessor.add_define("TMNEXT");
+#endif
+#ifdef _DEBUG
+				Preprocessor.add_define("DEVELOPER");
+#endif
+#ifdef X86
+				Preprocessor.add_define("MANIA32");
+#else
+				Preprocessor.add_define("MANIA64");
+#endif
+				// TODO: Maybe add a signature toggle?
+				Preprocessor.add_define("SIG_DEVELOPER");
+
+				auto NtDll = LoadLibrary(L"ntdll.dll");
+				if (NtDll && GetProcAddress(NtDll, "wine_get_version"))
+					Preprocessor.add_define("WINDOWS_WINE");
+
+				Preprocessor.add_define("WINDOWS");
+			}
+
+			// ...ugh
+			char* Buffer = new char[SourceCodeStream.str().size() + 1];
+			strcpy_s(Buffer, SourceCodeStream.str().size() + 1, (const char*)SourceCodeStream.str().c_str());
+
+			Preprocessor.process(Buffer, SourceCodeStream.str().size());
+			Script.SourceCode = (char8_t*)Buffer;
+
+			delete[] Buffer;
 		}
 		catch (...)
 		{

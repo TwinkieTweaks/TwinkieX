@@ -129,6 +129,8 @@ void TwinkUi::Render()
 {
 	using namespace ImGui;
 
+	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Main);
+
 	IoMgr.Sync();
 
 	if (IsKeyPressed(ImGuiKey_F3, false))

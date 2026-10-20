@@ -212,7 +212,6 @@ namespace Gecko::Exports::Trackmania
 	static CMwNod* __stdcall GetApp()
 	{
 		CMwNod* App = ReadAddr(CMwNod*, (uintptr_t)GetModuleHandleA(NULL) + O_APP);
-		App->ReferenceCount++;
 		return App;
 	}
 
@@ -343,8 +342,6 @@ namespace Gecko::Exports::Trackmania
 	// Registers all classes available from the engine manager.
 	void RegistrarFromTm(asIScriptEngine* Engine)
 	{
-		gTwinkie.TrackmaniaMgr.GetApp()->ReferenceCount++;
-
 		CMwEngineManager* EngineMgr = gTwinkie.TrackmaniaMgr.GetEngineManager();
 
 		for (auto& TmEngine : EngineMgr->Engines)

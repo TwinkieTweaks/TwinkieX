@@ -85,11 +85,6 @@ Twinkie::~Twinkie()
 
 void Twinkie::Update()
 {
-	LoggertTwink.trace(u8"*Waking up*");
-	LoggertTwink.print(u8"Good morning, sunshine!");
-	LoggertTwink.warn(u8"Uh oh, the sun is setting...");
-	LoggertTwink.error(u8"Oh no, now it's gone! :(");
-
 	Gecko::TheScriptManager = new Gecko::ScriptManager();
 
 	for (const auto& File : std::filesystem::directory_iterator(DocumentsFolderPath / "TwinkieX\\Scripts"))
@@ -100,7 +95,6 @@ void Twinkie::Update()
 	}
 
 	Gecko::TheScriptManager->BuildAll();
-	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Main);
 
 	this->UiMgr->Update(DocumentsFolderPath);
 }
