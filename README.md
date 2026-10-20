@@ -4,8 +4,8 @@
     <a href="https://discord.gg/kRZ4MdCkVf" style="text-decoration: none;">
         <img src="https://img.shields.io/discord/1364918007008202752?logo=discord&logoColor=fff&color=f0f" />
     </a>
-    <a href="https://github.com/TwinkieTweaks/TwinkieX/actions/workflows/build.yml" style="text-decoration: none;">
-        <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/build.yml?color=f0f" />
+    <a href="https://github.com/TwinkieTweaks/TwinkieX/actions/workflows/test.yml" style="text-decoration: none;">
+        <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/test.yml?logo=github&color=%23ff00ff" />
     </a>
     <a href="https://github.com/TwinkieTweaks/TwinkieX/releases" style="text-decoration: none;">
         <img src="https://img.shields.io/github/v/release/TwinkieTweaks/TwinkieX?color=f0f" />
@@ -13,7 +13,6 @@
     <a href="https://github.com/TwinkieTweaks/TwinkieX/releases" style="text-decoration: none;">
         <img src="https://img.shields.io/github/downloads/TwinkieTweaks/TwinkieX/total?color=f0f" />
     </a>
-    <img src="https://img.shields.io/github/actions/workflow/status/TwinkieTweaks/TwinkieX/test.yml?logo=github&color=%23ff00ff" />
 </p>
 
 A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, TMU, and TMCN.
