@@ -1,3 +1,4 @@
+
 #include "pch.h"
 #include "ExportImgui.h"
 
@@ -7,22 +8,52 @@ namespace Gecko::Exports::ImGui
 {
 	using namespace ::ImGui;
 
-	void BeginAs(std::string& s)
+	/*
+	!CompatMeta
+	for     UI
+	with    bool Begin(const string&in title, int flags = UI::GetDefaultWindowFlags())
+	with    bool Begin(const string&in title, bool&out open, int flags = UI::GetDefaultWindowFlags())
+	as      void Begin(const string&in title)
+	being   function
+	declare partial
+	reason  Open and Flags are not implemented as arguments yet.
+	!CompatMeta
+	*/
+	void BeginAs(std::u8string& s)
 	{
 		Gecko_Exports_ImGui_GuardNonRender();
-		Begin(s.c_str());
+		Begin((const char*)s.c_str());
 	}
 
+	/*
+	!CompatMeta
+	for     UI
+	with    void End()
+	as      void End()
+	being   function
+	declare full
+	!CompatMeta
+	*/
 	void EndAs()
 	{
 		Gecko_Exports_ImGui_GuardNonRender();
 		End();
 	}
 
-	void TextAs(std::string& s)
+	/*
+	!CompatMeta
+	for     UI
+	with    void Text(const string&in text, int length = -1)
+	as      void Text(const string&in text)
+	being   function
+	declare partial
+	reason  Length is not implemented.
+	!CompatMeta
+	*/
+	void TextAs(std::u8string& s)
 	{
 		Gecko_Exports_ImGui_GuardNonRender();
-		Text(s.c_str());
+		Text((const char*)s.c_str());
 	}
 
 	void Registrar(asIScriptEngine* Engine)

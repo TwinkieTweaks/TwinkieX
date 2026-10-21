@@ -23,6 +23,16 @@ namespace Gecko::Exports::Trackmania
 		//	Nod->ReferenceCount--;
 		//}
 
+		/*
+		!CompatMeta
+		for     Global
+		with    uint get_Length() const
+		as      uint get_Length()
+		being   method
+		of      MwFastArray
+		declare full
+		!CompatMeta
+		*/
 		static uint32_t __cdecl CFastArray_Length(CFastArrayGen* Array)
 		{
 			return Array->Size;
@@ -128,18 +138,39 @@ namespace Gecko::Exports::Trackmania
 			NewArray->Size = Size;
 		}
 
+
 		static void CFastArray_ctor(asIScriptGeneric* Script)
 		{
 			asITypeInfo* ArrayType = *(asITypeInfo**)Script->GetAddressOfArg(0);
 			CFastArray_Construct(ArrayType, 0, Script->GetObject());
 		}
 
+		/*
+		!CompatMeta
+		for     Global
+		with    MwFastArray(int&in)
+		as      MwFastArray(int&in)
+		being   behavior
+		of      MwFastArray
+		declare full
+		!CompatMeta
+		*/
 		static void CFastArray_ctorSize(asIScriptGeneric* Script)
 		{
 			asITypeInfo* ArrayType = *(asITypeInfo**)Script->GetAddressOfArg(0);
 			CFastArray_Construct(ArrayType, Script->GetArgDWord(1), Script->GetObject());
 		}
 
+		/*
+		!CompatMeta
+		for     Global
+		with    ~MwFastArray()
+		as      ~MwFastArray()
+		being   behavior
+		of      MwFastArray
+		declare full
+		!CompatMeta
+		*/
 		static void CFastArray_dtor(asIScriptGeneric* Script)
 		{
 			auto Engine = Script->GetEngine();
@@ -150,7 +181,16 @@ namespace Gecko::Exports::Trackmania
 			CFastArray_FreeBuffer(Engine, Engine->GetTypeInfoById(Script->GetObjectTypeId()), Array);
 		}
 
-
+		/*
+		!CompatMeta
+		for     Global
+		with    MwFastArray<T>& opAssign(const MwFastArray<T>&in)
+		as      MwFastArray<T>& opAssign(const MwFastArray<T>&in)
+		being   method
+		of      MwFastArray
+		declare full
+		!CompatMeta
+		*/
 		static void CFastArray_opAssign(asIScriptGeneric* Script)
 		{
 			auto Engine = Script->GetEngine();
