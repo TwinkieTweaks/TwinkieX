@@ -10,6 +10,7 @@ on:
       - 'TwinkieX.sln'
       - 'GenerateVersion.ps1'
       - '.gitignore'
+      - 'CompatCheck/**'
   pull_request:
     branches: [ "development" ]
     paths:
@@ -19,6 +20,7 @@ on:
       - 'TwinkieX.sln'
       - 'GenerateVersion.ps1'
       - '.gitignore'
+      - 'CompatCheck/**'
   workflow_dispatch:
 
 jobs:
@@ -69,3 +71,13 @@ jobs:
           /p:IncludePath="${{ github.workspace }}/TwinkieX/Includes" `
           /p:PathMap="${{ github.workspace }}=C:/Dev/" `
           /m
+  
+  compat:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install python
+        uses: actions/setup-python@v7
+        with:
+          python-version: '3.12.2'
+      - name: Run compatcheck.py
+        run: py CompatCheck/compatcheck.py 

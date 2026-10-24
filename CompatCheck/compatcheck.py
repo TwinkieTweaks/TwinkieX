@@ -5,7 +5,7 @@ from collections import defaultdict
 import json
 
 def pluralize(string: str):
-    return string + "s" if string[-1] != "s" else string + "es" if string[-1] != "y" else string[:-1] + "ies"
+    return (string + "s" if string[-1] != "y" else string[:-1] + "ies") if string[-1] != "s" else string + "es"
 
 class BeingInfo(Enum):
     Function = "function"
@@ -26,13 +26,13 @@ class DeclInfo(Enum):
 class CompatInfo:
     def __init__(self):
         self.namespace = ""
-        self.wanted = []
+        self.wanted: list[str] = []
         self.impl = ""
         self.being = ""
         self.decl: DeclInfo = DeclInfo.Undefined
         self.reason = ""
         self.of = ""
-        self.games = ["TMCN", "TMU", "ESWC", "TMSX", "TMO", "TMS", "TM1.0"]
+        self.games = ["TMCN", "TMU", "ESWC", "TMSX", "TMO", "TMS", "TM1"]
         self.since = ""
 
         self.line = 0
@@ -57,7 +57,7 @@ class CompatInfo:
             case "declare":
                 if arg not in DeclInfo:
                     raise SyntaxError(f"{arg} is not a valid declaration ({self.__repr__()})")
-                self.decl = arg
+                self.decl = DeclInfo(arg)
             case "games":
                 self.games = arg.split(", ")   
             case "since":
@@ -67,7 +67,7 @@ class CompatInfo:
             case _: pass
 
     def __repr__(self):
-        return f'{{"{self.file}", line {self.line}, {self.decl}}}'
+        return f'{{"{self.file}", line {self.line}, {self.decl.value}}}'
 
 parser = argparse.ArgumentParser(
     prog="CompatCheck", 
@@ -83,7 +83,7 @@ parser.add_argument("-r", "--recursive", action="store_true")
 
 args = parser.parse_args()
 
-files = []
+files: list[str] = []
 for filter in args.filter.split(","):
     files += glob(args.input + "\\" + filter, recursive=args.recursive)
 
@@ -123,7 +123,7 @@ for file in files:
 for info in infos:
     infos_by_being[info.being].append(info)
 
-matches: dict[str, int] = defaultdict(int)
+matches: dict[DeclInfo, int] = defaultdict(int)
 misses = 0
 
 class_name_to_idx: dict[str, int] = {}
@@ -164,9 +164,13 @@ with open(args.against, "r") as core:
 
         misses += len(contents) - matches_being
 
+has_unmatched_info = False
 for being in infos_by_being:
     for info in infos_by_being[being]:
         if not info.matched:
             print(f"unmatched info: {info}")
+            has_unmatched_info = True
 
-print(f'{"".join(f"{matches[m]} {m} matches, " if matches[m] >= 1 else f"{m} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
+print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] >= 1 else f"{m} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
+
+quit(has_unmatched_info)
