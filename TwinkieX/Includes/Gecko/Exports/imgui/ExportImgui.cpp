@@ -362,20 +362,20 @@ namespace Gecko::Exports::ImGui
 		/*
 		!CompatMeta
 		for     UI
-		with    void TextLinkOpenURL(const string&in text)
-		as      void TextLinkOpenURL(const string&in text)
+		with    void TextLinkOpenURL(const string&in label, const string&in url)
+		as      void TextLinkOpenURL(const string&in label, const string&in url)
 		being   function
 		declare full
 		since   v0.1.0
 		!CompatMeta
 		*/
-		void TextLinkOpenURLAs(std::u8string& s)
+		void TextLinkOpenURLAs(std::u8string& l, std::u8string& t)
 		{
 			Gecko_Exports_ImGui_GuardNonRender();
 
-			TextLinkOpenURL((const char*)s.c_str());
+			TextLinkOpenURL((const char*)l.c_str(), (const char*)t.c_str());
 		}
-		UI_EXPORT("void TextLinkOpenURL(const string&in text)", TextLinkOpenURLAs);
+		UI_EXPORT("void TextLinkOpenURL(const string&in label, const string&in text)", TextLinkOpenURLAs);
 
 		/*
 		!CompatMeta
