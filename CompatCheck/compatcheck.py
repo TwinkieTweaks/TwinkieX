@@ -86,9 +86,7 @@ args = parser.parse_args()
 files: list[str] = []
 for filter in args.filter.split(","):
     files += glob(args.input + "/" + filter, recursive=args.recursive)
-
-breakpoint()
-
+    
 infos: list[CompatInfo] = []
 infos_by_being: dict[str, list[CompatInfo]] = defaultdict(list)
 for file in files:
