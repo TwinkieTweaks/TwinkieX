@@ -85,40 +85,45 @@ args = parser.parse_args()
 
 files: list[str] = []
 for filter in args.filter.split(","):
-    files += glob(args.input + "\\" + filter, recursive=args.recursive)
+    files += glob(args.input + "/" + filter, recursive=args.recursive)
+
+breakpoint()
 
 infos: list[CompatInfo] = []
 infos_by_being: dict[str, list[CompatInfo]] = defaultdict(list)
 for file in files:
     with open(file, "r") as file:
-        lines = file.readlines()
+        try:
+            lines = file.readlines()
 
-        tag_count = 0
-        for line in lines:
-            if "!CompatMeta" in line:
-                tag_count += 1
+            tag_count = 0
+            for line in lines:
+                if "!CompatMeta" in line:
+                    tag_count += 1
 
-        if tag_count % 2 != 0:
-            raise SyntaxError("a tag was opened but not closed")
+            if tag_count % 2 != 0:
+                raise SyntaxError("a tag was opened but not closed")
 
-        seen_tag = False
-        for idx, line in enumerate(lines):
-            if "!CompatMeta" in line:
-                seen_tag = not seen_tag
-                if not seen_tag:
-                    infos[-1].line = idx + 2
-                    infos[-1].file = file.name
-                else:
-                    infos.append(CompatInfo())
-                    infos[-1].line = idx + 2
-                    infos[-1].file = file.name
-                continue
-            elif seen_tag:
-                line = line.strip().removeprefix("//").strip().split(None, 1)
-                command = line[0]
-                value = line[1]
+            seen_tag = False
+            for idx, line in enumerate(lines):
+                if "!CompatMeta" in line:
+                    seen_tag = not seen_tag
+                    if not seen_tag:
+                        infos[-1].line = idx + 2
+                        infos[-1].file = file.name
+                    else:
+                        infos.append(CompatInfo())
+                        infos[-1].line = idx + 2
+                        infos[-1].file = file.name
+                    continue
+                elif seen_tag:
+                    line = line.strip().removeprefix("//").strip().split(None, 1)
+                    command = line[0]
+                    value = line[1]
 
-                infos[-1].From(command, value)
+                    infos[-1].From(command, value)
+        except Exception as e:
+            print(f"could not parse or open {file.name}: {e}")
 
 for info in infos:
     infos_by_being[info.being].append(info)
