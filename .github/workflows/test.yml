@@ -85,5 +85,4 @@ jobs:
           python-version: '3.12.2'
       - name: Run compatcheck.py
         run: | 
-          ls ${{ github.workspace }} 
           python CompatCheck/compatcheck.py -i ${{ github.workspace }}/ -a CompatCheck/OpenplanetCore.json -r

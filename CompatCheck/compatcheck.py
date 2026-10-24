@@ -175,5 +175,6 @@ for being in infos_by_being:
             has_unmatched_info = True
 
 print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] >= 1 else f"{m} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
+print(f'{(matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses):.2%} complete, {(matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses):.2%} non-partial')
 
 quit(has_unmatched_info or (len(matches) == 0))
