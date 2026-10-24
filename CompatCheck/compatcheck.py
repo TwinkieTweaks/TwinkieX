@@ -173,4 +173,4 @@ for being in infos_by_being:
 
 print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] >= 1 else f"{m} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
 
-quit(has_unmatched_info)
+quit(has_unmatched_info or (len(matches) == 0))
