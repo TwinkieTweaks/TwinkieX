@@ -34,7 +34,7 @@ namespace Gecko::Exports::ImGui
 		as      bool Begin(const string&in title, int flags)
 		being   function
 		declare partial
-		since   v0.1.0
+		since   v0.1.1
 		reason  Flags are not pulled from any function before use.
 		!CompatMeta
 		*/
@@ -52,7 +52,7 @@ namespace Gecko::Exports::ImGui
 		as      bool Begin(const string&in title, bool&out open, int flags)
 		being   function
 		declare partial
-		since   v0.1.0
+		since   v0.1.1
 		reason  Flags are not pulled from any function before use.
 		!CompatMeta
 		*/
@@ -195,7 +195,7 @@ namespace Gecko::Exports::ImGui
 			return BeginTabItem((const char*)label.c_str(), open, flags);
 		}
 		UI_EXPORT("bool BeginTabItem(const string&in label, bool&out open, int flags = 0)", BeginTabItemAs_Open);
-	
+
 		/*
 		!CompatMeta
 		for     UI
@@ -225,7 +225,7 @@ namespace Gecko::Exports::ImGui
 			return BeginTable((const char*)id.c_str(), columns, flags);
 		}
 		UI_EXPORT("bool BeginTabItem(const string&in label, bool&out open, int flags = 0)", BeginTableAs);
-	
+
 		/*
 		!CompatMeta
 		for     UI
@@ -312,7 +312,7 @@ namespace Gecko::Exports::ImGui
 		as      void TextWrapped(const string&in text)
 		being   function
 		declare full
-		since   v0.1.0
+		since   v0.1.1
 		!CompatMeta
 		*/
 		void TextWrappedAs(std::u8string& s)
@@ -330,7 +330,7 @@ namespace Gecko::Exports::ImGui
 		as      void TextDisabled(const string&in text)
 		being   function
 		declare full
-		since   v0.1.0
+		since   v0.1.1
 		!CompatMeta
 		*/
 		void TextDisabledAs(std::u8string& s)
@@ -348,7 +348,7 @@ namespace Gecko::Exports::ImGui
 		as      bool TextLink(const string&in label)
 		being   function
 		declare full
-		since   v0.1.0
+		since   v0.1.1
 		!CompatMeta
 		*/
 		bool TextLinkAs(std::u8string& s)
@@ -366,7 +366,7 @@ namespace Gecko::Exports::ImGui
 		as      void TextLinkOpenURL(const string&in label, const string&in url)
 		being   function
 		declare full
-		since   v0.1.0
+		since   v0.1.1
 		!CompatMeta
 		*/
 		void TextLinkOpenURLAs(std::u8string& l, std::u8string& t)
@@ -384,7 +384,7 @@ namespace Gecko::Exports::ImGui
 		as      void LabelText(const string&in label, const string&in text)
 		being   function
 		declare full
-		since   v0.1.0
+		since   v0.1.1
 		!CompatMeta
 		*/
 		void LabelTextAs(std::u8string& l, std::u8string& t)
