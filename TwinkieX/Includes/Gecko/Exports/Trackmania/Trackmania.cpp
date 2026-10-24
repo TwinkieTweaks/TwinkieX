@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Trackmania.h"
+#include <Gecko/Exports/GeckoAutoExport.h>
 #include <Twinkie/Twinkie.h>
 #include <unordered_set>
 
@@ -10,6 +11,12 @@ namespace Gecko::Exports::Trackmania
 {
 	std::unordered_map<uint32_t, CMwClassInfo*> ClassIDToInfo;
 	std::unordered_map<std::string, CMwClassInfo*> ClassNameToInfo;
+
+	static std::vector<GeckoExport> s_BaseExports;
+	static std::vector<GeckoExport> s_Exports;
+
+#define FASTARRAY_METHOD(Decl_, Ptr_, Conv_)          GECKO_EXPORT_METHOD(s_BaseExports, "", "MwFastArray<T>", Decl_, Ptr_, Conv_)
+#define FASTARRAY_BEHAVIOUR(Beh_, Decl_, Ptr_, Conv_) GECKO_EXPORT_BEHAVIOUR(s_BaseExports, "", "MwFastArray<T>", Beh_, Decl_, Ptr_, Conv_)
 
 	namespace BaseTypes
 	{
@@ -31,12 +38,14 @@ namespace Gecko::Exports::Trackmania
 		being   method
 		of      MwFastArray
 		declare full
+		since   v0.1.0
 		!CompatMeta
 		*/
 		static uint32_t __cdecl CFastArray_Length(CFastArrayGen* Array)
 		{
 			return Array->Size;
 		}
+		FASTARRAY_METHOD("const uint get_Length() property", asFUNCTION(CFastArray_Length), asCALL_CDECL_OBJLAST);
 
 		// Size in bytes of one element of a MwFastArray<T> instance
 		static uint32_t CFastArray_ElemSize(asIScriptEngine* Engine, asITypeInfo* ArrayType)
@@ -68,6 +77,8 @@ namespace Gecko::Exports::Trackmania
 
 			Script->SetReturnAddress(Array->Get(Idx, ElemSize));
 		}
+		FASTARRAY_METHOD("T& opIndex(uint index)", asFUNCTION(CFastArray_opIndex), asCALL_GENERIC);
+		FASTARRAY_METHOD("const T& opIndex(uint index) const", asFUNCTION(CFastArray_opIndex), asCALL_GENERIC);
 
 		static bool __cdecl CFastArray_TemplateCallback(asITypeInfo* ArrayType, bool& DontGarbageCollect)
 		{
@@ -88,6 +99,7 @@ namespace Gecko::Exports::Trackmania
 
 			return true;
 		}
+		FASTARRAY_BEHAVIOUR(asBEHAVE_TEMPLATE_CALLBACK, "bool f(int&in, bool&out)", asFUNCTION(CFastArray_TemplateCallback), asCALL_CDECL);
 
 		// All arrays made by a script
 		static std::unordered_set<CFastArrayGen*> OwnedArrays;
@@ -144,6 +156,7 @@ namespace Gecko::Exports::Trackmania
 			asITypeInfo* ArrayType = *(asITypeInfo**)Script->GetAddressOfArg(0);
 			CFastArray_Construct(ArrayType, 0, Script->GetObject());
 		}
+		FASTARRAY_BEHAVIOUR(asBEHAVE_CONSTRUCT, "void f(int&in)", asFUNCTION(CFastArray_ctor), asCALL_GENERIC);
 
 		/*
 		!CompatMeta
@@ -153,6 +166,7 @@ namespace Gecko::Exports::Trackmania
 		being   behavior
 		of      MwFastArray
 		declare full
+		since   v0.1.0
 		!CompatMeta
 		*/
 		static void CFastArray_ctorSize(asIScriptGeneric* Script)
@@ -160,6 +174,7 @@ namespace Gecko::Exports::Trackmania
 			asITypeInfo* ArrayType = *(asITypeInfo**)Script->GetAddressOfArg(0);
 			CFastArray_Construct(ArrayType, Script->GetArgDWord(1), Script->GetObject());
 		}
+		FASTARRAY_BEHAVIOUR(asBEHAVE_CONSTRUCT, "void f(int&in, uint)", asFUNCTION(CFastArray_ctorSize), asCALL_GENERIC);
 
 		/*
 		!CompatMeta
@@ -169,6 +184,7 @@ namespace Gecko::Exports::Trackmania
 		being   behavior
 		of      MwFastArray
 		declare full
+		since   v0.1.0
 		!CompatMeta
 		*/
 		static void CFastArray_dtor(asIScriptGeneric* Script)
@@ -180,6 +196,7 @@ namespace Gecko::Exports::Trackmania
 
 			CFastArray_FreeBuffer(Engine, Engine->GetTypeInfoById(Script->GetObjectTypeId()), Array);
 		}
+		FASTARRAY_BEHAVIOUR(asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CFastArray_dtor), asCALL_GENERIC);
 
 		/*
 		!CompatMeta
@@ -189,6 +206,7 @@ namespace Gecko::Exports::Trackmania
 		being   method
 		of      MwFastArray
 		declare full
+		since   v0.1.0
 		!CompatMeta
 		*/
 		static void CFastArray_opAssign(asIScriptGeneric* Script)
@@ -232,19 +250,13 @@ namespace Gecko::Exports::Trackmania
 			Dst->Ptr = NewPtr;
 			Dst->Size = NewSize;
 		}
+		FASTARRAY_METHOD("MwFastArray<T>& opAssign(const MwFastArray<T>&in)", asFUNCTION(CFastArray_opAssign), asCALL_GENERIC);
 
 		// Registers all base types used by the game.
 		static void RegistrarBaseTypes(asIScriptEngine* Engine)
 		{
 			Engine->RegisterObjectType("MwFastArray<T>", sizeof(CFastArrayGen), asOBJ_VALUE | asOBJ_TEMPLATE | asGetTypeTraits<CFastArrayGen>());
-			Engine->RegisterObjectBehaviour("MwFastArray<T>", asBEHAVE_TEMPLATE_CALLBACK, "bool f(int&in, bool&out)", asFUNCTION(CFastArray_TemplateCallback), asCALL_CDECL);
-			Engine->RegisterObjectBehaviour("MwFastArray<T>", asBEHAVE_CONSTRUCT, "void f(int&in)", asFUNCTION(CFastArray_ctor), asCALL_GENERIC);
-			Engine->RegisterObjectBehaviour("MwFastArray<T>", asBEHAVE_CONSTRUCT, "void f(int&in, uint)", asFUNCTION(CFastArray_ctorSize), asCALL_GENERIC);
-			Engine->RegisterObjectBehaviour("MwFastArray<T>", asBEHAVE_DESTRUCT, "void f()", asFUNCTION(CFastArray_dtor), asCALL_GENERIC);
-			Engine->RegisterObjectMethod("MwFastArray<T>", "MwFastArray<T>& opAssign(const MwFastArray<T>&in)", asFUNCTION(CFastArray_opAssign), asCALL_GENERIC);
-			Engine->RegisterObjectMethod("MwFastArray<T>", "const uint get_Length() property", asFUNCTION(CFastArray_Length), asCALL_CDECL_OBJLAST);
-			Engine->RegisterObjectMethod("MwFastArray<T>", "T& opIndex(uint index)", asFUNCTION(CFastArray_opIndex), asCALL_GENERIC);
-			Engine->RegisterObjectMethod("MwFastArray<T>", "const T& opIndex(uint index) const", asFUNCTION(CFastArray_opIndex), asCALL_GENERIC);
+			RegisterAll(Engine, s_BaseExports);
 		}
 	}
 
@@ -254,6 +266,7 @@ namespace Gecko::Exports::Trackmania
 		CMwNod* App = ReadAddr(CMwNod*, (uintptr_t)GetModuleHandleA(NULL) + O_APP);
 		return App;
 	}
+	GECKO_EXPORT_FN_EX(s_Exports, "", "CGameApp@ GetApp()", asFUNCTION(GetApp), asCALL_STDCALL);
 
 	void Caster(asIScriptGeneric* Script)
 	{
@@ -530,7 +543,7 @@ namespace Gecko::Exports::Trackmania
 		BaseTypes::RegistrarBaseTypes(Engine);
 		RegistrarFromTm(Engine);
 
-		Engine->RegisterGlobalFunction("CGameApp@ GetApp()", asFUNCTION(GetApp), asCALL_STDCALL);
+		RegisterAll(Engine, s_Exports);
 	}
 
 	void Cleanup()

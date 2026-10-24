@@ -24,6 +24,8 @@ extern const char* g_MemberTypeSignatures[];
 
 #define OffsetOf(Class, member) (uintptr_t)&(((Class*)(0))->Member)
 
+#define DeleteImplOperatorEq(Class) Class operator=(Class) = delete
+
 // Used to write to the n-th virtual function from an object ptr
 __declspec(noinline) uintptr_t VirtualWrite(unsigned int Idx, uintptr_t This, uintptr_t ToWrite);
 __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);

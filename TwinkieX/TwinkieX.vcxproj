@@ -924,6 +924,7 @@
     <ClInclude Include="Includes\DiscordGameSDK\user_manager.h" />
     <ClInclude Include="Includes\DiscordGameSDK\voice_manager.h" />
     <ClInclude Include="Includes\Gecko\CtxSet.h" />
+    <ClInclude Include="Includes\Gecko\Exports\GeckoAutoExport.h" />
     <ClInclude Include="Includes\Gecko\Exports\Global\Global.h" />
     <ClInclude Include="Includes\Gecko\Exports\imgui\ExportImgui.h" />
     <ClInclude Include="Includes\Gecko\Exports\Reflection\Reflection.h" />
@@ -943,7 +944,7 @@
     <ClInclude Include="Includes\imgui\imstb_textedit.h" />
     <ClInclude Include="Includes\imgui\imstb_truetype.h" />
     <ClInclude Include="Includes\Modules\AboutModule\AboutModule.h" />
-    <ClInclude Include="Includes\Modules\AddictionUnlimiterModule\AddictionUnlimiter.h" />
+    <ClInclude Include="Includes\Modules\ModuleAutoExport.h" />
     <ClInclude Include="Includes\Modules\NodExplorerModule\NodExplorerModule.h" />
     <ClInclude Include="Includes\Modules\IModule.h" />
     <ClInclude Include="Includes\Modules\InputDisplayModule\InputDisplayModule.h" />
@@ -1055,7 +1056,6 @@
     <ClCompile Include="Includes\imgui\imgui_tables.cpp" />
     <ClCompile Include="Includes\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Includes\Modules\AboutModule\AboutModule.cpp" />
-    <ClCompile Include="Includes\Modules\AddictionUnlimiterModule\AddictionUnlimiter.cpp" />
     <ClCompile Include="Includes\Modules\NodExplorerModule\NodExplorerModule.cpp" />
     <ClCompile Include="Includes\Modules\InputDisplayModule\InputDisplayModule.cpp" />
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />

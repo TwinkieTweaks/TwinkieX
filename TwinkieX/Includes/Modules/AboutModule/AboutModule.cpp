@@ -1,5 +1,6 @@
 #include "pch.h"
-#include <Modules/AboutModule/AboutModule.h>
+#include "AboutModule.h"
+#include <Modules/ModuleAutoExport.h>
 
 AboutModule::~AboutModule() {}
 
@@ -29,3 +30,5 @@ void AboutModule::RenderMenuMain()
 	if (MenuItem("About", nullptr, AboutWindowVisible))
 		AboutWindowVisible = not AboutWindowVisible;
 }
+
+MODULE_EXPORT(AboutModule);

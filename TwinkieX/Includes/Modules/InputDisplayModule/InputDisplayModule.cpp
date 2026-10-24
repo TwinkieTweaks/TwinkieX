@@ -1,5 +1,6 @@
 #include "pch.h"
-#include <Modules/InputDisplayModule/InputDisplayModule.h>
+#include "InputDisplayModule.h"
+#include <Modules/ModuleAutoExport.h>
 
 const char* DashboardStyleNames[] = { "Pad", "Keyboard", "TMViz" };
 
@@ -328,3 +329,5 @@ void InputDisplayModule::Render()
 	}
 	End();
 }
+
+MODULE_EXPORT(InputDisplayModule);

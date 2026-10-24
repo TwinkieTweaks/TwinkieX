@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "NodExplorerModule.h"
+#include <Modules/ModuleAutoExport.h>
 #include <format>
 
 #define HasRightClickedOnItem() IsMouseClicked(ImGuiMouseButton_Right) and IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)
@@ -690,3 +691,5 @@ ContinueAfterRender:
 	}
 	return;
 }
+
+MODULE_EXPORT(NodExplorerModule);

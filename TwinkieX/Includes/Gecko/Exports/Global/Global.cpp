@@ -1,9 +1,13 @@
 
 #include "pch.h"
 #include "Global.h"
+#include <Gecko/Exports/GeckoAutoExport.h>
 
 namespace Gecko::Exports::Global
 {
+	static std::vector<GeckoExport> s_Exports;
+#define GLOBAL_EXPORT(Decl_, Fn_) GECKO_EXPORT_FN(s_Exports, "", Decl_, Fn_)
+
 	/*
 	!CompatMeta
 	for     Global
@@ -19,6 +23,7 @@ namespace Gecko::Exports::Global
 		if (Main && TheScriptManager->ActiveCallbackType == CallbackType::Main) Main->Suspend();
 		else if (TheScriptManager->ActiveCallbackType != CallbackType::Main) (void)0; // TODO: raise an error
 	}
+	GLOBAL_EXPORT("void yield()", yield);
 
 	/*
 	!CompatMeta
@@ -34,6 +39,7 @@ namespace Gecko::Exports::Global
 		TheScriptManager->GetActiveScript()->YieldFor = For ? For - 1 : 0;
 		if (For) yield();
 	}
+	GLOBAL_EXPORT("void yield(uint)", yieldFor);
 
 	/*
 	!CompatMeta
@@ -49,6 +55,7 @@ namespace Gecko::Exports::Global
 	{
 		LoggertAngelscript.trace(Str);
 	}
+	GLOBAL_EXPORT("void trace(const string &in)", trace);
 
 	/*
 	!CompatMeta
@@ -64,6 +71,7 @@ namespace Gecko::Exports::Global
 	{
 		LoggertAngelscript.print(Str);
 	}
+	GLOBAL_EXPORT("void print(const string &in)", print);
 
 	/*
 	!CompatMeta
@@ -79,6 +87,7 @@ namespace Gecko::Exports::Global
 	{
 		LoggertAngelscript.warn(Str);
 	}
+	GLOBAL_EXPORT("void warn(const string &in)", warn);
 
 	/*
 	!CompatMeta
@@ -94,6 +103,7 @@ namespace Gecko::Exports::Global
 	{
 		LoggertAngelscript.error(Str);
 	}
+	GLOBAL_EXPORT("void error(const string &in)", error);
 
 	// TODO: Research if angelscript exception throwing is built-in
 	//void _throw(std::u8string& Str)
@@ -106,12 +116,6 @@ namespace Gecko::Exports::Global
 		RegisterStdString(Engine);
 		RegisterScriptArray(Engine, true);
 
-		Engine->RegisterGlobalFunction("void trace(const string &in)", asFUNCTION(trace), asCALL_CDECL);
-		Engine->RegisterGlobalFunction("void print(const string &in)", asFUNCTION(print), asCALL_CDECL);
-		Engine->RegisterGlobalFunction("void warn(const string &in)", asFUNCTION(warn), asCALL_CDECL);
-		Engine->RegisterGlobalFunction("void error(const string &in)", asFUNCTION(error), asCALL_CDECL);
-		// TODO: Research if angelscript exception throwing is built-in
-		Engine->RegisterGlobalFunction("void yield()", asFUNCTION(yield), asCALL_CDECL);
-		Engine->RegisterGlobalFunction("void yield(uint)", asFUNCTION(yieldFor), asCALL_CDECL);
+		RegisterAll(Engine, s_Exports);
 	}
 }

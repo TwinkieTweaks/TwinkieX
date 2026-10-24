@@ -3,5 +3,5 @@
 
 __declspec(dllexport) void AddModuleToQueue(ModuleCreateFn CreateModuleFn)
 {
-	gTwinkie.UiMgr->ModuleQueue.push_back(CreateModuleFn(&gTwinkie.TrackmaniaMgr, &LoggertCpp));
+	gTwinkie.UiMgr.ModuleQueue.push_back(CreateModuleFn(&gTwinkie.TrackmaniaMgr, &LoggertCpp));
 }

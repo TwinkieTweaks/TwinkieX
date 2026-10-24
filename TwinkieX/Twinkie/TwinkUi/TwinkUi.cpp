@@ -1,14 +1,7 @@
 // Precompiled headers.
 #include "pch.h"
 
-// imgui (just for intellisense)
-#ifdef GAMEBOX
-#include <imgui/imgui_impl_dx9.h>
-#else
-#include <imgui/imgui_impl_dx11.h>
-#endif
-
-#include <imgui/imgui_impl_win32.h>
+#include <Modules/ModuleAutoExport.h>
 
 // External dear ImGui WndProc handler declaration
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -93,20 +86,12 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 	// TODO: Make a loggert for discord RP
 	this->DiscordMgr = new TwinkDiscordRP(TrackmaniaMgr);
 
-	this->Modules.push_back(new NodExplorerModule(TrackmaniaMgr, LoggertCpp));
-	this->Modules.push_back(new AboutModule(TrackmaniaMgr, LoggertCpp));
-	this->Modules.push_back(new InputDisplayModule(TrackmaniaMgr, LoggertCpp));
-#ifdef TMCN
-	this->Modules.push_back(new AddictionUnlimiter(TrackmaniaMgr, LoggertCpp));
-	this->Modules.push_back(new VehicleExplorer(TrackmaniaMgr, LoggertCpp));
-#endif
+	CreateAndExportModules(this->Modules, TrackmaniaMgr, &LoggertCpp);
 }
 
 __declspec(noinline) TwinkUi::~TwinkUi()
 {
 	Veridian::VastVeridian->PrepareForDestruction();
-
-	delete Veridian::VastVeridian;
 
 	for (auto& Module : Modules)
 	{

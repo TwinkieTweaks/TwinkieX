@@ -3,17 +3,9 @@
 #include <Twinkie/TwinkLogs/TwinkLogs.h>
 #include <Twinkie/TwinkDiscordRP/TwinkDiscordRP.h>
 #include <Twinkie/TwinkIo/TwinkIo.h>
-
-// Modules
-#include <Modules/NodExplorerModule/NodExplorerModule.h>
-#include <Modules/AboutModule/AboutModule.h>
-#include <Modules/InputDisplayModule/InputDisplayModule.h>
-#ifdef TMCN
-#include <Modules/AddictionUnlimiterModule/AddictionUnlimiter.h>
-#include <Modules/VehicleExplorerModule/VehicleExplorerModule.h>
-#endif
-
 #include <Twinkie/TwinkFilePicker/TwinkFilePickerExports.h>
+
+#include <Modules/IModule.h>
 
 #include <vector>
 
