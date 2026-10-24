@@ -3,7 +3,7 @@
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include "ExportImgui.h"
 
-#define Gecko_Exports_ImGui_GuardNonRender() if (!Gecko::TheScriptManager->IsExecutingRenderCallback()) /* TODO: Throw an error */ (void)0
+#define Gecko_Exports_ImGui_GuardNonRender(...) if (!Gecko::TheScriptManager->IsExecutingRenderCallback()) /* TODO: Throw an error */ { (void)0; return __VA_ARGS__; } (void)0
 
 namespace Gecko::Exports::ImGui
 {
@@ -11,6 +11,18 @@ namespace Gecko::Exports::ImGui
 
 	static std::vector<GeckoExport> s_Exports;
 #define UI_EXPORT(Decl, Fn) GECKO_EXPORT_FN(s_Exports, "UI", Decl, Fn)
+#define Gecko_Exports_ImGui_MakeEndFn(Fn) void End##Fn##As() { \
+			Gecko_Exports_ImGui_GuardNonRender(); \
+			End##Fn(); \
+		} UI_EXPORT("void End" #Fn "()", End##Fn##As)
+#define Gecko_Exports_ImGui_MakeTrivialFn(Fn) void Fn##As() { \
+			Gecko_Exports_ImGui_GuardNonRender(); \
+			Fn(); \
+		} UI_EXPORT("void " #Fn "()", Fn##As)
+#define Gecko_Exports_ImGui_MakeTrivialReturnFn(Fn) decltype(Fn()) Fn##As() { \
+			Gecko_Exports_ImGui_GuardNonRender(decltype(Fn()){}); \
+			return Fn(); \
+		} UI_EXPORT("void " #Fn "()", Fn##As)
 
 	// Begin/End functions
 	namespace
@@ -28,7 +40,7 @@ namespace Gecko::Exports::ImGui
 		*/
 		bool BeginAs_NoOpen(std::u8string& title, int flags)
 		{
-			Gecko_Exports_ImGui_GuardNonRender();
+			Gecko_Exports_ImGui_GuardNonRender(false);
 			return Begin((const char*)title.c_str(), nullptr, flags);
 		}
 		UI_EXPORT("bool Begin(const string&in title, int flags = 0)", BeginAs_NoOpen);
@@ -46,7 +58,7 @@ namespace Gecko::Exports::ImGui
 		*/
 		bool BeginAs_Open(std::u8string& title, bool* open, int flags)
 		{
-			Gecko_Exports_ImGui_GuardNonRender();
+			Gecko_Exports_ImGui_GuardNonRender(false);
 			return Begin((const char*)title.c_str(), open, flags);
 		}
 		UI_EXPORT("bool Begin(const string&in title, bool&out open, int flags = 0)", BeginAs_Open);
@@ -61,12 +73,7 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.0
 		!CompatMeta
 		*/
-		void EndAs()
-		{
-			Gecko_Exports_ImGui_GuardNonRender();
-			End();
-		}
-		UI_EXPORT("void End()", EndAs);
+		Gecko_Exports_ImGui_MakeTrivialFn(End);
 
 		/*
 		!CompatMeta
@@ -80,7 +87,7 @@ namespace Gecko::Exports::ImGui
 		*/
 		bool BeginComboAs(std::u8string& label, std::u8string& current, int flags)
 		{
-			Gecko_Exports_ImGui_GuardNonRender();
+			Gecko_Exports_ImGui_GuardNonRender(false);
 			return BeginCombo((const char*)label.c_str(), (const char*)current.c_str(), flags);
 		}
 		UI_EXPORT("bool BeginCombo(const string&in label, const string&in current, int flags = 0)", BeginComboAs);
@@ -95,12 +102,7 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.1
 		!CompatMeta
 		*/
-		void EndComboAs()
-		{
-			Gecko_Exports_ImGui_GuardNonRender();
-			EndCombo();
-		}
-		UI_EXPORT("void EndCombo()", EndComboAs);
+		Gecko_Exports_ImGui_MakeEndFn(Combo);
 
 		/*
 		!CompatMeta
@@ -129,12 +131,7 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.1
 		!CompatMeta
 		*/
-		void EndDisabledAs()
-		{
-			Gecko_Exports_ImGui_GuardNonRender();
-			EndDisabled();
-		}
-		UI_EXPORT("void EndDisabled()", EndDisabledAs);
+		Gecko_Exports_ImGui_MakeEndFn(Disabled);
 
 		/*
 		!CompatMeta
@@ -163,12 +160,119 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.1
 		!CompatMeta
 		*/
-		void EndTabBarAs()
+		Gecko_Exports_ImGui_MakeEndFn(TabBar);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool BeginTabItem(const string&in label, int flags = UI::TabItemFlags::None)
+		as      bool BeginTabItem(const string&in label, int flags)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool BeginTabItemAs_NoOpen(std::u8string& label, int flags)
 		{
-			Gecko_Exports_ImGui_GuardNonRender();
-			EndTabBar();
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return BeginTabItem((const char*)label.c_str(), nullptr, flags);
 		}
-		UI_EXPORT("void EndTabBar()", EndTabBarAs);
+		UI_EXPORT("bool BeginTabItem(const string&in label, int flags = 0)", BeginTabItemAs_NoOpen);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool BeginTabItem(const string&in label, bool&out open, int flags = UI::TabItemFlags::None)
+		as      bool BeginTabItem(const string&in label, bool&out open, int flags)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool BeginTabItemAs_Open(std::u8string& label, bool* open, int flags)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return BeginTabItem((const char*)label.c_str(), open, flags);
+		}
+		UI_EXPORT("bool BeginTabItem(const string&in label, bool&out open, int flags = 0)", BeginTabItemAs_Open);
+	
+		/*
+		!CompatMeta
+		for     UI
+		with    void EndTabItem()
+		as      void EndTabItem()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeEndFn(TabItem);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None, const vec2&in outer_size = vec2(), float inner_width = 0.0f)
+		as      bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None)
+		being   function
+		declare partial
+		reason  vec2 is not implemented yet
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool BeginTableAs(std::u8string& id, int columns, int flags)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return BeginTable((const char*)id.c_str(), columns, flags);
+		}
+		UI_EXPORT("bool BeginTabItem(const string&in label, bool&out open, int flags = 0)", BeginTableAs);
+	
+		/*
+		!CompatMeta
+		for     UI
+		with    void EndTable()
+		as      void EndTable()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeEndFn(Table);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void BeginTooltip()
+		as      void BeginTooltip()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialFn(BeginTooltip);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool BeginItemTooltip()
+		as      bool BeginItemTooltip()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(BeginItemTooltip);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void EndTooltip()
+		as      void EndTooltip()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeEndFn(Tooltip);
 	}
 
 	// General widgets
@@ -184,7 +288,7 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.0
 		!CompatMeta
 		*/
-		void TextAs(std::u8string& s, int length = -1)
+		void TextAs(std::u8string& s, int length)
 		{
 			Gecko_Exports_ImGui_GuardNonRender();
 
@@ -200,6 +304,266 @@ namespace Gecko::Exports::ImGui
 			}
 		}
 		UI_EXPORT("void Text(const string&in text, int length = -1)", TextAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void TextWrapped(const string&in text)
+		as      void TextWrapped(const string&in text)
+		being   function
+		declare full
+		since   v0.1.0
+		!CompatMeta
+		*/
+		void TextWrappedAs(std::u8string& s)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+
+			TextWrapped((const char*)s.c_str());
+		}
+		UI_EXPORT("void TextWrapped(const string&in text)", TextWrappedAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void TextDisabled(const string&in text)
+		as      void TextDisabled(const string&in text)
+		being   function
+		declare full
+		since   v0.1.0
+		!CompatMeta
+		*/
+		void TextDisabledAs(std::u8string& s)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+
+			TextDisabled((const char*)s.c_str());
+		}
+		UI_EXPORT("void TextDisabled(const string&in text)", TextDisabledAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool TextLink(const string&in label)
+		as      bool TextLink(const string&in label)
+		being   function
+		declare full
+		since   v0.1.0
+		!CompatMeta
+		*/
+		bool TextLinkAs(std::u8string& s)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+
+			return TextLink((const char*)s.c_str());
+		}
+		UI_EXPORT("bool TextLink(const string&in label)", TextLinkAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void TextLinkOpenURL(const string&in text)
+		as      void TextLinkOpenURL(const string&in text)
+		being   function
+		declare full
+		since   v0.1.0
+		!CompatMeta
+		*/
+		void TextLinkOpenURLAs(std::u8string& s)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+
+			TextLinkOpenURL((const char*)s.c_str());
+		}
+		UI_EXPORT("void TextLinkOpenURL(const string&in text)", TextLinkOpenURLAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void LabelText(const string&in label, const string&in text)
+		as      void LabelText(const string&in label, const string&in text)
+		being   function
+		declare full
+		since   v0.1.0
+		!CompatMeta
+		*/
+		void LabelTextAs(std::u8string& l, std::u8string& t)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+
+			LabelText((const char*)l.c_str(), (const char*)t.c_str());
+		}
+		UI_EXPORT("void LabelText(const string&in label, const string&in text)", LabelTextAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool Button(const string&in label, const vec2&in size = vec2())
+		as      bool Button(const string&in label)
+		being   function
+		declare partial
+		reason  vec2 is not implemented yet
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool ButtonAs(std::u8string& s)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return Button((const char*)s.c_str());
+		}
+		UI_EXPORT("bool Button(const string&in text)", ButtonAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool Checkbox(const string&in label, bool value)
+		as      bool Checkbox(const string&in label, bool value)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool CheckboxAs(std::u8string& s, bool value)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			Checkbox((const char*)s.c_str(), &value);
+			return value;
+		}
+		UI_EXPORT("bool Checkbox(const string&in label, bool value)", CheckboxAs);
+	}
+
+	// Flags and state
+	namespace 
+	{
+		/*
+		!CompatMeta
+		for     UI
+		with    bool IsItemHovered(int flags = UI::HoveredFlags::None)
+		as      bool IsItemHovered(int flags = 0)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool IsItemHoveredAs(int flags)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return IsItemHovered(flags);
+		}
+		UI_EXPORT("bool IsItemHovered(int flags = 0)", IsItemHoveredAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool IsItemActive()
+		as      bool IsItemActive()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemActive);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool IsItemFocused()
+		as      bool IsItemFocused()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemFocused);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PushID(const string&in id)
+		as      void PushID(const string&in id)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void PushIDAs(std::u8string& id)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			PushID((const char*)id.c_str());
+		}
+		UI_EXPORT("void PushID(const string&in id)", PushIDAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PopID()
+		as      void PopID()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialFn(PopID);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PushItemWidth(float item_width)
+		as      void PushItemWidth(float item_width)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void PushItemWidthAs(float w)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			PushItemWidth(w);
+		}
+		UI_EXPORT("void PushItemWidth(float item_width)", PushItemWidthAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PopItemWidth()
+		as      void PopItemWidth()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialFn(PopItemWidth);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void SameLine(float offset_from_start_x = 0.0f, float spacing = -1.0f)
+		as      void SameLine(float offset_from_start_x = 0.0f, float spacing = -1.0f)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void SameLineAs(float ox, float sp)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SameLine(ox, sp);
+		}
+		UI_EXPORT("void SameLine(float offset_from_start_x = 0.0f, float spacing = -1.0f)", SameLineAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void Separator()
+		with    void Separator(int flags, float thickness = 1.0f)
+		as      void Separator()
+		being   function
+		declare partial
+		reason  flags and thickness variant is not implemented
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialFn(Separator);
 	}
 
 	void Registrar(asIScriptEngine* Engine)
