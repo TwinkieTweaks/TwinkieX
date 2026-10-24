@@ -86,3 +86,15 @@ jobs:
       - name: Run compatcheck.py
         run: | 
           python CompatCheck/compatcheck.py -i ${{ github.workspace }}/ -a CompatCheck/OpenplanetCore.json -r
+      
+      - name: Publish percentage badge
+        uses: schneegans/dynamic-badges-action@v1.9.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: 58af903812974242f5c4645caa2b77f2
+          filename: compatcheck_percentage_badge.json
+          label: Openplanet Compatiblity
+          message: ${{ env.COMPLETE_PERCENTAGE }}%
+          valColorRange: ${{ env.COMPLETE_PERCENTAGE }}
+          minColorRange: 0
+          maxColorRange: 100

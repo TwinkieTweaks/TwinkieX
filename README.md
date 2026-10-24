@@ -13,6 +13,7 @@
     <a href="https://github.com/TwinkieTweaks/TwinkieX/releases" style="text-decoration: none;">
         <img src="https://img.shields.io/github/downloads/TwinkieTweaks/TwinkieX/total?color=f0f" />
     </a>
+    <img src="https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/CodyNinja1/58af903812974242f5c4645caa2b77f2/raw/compatcheck_percentage_badge.json" />
 </p>
 
 A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC, TMU, and TMCN.

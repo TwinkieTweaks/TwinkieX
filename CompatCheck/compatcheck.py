@@ -3,6 +3,7 @@ from glob import glob
 from enum import Enum
 from collections import defaultdict
 import json
+import os
 
 def pluralize(string: str):
     return (string + "s" if string[-1] != "y" else string[:-1] + "ies") if string[-1] != "s" else string + "es"
@@ -79,6 +80,7 @@ parser.add_argument("-i", "--input", help="the directory of files to check")
 parser.add_argument("-a", "--against", help="the OpenplanetCore.json file to check against")
 parser.add_argument("-o", "--output", help="the output direectory of the compatibility report")
 parser.add_argument("-f", "--filter", help="filter files to check", default="**/*.cpp,**/*.h")
+parser.add_argument("-g", "--github", help="store result to github environ", action="store_true")
 parser.add_argument("-r", "--recursive", action="store_true")
 
 args = parser.parse_args()
@@ -174,7 +176,15 @@ for being in infos_by_being:
             print(f"unmatched info: {info}")
             has_unmatched_info = True
 
+complete = (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses)
+non_partial = (matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses)
+
 print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] >= 1 else f"{m} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
-print(f'{(matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses):.2%} complete, {(matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses):.2%} non-partial')
+print(f'{complete:.2%} complete, {non_partial:.2%} non-partial')
+
+if args.github:
+    with open(os.environ["GITHUB_ENV"], "a") as f:
+        f.write(f"COMPLETE_PERCENTAGE={complete * 100:.1f}\n")
+        f.write(f"NON_PARTIAL_PERCENTAGE={non_partial * 100:.1f}\n")
 
 quit(has_unmatched_info or (len(matches) == 0))
