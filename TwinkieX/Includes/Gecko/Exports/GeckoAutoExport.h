@@ -5,6 +5,8 @@
 
 namespace Gecko::Exports
 {
+	// Garbage ass function.
+	// Please only use if your type is one of: bool, int, float.
 	template<typename T>
 	consteval const char* TypeToString()
 	{
