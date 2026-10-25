@@ -5,6 +5,19 @@
 
 namespace Gecko::Exports
 {
+	template<typename T>
+	consteval const char* TypeToString()
+	{
+#define Gecko_TypeToString_If(t) if constexpr (std::is_same_v<TNew, t>) { return #t; }
+		using TNew = std::remove_cvref_t<T>;
+
+		Gecko_TypeToString_If(bool)
+		else Gecko_TypeToString_If(float)
+		else Gecko_TypeToString_If(int)
+		else { return "<unk>"; }
+#undef Gecko_TypeToString_If
+	}
+
 	enum class AutoExportType { Function, Method, Behaviour, Property, Global };
 
 	struct GeckoExport

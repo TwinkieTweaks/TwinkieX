@@ -22,7 +22,7 @@ namespace Gecko::Exports::ImGui
 #define Gecko_Exports_ImGui_MakeTrivialReturnFn(Fn) decltype(Fn()) Fn##As() { \
 			Gecko_Exports_ImGui_GuardNonRender(decltype(Fn()){}); \
 			return Fn(); \
-		} UI_EXPORT("void " #Fn "()", Fn##As)
+		} UI_EXPORT((::std::string(::Gecko::Exports::TypeToString<decltype(Fn())>()) + " " + #Fn + "()").c_str(), Fn##As)
 
 	// Begin/End functions
 	namespace
