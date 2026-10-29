@@ -281,7 +281,7 @@ namespace Gecko::Exports::ImGui
 		/*
 		!CompatMeta
 		for     UI
-		with    void Text(const string&in text, int length)
+		with    void Text(const string&in text, int length = -1)
 		as      void Text(const string&in text, int length = -1)
 		being   function
 		declare full
