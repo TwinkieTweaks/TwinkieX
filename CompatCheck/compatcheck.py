@@ -5,6 +5,8 @@ from collections import defaultdict
 import json
 import os
 
+is_in_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
+
 def pluralize(string: str):
     return (string + "s" if string[-1] != "y" else string[:-1] + "ies") if string[-1] != "s" else string + "es"
 
@@ -81,9 +83,14 @@ parser.add_argument("-a", "--against", help="the OpenplanetCore.json file to che
 parser.add_argument("-o", "--output", help="the output direectory of the compatibility report")
 parser.add_argument("-f", "--filter", help="filter files to check", default="**/*.cpp,**/*.h")
 parser.add_argument("-g", "--github", help="store result to github environ", action="store_true")
+parser.add_argument("-n", "--no-fail", help="never exit with code other than 0 except when something fatal happens", action="store_true")
 parser.add_argument("-r", "--recursive", action="store_true")
 
 args = parser.parse_args()
+
+if not args.github and is_in_github_actions:
+    print("skipping post-build event")
+    quit(0)
 
 files: list[str] = []
 for filter in args.filter.split(","):
@@ -176,10 +183,10 @@ for being in infos_by_being:
             print(f"unmatched info: {info}")
             has_unmatched_info = True
 
-complete = (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses)
-non_partial = (matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses)
+complete = (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
+non_partial = (matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
 
-print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] >= 1 else f"{m} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
+print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] != 1 else f"{matches[m]} {m.value} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
 print(f'{complete:.2%} complete, {non_partial:.2%} non-partial')
 
 if args.github:
@@ -187,4 +194,5 @@ if args.github:
         f.write(f"COMPLETE_PERCENTAGE={complete * 100:.1f}\n")
         f.write(f"NON_PARTIAL_PERCENTAGE={non_partial * 100:.1f}\n")
 
-quit(has_unmatched_info or (len(matches) == 0))
+if not args.no_fail: 
+    quit(has_unmatched_info or (len(matches) == 0))

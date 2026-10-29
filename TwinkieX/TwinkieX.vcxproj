@@ -271,91 +271,127 @@
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ESWC|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TM1|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMCN|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMO|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMS|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMU|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMSX|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ESWC|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TM1|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMCN|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMO|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMS|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMU|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMSX|x64'">
     <TargetName>Twinkie$(Configuration)</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
+    <CustomBuildAfterTargets>
+    </CustomBuildAfterTargets>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <PreBuildEvent>
@@ -383,9 +419,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -410,9 +451,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TM1|Win32'">
     <ClCompile>
@@ -437,9 +483,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ESWC|Win32'">
     <ClCompile>
@@ -464,9 +515,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMSX|Win32'">
     <ClCompile>
@@ -491,9 +547,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMS|Win32'">
     <ClCompile>
@@ -518,9 +579,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMU|Win32'">
     <ClCompile>
@@ -545,9 +611,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMO|Win32'">
     <ClCompile>
@@ -572,9 +643,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMCN|Win32'">
     <ClCompile>
@@ -599,9 +675,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -624,9 +705,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -651,9 +737,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TM1|x64'">
     <ClCompile>
@@ -678,9 +769,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ESWC|x64'">
     <ClCompile>
@@ -705,9 +801,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMSX|x64'">
     <ClCompile>
@@ -732,9 +833,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMS|x64'">
     <ClCompile>
@@ -759,9 +865,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMU|x64'">
     <ClCompile>
@@ -786,9 +897,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMO|x64'">
     <ClCompile>
@@ -813,9 +929,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='TMCN|x64'">
     <ClCompile>
@@ -840,9 +961,14 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
+      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+    </PostBuildEvent>
+    <CustomBuildStep>
       <Command>
       </Command>
-    </PostBuildEvent>
+      <TreatOutputAsContent>
+      </TreatOutputAsContent>
+    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Exports\Exports.h" />
