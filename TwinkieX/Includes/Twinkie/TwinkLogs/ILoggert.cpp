@@ -8,7 +8,7 @@
 	std::string sIcon((const char*)Icon.c_str()); \
 	std::string sTag((const char*)Tag.c_str()); \
 	\
-    std::string MessageFormattedPrev = std::format(color tag " {}[{}{}] $g{}\n", sColorTag, sIcon, sTag, sStr); \
+    std::string MessageFormattedPrev = std::format(color tag " {}[{}{}] \\$g{}\n", sColorTag, sIcon, sTag, sStr); \
 	std::string MessageFormattedFile = std::format(tag " [{}{}] {}\n", sIcon, sTag, sStr); \
 	\
 	LoggertStreamForPreview << MessageFormattedPrev; \
@@ -29,7 +29,7 @@
 	LoggertStreamForFile << MessageFormattedFile; \
 }
 
-ILoggert_MakeFnExtraColored(trace, "$999", "[d]")
-ILoggert_MakeFn(print, "$35e", "[i]")
-ILoggert_MakeFnExtraColored(warn,  "$ff0", "[w]")
-ILoggert_MakeFnExtraColored(error, "$f00", "[e]")
+ILoggert_MakeFnExtraColored(trace, "\\$999", "[d]")
+ILoggert_MakeFn(print, "\\$35e", "[i]")
+ILoggert_MakeFnExtraColored(warn,  "\\$ff0", "[w]")
+ILoggert_MakeFnExtraColored(error, "\\$f00", "[e]")

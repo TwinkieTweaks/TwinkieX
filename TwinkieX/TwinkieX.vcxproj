@@ -331,7 +331,7 @@
     </CustomBuildAfterTargets>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>Twinkie$(Configuration)</TargetName>
+    <TargetName>TwinkieTMCN</TargetName>
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <OutDir>$(SolutionDir)Builds\$(Platform)\$(Configuration)\</OutDir>
     <CustomBuildAfterTargets>
@@ -1238,6 +1238,7 @@
     </MASM>
     <None Include="Includes\DiscordGameSDK\x64\discord_game_sdk.dll" />
     <None Include="Includes\DiscordGameSDK\x86\discord_game_sdk.dll" />
+    <None Include="Includes\imgui\PATCHES.md" />
     <None Include="Includes\README.md" />
     <None Include="Includes\Veridian\Veridian.sln" />
     <None Include="Includes\Veridian\Veridian.vcxproj" />

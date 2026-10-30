@@ -208,6 +208,7 @@ bool TwinkTrackmania::VirtualParamSet(CMwNod* Nod, const char* MemberName, Value
 template<typename ReturnT>
 TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo, bool IsNodImpersistent)
 {
+	// TODO: Better virtual member detection here and elsewhere
 	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
 	{
 		return VirtualParamGet<ReturnT>(Nod, MemberInfo);
@@ -216,9 +217,14 @@ TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::ParamGet(CMwNo
 	{
 		return &ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
 	}
-	else
+	else if (MemberInfo->MemberOffset != 0xFFFFFFFFU)
 	{
 		return ReadAddr(ReturnT, ((uintptr_t)Nod) + MemberInfo->MemberOffset);
+	}
+	else
+	{
+		// TODO: Virtual members for impersistent nods?
+		return nullptr;
 	}
 }
 

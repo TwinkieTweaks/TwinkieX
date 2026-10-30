@@ -4,12 +4,15 @@
 #include <vector>
 
 using ModuleCreateFn = IModule * (*)(TwinkTrackmania*, ILoggert*);
-extern std::vector<ModuleCreateFn> ModuleCreationFns;
-struct ModuleAutoExport { ModuleAutoExport(ModuleCreateFn E) { ModuleCreationFns.push_back(E); } };
-
+inline std::vector<ModuleCreateFn>& SingletonModuleCreationFns()
+{
+	static std::vector<ModuleCreateFn> Fns;
+	return Fns;
+}
+struct ModuleAutoExport { ModuleAutoExport(ModuleCreateFn E) { SingletonModuleCreationFns().push_back(E); } };
 inline void CreateAndExportModules(std::vector<IModule*>& Modules, TwinkTrackmania& TrackmaniaMgr, ILoggert* Loggert)
 {
-	for (auto& Fn : ModuleCreationFns)
+	for (auto& Fn : SingletonModuleCreationFns())
 	{
 		Modules.push_back(Fn(&TrackmaniaMgr, Loggert));
 	}

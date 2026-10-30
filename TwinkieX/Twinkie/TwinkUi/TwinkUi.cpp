@@ -141,7 +141,7 @@ void TwinkUi::Render()
 		{
 			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
 
-			if (BeginMenu("$f0fTwinkie##Twinkie"))
+			if (BeginMenu("\\$f0fTwinkie##Twinkie"))
 			{
 				if (MenuItem("Include module"))
 				{

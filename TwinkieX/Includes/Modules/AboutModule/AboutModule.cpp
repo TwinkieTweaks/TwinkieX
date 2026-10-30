@@ -17,7 +17,7 @@ void AboutModule::RenderInterface()
 
 		Separator();
 
-		Text("This version of TwinkieX is still $f00work-in-progress$z!");
+		Text("This version of TwinkieX is still \\$f00work-in-progress\\$z!");
 	}
 
 	End();
