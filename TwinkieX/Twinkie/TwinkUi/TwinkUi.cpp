@@ -85,8 +85,6 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 
 	// TODO: Make a loggert for discord RP
 	this->DiscordMgr = new TwinkDiscordRP(TrackmaniaMgr);
-
-	CreateAndExportModules(this->Modules, TrackmaniaMgr, &LoggertCpp);
 }
 
 __declspec(noinline) TwinkUi::~TwinkUi()
@@ -269,6 +267,8 @@ void TwinkUi::Render()
 __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolderPath)
 {
 	IoMgr.Update();
+
+	CreateAndExportModules(this->Modules, *this->TrackmaniaMgr, &LoggertCpp);
 
 	this->DocumentsFolderPath = pDocumentsFolderPath;
 

@@ -93,7 +93,7 @@ jobs:
           gistID: 58af903812974242f5c4645caa2b77f2
           filename: compatcheck_percentage_badge.json
           label: Openplanet Compatiblity
-          message: ${{ env.COMPLETE_PERCENTAGE }}%
-          valColorRange: ${{ env.COMPLETE_PERCENTAGE }}
+          message: ${{ env.NON_PARTIAL_PERCENTAGE }}%
+          valColorRange: ${{ env.NON_PARTIAL_PERCENTAGE }}
           minColorRange: 0
           maxColorRange: 100

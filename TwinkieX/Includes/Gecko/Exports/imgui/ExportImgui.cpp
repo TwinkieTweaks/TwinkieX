@@ -19,10 +19,10 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(); \
 			Fn(); \
 		} UI_EXPORT("void " #Fn "()", Fn##As)
-#define Gecko_Exports_ImGui_MakeTrivialReturnFn(Fn) decltype(Fn()) Fn##As() { \
+#define Gecko_Exports_ImGui_MakeTrivialReturnFn(Fn, ReturnType) decltype(Fn()) Fn##As() { \
 			Gecko_Exports_ImGui_GuardNonRender(decltype(Fn()){}); \
 			return Fn(); \
-		} UI_EXPORT((::std::string(::Gecko::Exports::TypeToString<decltype(Fn())>()) + " " + #Fn + "()").c_str(), Fn##As)
+		} UI_EXPORT(#ReturnType " " #Fn "()", Fn##As)
 
 	// Begin/End functions
 	namespace
@@ -212,7 +212,7 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None, const vec2&in outer_size = vec2(), float inner_width = 0.0f)
-		as      bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None)
+		as      bool BeginTable(const string&in id, int columns, int flags)
 		being   function
 		declare partial
 		reason  vec2 is not implemented yet
@@ -224,7 +224,7 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(false);
 			return BeginTable((const char*)id.c_str(), columns, flags);
 		}
-		UI_EXPORT("bool BeginTabItem(const string&in label, bool&out open, int flags = 0)", BeginTableAs);
+		UI_EXPORT("bool BeginTable(const string&in id, int columns, int flags)", BeginTableAs);
 
 		/*
 		!CompatMeta
@@ -260,7 +260,7 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.1
 		!CompatMeta
 		*/
-		Gecko_Exports_ImGui_MakeTrivialReturnFn(BeginItemTooltip);
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(BeginItemTooltip, bool);
 
 		/*
 		!CompatMeta
@@ -294,9 +294,9 @@ namespace Gecko::Exports::ImGui
 
 			if (length != -1)
 			{
-				// TODO: Avoid unnecessary copy. Maybe std::u8string_view does the trick?
-				std::u8string text(s, 0, length);
-				Text((const char*)text.c_str());
+				std::u8string_view vu(s);
+				vu = vu.substr(0, length);
+				TextEx((const char*)&vu.front(), (const char*)&vu.back());
 			}
 			else
 			{
@@ -462,7 +462,7 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.1
 		!CompatMeta
 		*/
-		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemActive);
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemActive, bool);
 
 		/*
 		!CompatMeta
@@ -474,7 +474,7 @@ namespace Gecko::Exports::ImGui
 		since   v0.1.1
 		!CompatMeta
 		*/
-		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemFocused);
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemFocused, bool);
 
 		/*
 		!CompatMeta

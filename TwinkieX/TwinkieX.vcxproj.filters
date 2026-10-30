@@ -704,6 +704,9 @@
     <ClCompile Include="Includes\Twinkie\TwinkLogs\TwinkLoggert\TwinkLoggert.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Includes\Modules\ModuleAutoExport.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Includes\README.md" />

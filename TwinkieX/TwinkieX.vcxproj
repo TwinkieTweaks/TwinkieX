@@ -1182,6 +1182,7 @@
     <ClCompile Include="Includes\imgui\imgui_tables.cpp" />
     <ClCompile Include="Includes\imgui\imgui_widgets.cpp" />
     <ClCompile Include="Includes\Modules\AboutModule\AboutModule.cpp" />
+    <ClCompile Include="Includes\Modules\ModuleAutoExport.cpp" />
     <ClCompile Include="Includes\Modules\NodExplorerModule\NodExplorerModule.cpp" />
     <ClCompile Include="Includes\Modules\InputDisplayModule\InputDisplayModule.cpp" />
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />
