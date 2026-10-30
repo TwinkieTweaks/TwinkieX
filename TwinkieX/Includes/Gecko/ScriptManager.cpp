@@ -290,6 +290,7 @@ namespace Gecko
 			ccpp::processor Preprocessor;
 
 			{
+				Preprocessor.add_define("TWINKIEX");
 				Preprocessor.add_define(TWINKIEX_GAME);
 #ifdef TMCN
 				Preprocessor.add_define("TMNEXT");
@@ -343,6 +344,7 @@ namespace Gecko
 			ccpp::processor Preprocessor;
 
 			{
+				Preprocessor.add_define("TWINKIEX");
 				Preprocessor.add_define(TWINKIEX_GAME);
 #ifdef TMCN
 				Preprocessor.add_define("TMNEXT");

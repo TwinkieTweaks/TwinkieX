@@ -32,16 +32,22 @@ jobs:
         include:
           - config: TMCN
             platform: x64
+            aka: x64
           - config: ESWC
             platform: x86
+            aka: Win32
           - config: TMU
             platform: x86
+            aka: Win32
           - config: TMO
             platform: x86
+            aka: Win32
           - config: TMSX
             platform: x86
+            aka: Win32
           - config: TM1
             platform: x86
+            aka: Win32
   
     steps:
     - name: Checkout code
@@ -65,12 +71,18 @@ jobs:
 
     - name: Build Project
       run: |
+        $env:CL = "/pathmap:${{ github.workspace }}\=.\"
         msbuild TwinkieX.sln `
           /p:Configuration=${{ matrix.config }} `
           /p:Platform=${{ matrix.platform }} `
           /p:IncludePath="${{ github.workspace }}/TwinkieX/Includes" `
-          /p:PathMap="${{ github.workspace }}=C:/Dev/" `
           /m
+    
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ matrix.config }}-${{ matrix.platform }}
+        path: ${{ github.workspace }}/Builds/${{ matrix.aka }}/${{ matrix.config }}/
   
   compat:
     runs-on: ubuntu-latest
