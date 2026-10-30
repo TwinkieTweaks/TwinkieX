@@ -56,7 +56,7 @@ jobs:
 
     - name: Build Project
       run: |
-        $env:CL = "/pathmap:${{ github.workspace }}\=.\"
+        $env:CL = "/experimental:deterministic /pathmap:${{ github.workspace }}\=.\"
         msbuild TwinkieX.sln `
           /p:Configuration=${{ matrix.config }} `
           /p:Platform=${{ matrix.platform }} `
