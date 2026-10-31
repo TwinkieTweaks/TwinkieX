@@ -1,8 +1,6 @@
 // Precompiled headers.
 #include "pch.h"
 
-#include <DiscordGameSDK/DiscordStuff.h>
-
 // Class definition for the Twinkie class used by (Twinkie gTwinkie).
 #include <Twinkie/Twinkie.h>
 

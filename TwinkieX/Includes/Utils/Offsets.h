@@ -2,9 +2,28 @@
 #include "Arch.h"
 #include "Stdlibs.h"
 
+#define TWINKIEX_API __declspec(dllexport)
+
 extern DWORD ProtFlags;
 extern const char* g_MemberTypeNames[];
 extern const char* g_MemberTypeSignatures[];
+enum class EGame
+{
+    // TM1
+    Trackmania1,
+    // TMO
+    TrackmaniaOriginal,
+    // TMS
+    TrackmaniaSunrise,
+    // TMSX
+    TrackmaniaSunriseExtreme,
+    // ESWC
+    TrackmaniaNationsESWC,
+    // TMU
+    TrackmaniaUnited,
+    // TMCN
+    TrackmaniaChina
+};
 
 // Useful definitions
 

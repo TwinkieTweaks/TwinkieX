@@ -16,8 +16,11 @@
 #include <windows.h>
 #include <shlobj_core.h>
 #include <commdlg.h>
-
 #pragma comment(lib, "Comdlg32.lib")
+#include <winhttp.h>
+#pragma comment(lib, "windowscodecs.lib")
+#include <objbase.h>
+#pragma comment(lib, "winhttp.lib")
 
 #pragma warning(pop)
 

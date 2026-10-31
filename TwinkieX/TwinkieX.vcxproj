@@ -1060,6 +1060,7 @@
     <ClInclude Include="Includes\Gecko\ScriptManager.h" />
     <ClInclude Include="Includes\GlyphTable\IconsForkAwesome.h" />
     <ClInclude Include="Includes\GlyphTable\IconsKenney.h" />
+    <ClInclude Include="Includes\Http\HttpReq.h" />
     <ClInclude Include="Includes\imgui\imconfig.h" />
     <ClInclude Include="Includes\imgui\imgui.h" />
     <ClInclude Include="Includes\imgui\imgui_impl_dx11.h" />
@@ -1097,6 +1098,7 @@
     <ClInclude Include="Includes\Utils\Offsets.h" />
     <ClInclude Include="Includes\Twinkie\Twinkie.h" />
     <ClInclude Include="Includes\Twinkie\TwinkTrackmania\TwinkTrackmania.h" />
+    <ClInclude Include="Includes\Resources\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -1173,6 +1175,7 @@
     <ClCompile Include="Includes\Gecko\Gecko.cpp" />
     <ClCompile Include="Includes\Gecko\Script.cpp" />
     <ClCompile Include="Includes\Gecko\ScriptManager.cpp" />
+    <ClCompile Include="Includes\Http\HttpReq.cpp" />
     <ClCompile Include="Includes\imgui\imgui.cpp" />
     <ClCompile Include="Includes\imgui\imgui_demo.cpp" />
     <ClCompile Include="Includes\imgui\imgui_draw.cpp" />
@@ -1242,6 +1245,12 @@
     <None Include="Includes\README.md" />
     <None Include="Includes\Veridian\Veridian.sln" />
     <None Include="Includes\Veridian\Veridian.vcxproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Includes\Resources\TwinkieX.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\Media\Banner\TwinkieXBanner1920x720.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

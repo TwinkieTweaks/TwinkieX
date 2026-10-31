@@ -1,11 +1,14 @@
 #include "pch.h"
 #include "AboutModule.h"
+#include <Resources/resource.h>
 #include <Modules/ModuleAutoExport.h>
+#include <Http/HttpReq.h>
 
 AboutModule::~AboutModule() {}
 
 void AboutModule::RenderInterface()
 {
+	static HttpRequest Req;
 	using namespace ImGui;
 
 	if (not AboutWindowVisible) return;

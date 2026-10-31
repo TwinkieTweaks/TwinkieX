@@ -8,4 +8,4 @@ using ModuleCreateFn = IModule * (*)(TwinkTrackmania*, ILoggert*);
 
 extern Twinkie gTwinkie;
 
-extern __declspec(dllexport) void AddModuleToQueue(ModuleCreateFn CreateModuleFn);
+extern TWINKIEX_API void AddModuleToQueue(ModuleCreateFn CreateModuleFn);
