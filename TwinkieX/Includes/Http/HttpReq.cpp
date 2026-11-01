@@ -276,6 +276,10 @@ bool MakeRawHttpRequest(
 
     size_t DataAvailable = 0;
     size_t DataRead = 0;
+    bool CouldWriteToFile = true;
+    std::ofstream File;
+    if (!SaveToFilePath.empty()) File.open(std::filesystem::path(SaveToFilePath), std::ios::binary | std::ios::out);
+    CouldWriteToFile = File.is_open();
     while (WinHttpQueryDataAvailable(Request, (LPDWORD)&DataAvailable) && DataAvailable)
     {
         size_t AlreadyWritten = DataOut.size();
@@ -288,6 +292,19 @@ bool MakeRawHttpRequest(
             (LPDWORD)&DataRead
         );
 
+        if (!SaveToFilePath.empty() && CouldWriteToFile)
+        {
+            try
+            {
+                File.write((const char*)(DataOut.data() + AlreadyWritten), DataOut.size());
+            }
+            catch (...)
+            {
+                Err = u8"Could not write to file.";
+                CouldWriteToFile = false;
+            }
+        }
+
         DownUpInfo.DownloadedBytes += DataRead;
 
         DataOut.resize(AlreadyWritten + DataRead);
@@ -295,21 +312,7 @@ bool MakeRawHttpRequest(
 
     WinHttpCloseHandle(Request); WinHttpCloseHandle(Connection); WinHttpCloseHandle(Session);
 
-    if (!SaveToFilePath.empty())
-    {
-        try
-        {
-            std::ofstream File{ std::filesystem::path(SaveToFilePath), std::ios::binary | std::ios::out };
-            File.write((const char*)DataOut.data(), DataOut.size());
-        }
-        catch (...)
-        {
-            Err = u8"Could not write to file.";
-            return false;
-        }
-    }
-
-    return true;
+    return CouldWriteToFile;
 #undef DefComp
 }
 
