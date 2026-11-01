@@ -280,6 +280,7 @@ bool MakeRawHttpRequest(
     std::ofstream File;
     if (!SaveToFilePath.empty()) File.open(std::filesystem::path(SaveToFilePath), std::ios::binary | std::ios::out);
     CouldWriteToFile = File.is_open();
+    if (!CouldWriteToFile) Err = u8"Could not write to file.";
     while (WinHttpQueryDataAvailable(Request, (LPDWORD)&DataAvailable) && DataAvailable)
     {
         size_t AlreadyWritten = DataOut.size();
