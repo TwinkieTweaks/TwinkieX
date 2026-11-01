@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "HttpReq.h"
-#pragma warning(disable : 4505)
+#pragma warning(disable : 4505 6262)
 
 static std::u8string FromStr(const std::string& that)
 {
@@ -22,10 +22,133 @@ static std::u8string ToStr(const std::wstring& that)
     return std::filesystem::path(that).u8string();
 }
 
+template<typename T>
+static std::basic_string<T, std::char_traits<T>, std::allocator<T>>& StringoidToLower(std::basic_string<T, std::char_traits<T>, std::allocator<T>>& Str)
+{
+    for (T& C : Str)
+    {
+        C = std::tolower(C);
+    }
+
+    return Str;
+}
+
+enum class HttpHeadersFrom : uint32_t
+{
+    Request = WINHTTP_QUERY_FLAG_REQUEST_HEADERS,
+    Response = 0
+};
+
+static bool GetHeadersWinHttp(
+    HINTERNET Request,
+    std::unordered_map<std::u8string, std::u8string>& HeadersOut,
+    std::u8string& Err,
+    HttpHeadersFrom Where
+)
+{
+    size_t ReqHeadersBufSz = 0;
+    // No error check because when using WINHTTP_NO_OUTPUT_BUFFER, it always returns FALSE.
+    WinHttpQueryHeaders(
+        Request,
+        WINHTTP_QUERY_RAW_HEADERS_CRLF | (uint32_t)Where,
+        WINHTTP_HEADER_NAME_BY_INDEX,
+        WINHTTP_NO_OUTPUT_BUFFER,
+        (LPDWORD)&ReqHeadersBufSz,
+        WINHTTP_NO_HEADER_INDEX
+    );
+
+    // Includes nasty things like verb and object.
+    // CRLF-separated.
+    wchar_t* ReqHeadersBuf = new wchar_t[ReqHeadersBufSz / sizeof(wchar_t)];
+    if (!WinHttpQueryHeaders(
+        Request,
+        WINHTTP_QUERY_RAW_HEADERS_CRLF | (uint32_t)Where,
+        WINHTTP_HEADER_NAME_BY_INDEX,
+        ReqHeadersBuf,
+        (LPDWORD)&ReqHeadersBufSz,
+        WINHTTP_NO_HEADER_INDEX
+    ))
+    {
+        Err = u8"Could not query request headers.";
+        return false;
+    }
+
+    std::vector<std::wstring> HeaderLines;
+    {
+        std::wstringstream HeaderWss(ReqHeadersBuf);
+        std::wstring HeaderLine;
+        size_t HeaderLineIdx = 0;
+        while (std::getline(HeaderWss, HeaderLine, L'\r'))
+        {
+            // Remove extra \n and skip verb and object
+            if (HeaderLineIdx > 0) HeaderLines.push_back(HeaderLine.substr(1, HeaderLine.size() - 1));
+            HeaderLineIdx++;
+        }
+        // Remove empty lines from the back
+        for (size_t RemovalHeaderLineIdx = HeaderLines.size() - 1; RemovalHeaderLineIdx != 0; RemovalHeaderLineIdx--)
+        {
+            if (HeaderLines[RemovalHeaderLineIdx].empty())
+            {
+                HeaderLines.erase(HeaderLines.begin() + RemovalHeaderLineIdx);
+            }
+            else break;
+        }
+    }
+    delete[] ReqHeadersBuf;
+
+    for (auto& HeaderLine : HeaderLines)
+    {
+        std::vector<std::wstring> Tokens;
+        size_t Pos = 0;
+        std::wstring Token;
+        while ((Pos = HeaderLine.find(L": ")) != std::wstring::npos) {
+            Token = HeaderLine.substr(0, Pos);
+            Tokens.push_back(Token);
+            HeaderLine.erase(0, Pos + 2);
+        }
+        Tokens.push_back(HeaderLine);
+
+        if (Tokens.size() < 2)
+        {
+            Err = u8"Invalid request header format.";
+            return false;
+        }
+        else
+        {
+            auto Key = ToStr(Tokens[0]);
+            StringoidToLower(Key);
+            HeadersOut[Key] = ToStr(Tokens[1]);
+        }
+    }
+    return true;
+}
+
 // Make an HTTP/HTTPS request and store the return data.
 // This function is blocking. For a non-blocking method, use HttpRequest.
-bool MakeRawHttpRequest(const std::u8string& Url, const std::u8string& AgentInfo, const std::u8string& Verb, const std::vector<uint8_t>& DataIn, std::vector<uint8_t>& DataOut, std::u8string& Err, const std::u8string& ContentType)
+bool MakeRawHttpRequest(
+    const std::u8string& Url,
+    const std::u8string& AgentInfo,
+    const std::u8string& Verb,
+    const std::vector<uint8_t>& DataIn,
+    std::vector<uint8_t>& DataOut,
+    std::unordered_map<std::u8string, std::u8string>& ReqHeadersInOut,
+    std::unordered_map<std::u8string, std::u8string>& ResponseHeadersOut,
+    std::u8string& Err,
+    HttpDownUpInfo& DownUpInfo,
+    const std::u8string& ContentType,
+    const std::u8string& SaveToFilePath,
+    bool FollowRedirects
+)
 {
+    {
+        DownUpInfo.BytesToBeDownloaded = 0;
+        DownUpInfo.BytesToBeUploaded = DataIn.size();
+        DownUpInfo.DownloadedBytes = 0;
+        DownUpInfo.UploadedBytes = 0;
+
+        Err = u8"";
+    }
+
     std::wstring WUrl = FromStr(Url);
 
     wchar_t ExtraInfo[8192]{ 0 };
@@ -83,7 +206,6 @@ bool MakeRawHttpRequest(const std::u8string& Url, const std::u8string& AgentInfo
         );
     wchar_t* pAcceptTypes = AcceptTypes;
 
-
     auto Request = WinHttpOpenRequest(
         Connection,
         FromStr(Verb).c_str(),
@@ -93,6 +215,35 @@ bool MakeRawHttpRequest(const std::u8string& Url, const std::u8string& AgentInfo
         ContentType.empty() ? WINHTTP_DEFAULT_ACCEPT_TYPES : (LPCWSTR*)&pAcceptTypes,
         ReqFlags
     );
+
+    if (ReqHeadersInOut.size())
+    {
+        std::wstring CollectiveReqHeadersIn;
+        for (auto& Header : ReqHeadersInOut)
+        {
+            CollectiveReqHeadersIn += FromStr(Header.first) + L": " + FromStr(Header.second) + L"\r\n";
+        }
+        // Remove last \r\n as docs say
+        CollectiveReqHeadersIn = CollectiveReqHeadersIn.substr(0, CollectiveReqHeadersIn.size() - 2);
+
+        WinHttpAddRequestHeaders(Request, CollectiveReqHeadersIn.c_str(), (DWORD)CollectiveReqHeadersIn.size(), WINHTTP_ADDREQ_FLAG_REPLACE);
+    }
+
+    unsigned long FeatureToDisable = WINHTTP_DISABLE_REDIRECTS;
+    if (!FollowRedirects) WinHttpSetOption(Request, WINHTTP_OPTION_DISABLE_FEATURE, &FeatureToDisable, sizeof(FeatureToDisable));
+
+    if (!WinHttpSendRequest(
+        Request,
+        WINHTTP_NO_ADDITIONAL_HEADERS,
+        0,
+        WINHTTP_NO_REQUEST_DATA,
+        0, (DWORD)DataIn.size(), 0))
+    {
+        WinHttpCloseHandle(Request); WinHttpCloseHandle(Connection); WinHttpCloseHandle(Session);
+        Err = u8"Sending HTTP request failed.";
+        return false;
+    }
+
     size_t DataWrittenToRequest = 0;
     if (!DataIn.empty())
     {
@@ -103,19 +254,24 @@ bool MakeRawHttpRequest(const std::u8string& Url, const std::u8string& AgentInfo
             Err = u8"Not all data was written into request.";
             return false;
         }
+
+        // TODO: Is this accurate?
+        DownUpInfo.UploadedBytes = DataWrittenToRequest;
     }
 
-    if (!WinHttpSendRequest(
-        Request,
-        WINHTTP_NO_ADDITIONAL_HEADERS,
-        0,
-        WINHTTP_NO_REQUEST_DATA,
-        0, 0, 0) ||
-        !WinHttpReceiveResponse(Request, nullptr))
+    if (!WinHttpReceiveResponse(Request, nullptr))
     {
         WinHttpCloseHandle(Request); WinHttpCloseHandle(Connection); WinHttpCloseHandle(Session);
-        Err = u8"Sending HTTP request failed.";
+        Err = u8"Recieving response failed.";
         return false;
+    }
+
+    GetHeadersWinHttp(Request, ReqHeadersInOut, Err, HttpHeadersFrom::Request);
+    GetHeadersWinHttp(Request, ResponseHeadersOut, Err, HttpHeadersFrom::Response);
+
+    if (ResponseHeadersOut.contains(u8"content-length"))
+    {
+        DownUpInfo.BytesToBeDownloaded = std::stoull(FromStr(ResponseHeadersOut[u8"content-length"]));
     }
 
     size_t DataAvailable = 0;
@@ -131,10 +287,27 @@ bool MakeRawHttpRequest(const std::u8string& Url, const std::u8string& AgentInfo
             (DWORD)DataAvailable,
             (LPDWORD)&DataRead
         );
-        DataOut.resize(AlreadyWritten + DataRead);
 
+        DownUpInfo.DownloadedBytes += DataRead;
+
+        DataOut.resize(AlreadyWritten + DataRead);
     }
+
     WinHttpCloseHandle(Request); WinHttpCloseHandle(Connection); WinHttpCloseHandle(Session);
+
+    if (!SaveToFilePath.empty())
+    {
+        try
+        {
+            std::ofstream File{ std::filesystem::path(SaveToFilePath), std::ios::binary | std::ios::out };
+            File.write((const char*)DataOut.data(), DataOut.size());
+        }
+        catch (...)
+        {
+            Err = u8"Could not write to file.";
+            return false;
+        }
+    }
 
     return true;
 #undef DefComp
@@ -151,11 +324,16 @@ DWORD WINAPI HttpThread(LPVOID lpParameter)
         Req->Verb,
         Req->DataIn,
         Req->DataOut,
+        Req->ReqHeadersInOut,
+        Req->ResponseHeadersOut,
         Req->LastErr,
-        Req->ContentType
+        Req->DownUpInfo,
+        Req->ContentType,
+        Req->SaveToFilePath,
+        Req->FollowRedirects
     );
 
-    *(bool*)Req = true;
+    Req->Done = true;
 
     return Result;
 }

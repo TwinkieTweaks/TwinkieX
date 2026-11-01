@@ -8,7 +8,6 @@ AboutModule::~AboutModule() {}
 
 void AboutModule::RenderInterface()
 {
-	static HttpRequest Req;
 	using namespace ImGui;
 
 	if (not AboutWindowVisible) return;

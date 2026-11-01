@@ -4,26 +4,48 @@
 #include "Version.h"
 
 DWORD WINAPI HttpThread(LPVOID lpParameter);
-bool MakeRawHttpRequest(const std::u8string& Url, const std::u8string& AgentInfo, const std::u8string& Verb, const std::vector<uint8_t>& DataIn, std::vector<uint8_t>& DataOut, std::u8string& Err, const std::u8string& ContentType = u8"");
+
+struct HttpDownUpInfo
+{
+    size_t DownloadedBytes = 0;
+    size_t BytesToBeDownloaded = 0;
+    size_t UploadedBytes = 0;
+    size_t BytesToBeUploaded = 0;
+};
+
+bool MakeRawHttpRequest(
+    const std::u8string& Url,
+    const std::u8string& AgentInfo,
+    const std::u8string& Verb,
+    const std::vector<uint8_t>& DataIn,
+    std::vector<uint8_t>& DataOut,
+    std::unordered_map<std::u8string, std::u8string>& ReqHeadersInOut,
+    std::unordered_map<std::u8string, std::u8string>& ResponseHeadersOut,
+    std::u8string& Err,
+    HttpDownUpInfo& DownUpInfo,
+    const std::u8string& ContentType = u8"",
+    const std::u8string& SaveToFilePath = u8"",
+    bool FollowRedirects = true
+);
 
 class HttpRequest
 {
-    // DO NOT CHANGE LOCATION
-    // If you do, then update HttpThread accordingly.
     bool Done = true;
-    uint8_t PaddingA[3];
-    uint16_t PaddingB = 0;
-    uint16_t PaddingC = 0;
+    HttpDownUpInfo DownUpInfo;
+    friend DWORD WINAPI HttpThread(LPVOID lpParameter);
 public:
     std::u8string Url;
-    std::vector<uint8_t> DataOut;
-    std::vector<uint8_t> DataIn;
-    std::u8string LastErr;
     // Don't change unless you know what you're doing!
-    // 
     std::u8string AgentInfo = u8"TwinkieX/" TWINKIEX_VERSION_HTTP " / jailmanguy1[at]gmail.com";
     std::u8string Verb = u8"GET";
+    std::vector<uint8_t> DataIn;
+    std::vector<uint8_t> DataOut;
+    std::unordered_map<std::u8string, std::u8string> ReqHeadersInOut;
+    std::unordered_map<std::u8string, std::u8string> ResponseHeadersOut;
+    std::u8string LastErr;
     std::u8string ContentType;
+    std::u8string SaveToFilePath;
+    bool FollowRedirects = true;
 
     HttpRequest(std::u8string Url) : Url(Url) {}
     HttpRequest() {}
