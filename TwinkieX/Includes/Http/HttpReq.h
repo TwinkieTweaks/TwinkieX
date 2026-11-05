@@ -5,12 +5,31 @@
 
 DWORD WINAPI HttpThread(LPVOID lpParameter);
 
+namespace Gecko::Exports
+{
+    struct GeckoAutoExport;
+    namespace Net
+    {
+        void Registrar(asIScriptEngine*);
+    }
+}
+
 struct HttpDownUpInfo
 {
     size_t DownloadedBytes = 0;
     size_t BytesToBeDownloaded = 0;
     size_t UploadedBytes = 0;
     size_t BytesToBeUploaded = 0;
+};
+
+enum class HttpMethod : uint32_t
+{
+    Get, 
+    Post, 
+    Head, 
+    Put,
+    Delete,
+    Patch
 };
 
 bool MakeRawHttpRequest(
@@ -25,7 +44,7 @@ bool MakeRawHttpRequest(
     HttpDownUpInfo& DownUpInfo,
     const std::u8string& ContentType = u8"",
     const std::u8string& SaveToFilePath = u8"",
-    bool FollowRedirects = true
+    bool Redirect = true
 );
 
 // A non-blocking HTTP/HTTPS request. For a blocking method, use MakeRawHttpRequest.
@@ -40,6 +59,8 @@ class HttpRequest
     void AddRef();
     void RemoveRef();
 
+    friend struct Gecko::Exports::GeckoAutoExport;
+    friend void Gecko::Exports::Net::Registrar(asIScriptEngine*);
     friend DWORD WINAPI HttpThread(LPVOID lpParameter);
 public:
     std::u8string Url;
@@ -52,7 +73,7 @@ public:
     std::unordered_map<std::u8string, std::u8string> ResponseHeadersOut;
     std::u8string LastErr;
     std::u8string ContentType;
-    bool FollowRedirects = true;
+    bool Redirect = true;
 
     HttpRequest(std::u8string Url) : Url(Url) {}
     HttpRequest() {}

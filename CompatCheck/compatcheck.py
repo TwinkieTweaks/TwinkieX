@@ -70,6 +70,22 @@ class CompatInfo:
                 self.reason = arg
             case _: pass
 
+    def __eq__(self, other: object):
+        if not isinstance(other, CompatInfo):
+            return NotImplemented
+        return self.namespace == other.namespace or \
+            self.impl == other.impl or \
+            self.being == other.being or \
+            self.of == other.of
+
+    def __hash__(self) -> int:
+        return hash((
+                self.namespace,
+                self.impl,
+                self.being,
+                self.of
+            ))
+
     def __repr__(self):
         return f'{{"{self.file}", line {self.line}, {self.decl.value}}}'
 
@@ -139,6 +155,8 @@ def do():
                         infos[-1].From(command, value)
             except Exception as e:
                 print(f"could not parse or open {file.name}: {e}")
+
+    infos = list(dict.fromkeys(infos).keys())
 
     for info in infos:
         infos_by_being[info.being].append(info)

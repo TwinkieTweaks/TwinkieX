@@ -4,12 +4,12 @@
 
 static std::u8string FromStr(const std::string& that)
 {
-    return (char8_t*)that.c_str();
+    return std::u8string((const char8_t*)that.data(), that.size());
 }
 
 static std::string ToStr(const std::u8string& that)
 {
-    return (char*)that.c_str();
+    return std::string((const char*)that.data(), that.size());
 }
 
 static std::wstring FromStr(const std::u8string& that)
@@ -137,7 +137,7 @@ bool MakeRawHttpRequest(
     HttpDownUpInfo& DownUpInfo,
     const std::u8string& ContentType,
     const std::u8string& SaveToFilePath,
-    bool FollowRedirects
+    bool Redirect
 )
 {
     {
@@ -230,7 +230,7 @@ bool MakeRawHttpRequest(
     }
 
     unsigned long FeatureToDisable = WINHTTP_DISABLE_REDIRECTS;
-    if (!FollowRedirects) WinHttpSetOption(Request, WINHTTP_OPTION_DISABLE_FEATURE, &FeatureToDisable, sizeof(FeatureToDisable));
+    if (!Redirect) WinHttpSetOption(Request, WINHTTP_OPTION_DISABLE_FEATURE, &FeatureToDisable, sizeof(FeatureToDisable));
 
     if (!WinHttpSendRequest(
         Request,
@@ -334,7 +334,7 @@ DWORD WINAPI HttpThread(LPVOID lpParameter)
         Req->DownUpInfo,
         Req->ContentType,
         Req->SaveToFilePath,
-        Req->FollowRedirects
+        Req->Redirect
     );
 
     Req->Done = true;

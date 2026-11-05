@@ -69,4 +69,4 @@ namespace Gecko::Exports
 #define GECKO_EXPORT_GLOBAL(List, Ns_, Decl_, Addr_) \
 	GECKO_AUTOEXPORT(List, .Type = ::Gecko::Exports::AutoExportType::Global, .Namespace = Ns_, .Decl = Decl_, .Address = (void*)(Addr_))
 #define GECKO_EXPORT_ENUM(List, Ns_, Name_, Names_, Values_) \
-	GECKO_AUTOEXPORT(List, .Type = ::Gecko::Exports::AutoExportType::Enum, .Namespace = Ns_, .EnumType = Name_, .EnumNamesSz = sizeof(new const char*[] Names_) / sizeof(const char*), .EnumNames = new const char*[] Names_, .EnumVs = new int[] Values_)
+	static const char* GECKO_CAT(s_, GECKO_CAT(Ns_, GECKO_CAT(Name_, EnumNames)))[] = Names_; GECKO_AUTOEXPORT(List, .Type = ::Gecko::Exports::AutoExportType::Enum, .Namespace = #Ns_, .EnumType = #Name_, .EnumNamesSz = sizeof(GECKO_CAT(s_, GECKO_CAT(Ns_, GECKO_CAT(Name_, EnumNames)))) / sizeof(const char*), .EnumNames = GECKO_CAT(s_, GECKO_CAT(Ns_, GECKO_CAT(Name_, EnumNames))), .EnumVs = new int[] Values_)
