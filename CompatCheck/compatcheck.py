@@ -4,6 +4,7 @@ from enum import Enum
 from collections import defaultdict
 import json
 import os
+import traceback
 
 is_in_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
 
@@ -88,111 +89,131 @@ parser.add_argument("-r", "--recursive", action="store_true")
 
 args = parser.parse_args()
 
-if not args.github and is_in_github_actions:
-    print("skipping post-build event")
-    quit(0)
+print(f"------ CompatCheck: checking against {args.against} ------")
 
-files: list[str] = []
-for filter in args.filter.split(","):
-    files += glob(args.input + "/" + filter, recursive=args.recursive)
-    
-infos: list[CompatInfo] = []
-infos_by_being: dict[str, list[CompatInfo]] = defaultdict(list)
-for file in files:
-    with open(file, "r") as file:
-        try:
-            lines = file.readlines()
+def do():
+    if not args.github and is_in_github_actions:
+        print("skipping post-build event")
+        quit(0)
 
-            tag_count = 0
-            for line in lines:
-                if "!CompatMeta" in line:
-                    tag_count += 1
+    files: list[str] = []
+    for filter in args.filter.split(","):
+        files += glob(args.input + "/" + filter, recursive=args.recursive)
+        
+    infos: list[CompatInfo] = []
+    infos_by_being: dict[str, list[CompatInfo]] = defaultdict(list)
 
-            if tag_count % 2 != 0:
-                raise SyntaxError("a tag was opened but not closed")
+    for being_info in BeingInfo:
+        infos_by_being[being_info.value] = []
 
-            seen_tag = False
-            for idx, line in enumerate(lines):
-                if "!CompatMeta" in line:
-                    seen_tag = not seen_tag
-                    if not seen_tag:
-                        infos[-1].line = idx + 2
-                        infos[-1].file = file.name
-                    else:
-                        infos.append(CompatInfo())
-                        infos[-1].line = idx + 2
-                        infos[-1].file = file.name
-                    continue
-                elif seen_tag:
-                    line = line.strip().removeprefix("//").strip().split(None, 1)
-                    command = line[0]
-                    value = line[1]
+    for file in files:
+        with open(file, "r") as file:
+            try:
+                lines = file.readlines()
 
-                    infos[-1].From(command, value)
-        except Exception as e:
-            print(f"could not parse or open {file.name}: {e}")
+                tag_count = 0
+                for line in lines:
+                    if "!CompatMeta" in line:
+                        tag_count += 1
 
-for info in infos:
-    infos_by_being[info.being].append(info)
+                if tag_count % 2 != 0:
+                    raise SyntaxError("a tag was opened but not closed")
 
-matches: dict[DeclInfo, int] = defaultdict(int)
-misses = 0
+                seen_tag = False
+                for idx, line in enumerate(lines):
+                    if "!CompatMeta" in line:
+                        seen_tag = not seen_tag
+                        if not seen_tag:
+                            infos[-1].line = idx + 2
+                            infos[-1].file = file.name
+                        else:
+                            infos.append(CompatInfo())
+                            infos[-1].line = idx + 2
+                            infos[-1].file = file.name
+                        continue
+                    elif seen_tag:
+                        line = line.strip().removeprefix("//").strip().split(None, 1)
+                        command = line[0]
+                        value = line[1]
 
-class_name_to_idx: dict[str, int] = {}
+                        infos[-1].From(command, value)
+            except Exception as e:
+                print(f"could not parse or open {file.name}: {e}")
 
-with open(args.against, "r") as core:
-    core_contents = json.load(core)
-    matches_being = 0
-    for i, c in enumerate(core_contents["classes"]):
-        class_name_to_idx[c["name"]] = i
+    for info in infos:
+        infos_by_being[info.being].append(info)
 
-    for being in infos_by_being:
-        is_of_class = being in ["method", "behavior", "prop"]
+    matches: dict[DeclInfo, int] = defaultdict(int)
+    misses = 0
 
-        if not is_of_class:
-            key = pluralize(being)
-            contents = core_contents[key]
+    class_name_to_idx: dict[str, int] = {}
 
-            for thing in contents:
-                for info in infos_by_being[being]:
-                    if thing["decl"] in info.wanted:
-                        matches[info.decl] += 1
-                        matches_being += 1
+    with open(args.against, "r") as core:
+        core_contents = json.load(core)
+        matches_being = 0
+        for i, c in enumerate(core_contents["classes"]):
+            class_name_to_idx[c["name"]] = i
 
-                        info.matched = True
-        else:
-            for info in infos_by_being[being]:
-                if info.of == "" and is_of_class:
-                    raise SyntaxError(f"{info}: {info.being} of what?")
-                
-                contents = core_contents["classes"][class_name_to_idx[info.of]][pluralize(being)]
+        for being in infos_by_being:
+            is_of_class = being in ["method", "behavior", "prop"]
+            being = being if being != "global" else "prop"
+
+            if not is_of_class:
+                key = pluralize(being)
+                contents = core_contents[key]
+
                 for thing in contents:
-                    against = thing["decl"] if being not in ["prop", "behavior"] else ((thing["typedecl"] + " " + thing["name"]) if being != "behavior" else thing["func"]["decl"])
-                    if against in info.wanted:
-                        matches[info.decl] += 1
-                        matches_being += 1
+                    for info in infos_by_being[being]:
+                        if thing["decl" if being not in ["enum", "prop"] else "name"] in info.wanted:
+                            matches[info.decl] += 1
+                            matches_being += 1
 
-                        info.matched = True
+                            info.matched = True
+            else:
+                for info in infos_by_being[being]:
+                    if info.of == "" and is_of_class:
+                        raise SyntaxError(f"{info}: {info.being} of what?")
+                    
+                    contents = core_contents["classes"][class_name_to_idx[info.of]][pluralize(being)]
+                    for thing in contents:
+                        against = thing["decl"] if being not in ["prop", "behavior"] else ((thing["typedecl"] + " " + thing["name"]) if being != "behavior" else thing["func"]["decl"])
+                        if against in info.wanted:
+                            matches[info.decl] += 1
+                            matches_being += 1
 
-        misses += len(contents) - matches_being
+                            info.matched = True
 
-has_unmatched_info = False
-for being in infos_by_being:
-    for info in infos_by_being[being]:
-        if not info.matched:
-            print(f"unmatched info: {info}")
-            has_unmatched_info = True
+            misses += len(contents) - matches_being
+            matches_being = 0
 
-complete = (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
-non_partial = (matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
+    has_unmatched_info = False
+    for being in infos_by_being:
+        for info in infos_by_being[being]:
+            if not info.matched:
+                print(f"unmatched info: {info}")
+                has_unmatched_info = True
 
-print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] != 1 else f"{matches[m]} {m.value} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
-print(f'{complete:.2%} complete, {non_partial:.2%} non-partial')
+    complete = (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
+    non_partial = (matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
 
-if args.github:
-    with open(os.environ["GITHUB_ENV"], "a") as f:
-        f.write(f"COMPLETE_PERCENTAGE={complete * 100:.1f}\n")
-        f.write(f"NON_PARTIAL_PERCENTAGE={non_partial * 100:.1f}\n")
+    print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] != 1 else f"{matches[m]} {m.value} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
+    print(f'{complete:.2%} complete, {non_partial:.2%} non-partial')
 
-if not args.no_fail: 
-    quit(has_unmatched_info or (len(matches) == 0))
+    if args.github:
+        with open(os.environ["GITHUB_ENV"], "a") as f:
+            f.write(f"COMPLETE_PERCENTAGE={complete * 100:.1f}\n")
+            f.write(f"NON_PARTIAL_PERCENTAGE={non_partial * 100:.1f}\n")
+
+    if not args.no_fail: 
+        quit(has_unmatched_info or (len(matches) == 0))
+
+if args.no_fail:
+    try:
+        do()        
+    except Exception as e:
+        print("An exception occured during compatcheck:")
+        print(traceback.format_exc())
+else:
+    do()
+
+print(f"------ CompatCheck: checked against {args.against} ------")

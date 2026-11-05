@@ -23,7 +23,7 @@ static std::u8string ToStr(const std::wstring& that)
 }
 
 template<typename T>
-static std::basic_string<T, std::char_traits<T>, std::allocator<T>>& StringoidToLower(std::basic_string<T, std::char_traits<T>, std::allocator<T>>& Str)
+static std::basic_string<T>& StringoidToLower(std::basic_string<T>& Str)
 {
     for (T& C : Str)
     {
@@ -341,4 +341,71 @@ DWORD WINAPI HttpThread(LPVOID lpParameter)
     Req->RunningThread = NULL;
 
     return Result;
+}
+
+bool HttpRequest::Start(const std::u8string& pUrl)
+{
+    this->Done = false;
+    if (!this->DataOut.empty()) this->DataOut.resize(0);
+    if (!pUrl.empty()) this->Url = pUrl;
+    if (!(this->RunningThread = CreateThread(NULL, 0, HttpThread, this, 0, NULL)))
+        return false;
+    return true;
+}
+
+bool HttpRequest::StartToFile(const std::u8string& path)
+{
+    this->SaveToFilePath = path;
+    return Start();
+}
+
+bool HttpRequest::Finished()
+{
+    return Done;
+}
+
+size_t HttpRequest::ProgressDownload()
+{
+    return DownUpInfo.DownloadedBytes;
+}
+
+size_t HttpRequest::ProgressDownloadTotal()
+{
+    return DownUpInfo.BytesToBeDownloaded;
+}
+
+size_t HttpRequest::ProgressUpload()
+{
+    return DownUpInfo.UploadedBytes;
+}
+
+size_t HttpRequest::ProgressUploadTotal()
+{
+    return DownUpInfo.BytesToBeUploaded;
+}
+
+void HttpRequest::Cancel()
+{
+    // TODO: probably shouldn't use TerminateThread here, but HttpThread is safe from leaks
+    TerminateThread(this->RunningThread, 0);
+    this->Done = true;
+}
+
+void HttpRequest::AddRef()
+{
+    this->RefCount++;
+}
+
+void HttpRequest::RemoveRef()
+{
+    if (!--this->RefCount)
+        delete this;
+}
+
+HttpRequest::~HttpRequest()
+{
+    if (!this->Done)
+    {
+        this->Cancel();
+    }
 }

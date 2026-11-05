@@ -35,6 +35,11 @@ class HttpRequest
     HttpDownUpInfo DownUpInfo;
     std::u8string SaveToFilePath;
     HANDLE RunningThread = NULL;
+    size_t RefCount = 0;
+
+    void AddRef();
+    void RemoveRef();
+
     friend DWORD WINAPI HttpThread(LPVOID lpParameter);
 public:
     std::u8string Url;
@@ -52,53 +57,16 @@ public:
     HttpRequest(std::u8string Url) : Url(Url) {}
     HttpRequest() {}
 
-    ~HttpRequest() {}
+    ~HttpRequest();
 
-    bool Start(const std::u8string& pUrl = u8"")
-    {
-        Done = false;
-        if (!DataOut.empty()) DataOut.resize(0);
-        if (!pUrl.empty()) this->Url = pUrl;
-        if (!(this->RunningThread = CreateThread(NULL, 0, HttpThread, this, 0, NULL)))
-            return false;
-        return true;
-    }
+    bool Start(const std::u8string& pUrl = u8"");
+    bool StartToFile(const std::u8string& path);
+    bool Finished();
 
-    bool StartToFile(const std::u8string& path)
-    {
-        this->SaveToFilePath = path;
-        return Start();
-    }
+    size_t ProgressDownload();
+    size_t ProgressDownloadTotal();
+    size_t ProgressUpload();
+    size_t ProgressUploadTotal();
 
-    bool Finished()
-    {
-        return Done;
-    }
-
-    size_t ProgressDownload()
-    {
-        return DownUpInfo.DownloadedBytes;
-    }
-
-    size_t ProgressDownloadTotal()
-    {
-        return DownUpInfo.BytesToBeDownloaded;
-    }
-
-    size_t ProgressUpload()
-    {
-        return DownUpInfo.UploadedBytes;
-    }
-
-    size_t ProgressUploadTotal()
-    {
-        return DownUpInfo.BytesToBeUploaded;
-    }
-
-    void Cancel()
-    {
-        // TODO: probably shouldn't use TerminateThread here, but HttpThread is safe from leaks
-        TerminateThread(this->RunningThread, 0);
-        this->Done = true;
-    }
+    void Cancel();
 };

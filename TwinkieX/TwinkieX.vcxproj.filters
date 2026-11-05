@@ -399,6 +399,9 @@
     <ClInclude Include="Includes\Http\HttpReq.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Gecko\Exports\Net\Net.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -714,6 +717,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Http\HttpReq.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\Net\Net.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

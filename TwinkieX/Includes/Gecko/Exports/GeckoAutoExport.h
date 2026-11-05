@@ -5,19 +5,23 @@
 
 namespace Gecko::Exports
 {
-	enum class AutoExportType { Function, Method, Behaviour, Property, Global };
+	enum class AutoExportType { Function, Method, Behaviour, Property, Global, Enum };
 
 	struct GeckoExport
 	{
 		AutoExportType Type;
-		const char*    Namespace = "";
-		const char*    Class     = nullptr;
-		const char*    Decl      = nullptr;
+		const char*    Namespace   = "";
+		const char*    Class       = nullptr;
+		const char*    Decl        = nullptr;
 		asSFuncPtr     Ptr;
-		asDWORD        CallConv  = 0;
-		asEBehaviours  Behaviour = asBEHAVE_CONSTRUCT;
-		int            Offset    = 0;
-		void*          Address   = nullptr;
+		asDWORD        CallConv    = 0;
+		asEBehaviours  Behaviour   = asBEHAVE_CONSTRUCT;
+		int            Offset      = 0;
+		void*          Address     = nullptr;
+		const char*    EnumType    = nullptr;
+		size_t         EnumNamesSz = 0;
+		const char**   EnumNames   = nullptr;
+		int*           EnumVs      = nullptr;
 	};
 
 	struct GeckoAutoExport { GeckoAutoExport(std::vector<GeckoExport>& L, const GeckoExport& E) { L.push_back(E); }};
@@ -34,6 +38,13 @@ namespace Gecko::Exports
 			case AutoExportType::Behaviour: Engine->RegisterObjectBehaviour(E.Class, E.Behaviour, E.Decl, E.Ptr, E.CallConv); break;
 			case AutoExportType::Property:  Engine->RegisterObjectProperty (E.Class, E.Decl,      E.Offset);                  break;
 			case AutoExportType::Global:    Engine->RegisterGlobalProperty (E.Decl,  E.Address);                              break;
+			case AutoExportType::Enum:
+				Engine->RegisterEnum(E.EnumType);
+				for (size_t EnumValIdx = 0; EnumValIdx < E.EnumNamesSz; EnumValIdx++)
+				{
+					Engine->RegisterEnumValue(E.EnumType, E.EnumNames[EnumValIdx], E.EnumVs[EnumValIdx]);
+				}
+				break;
 			}
 		}
 		Engine->SetDefaultNamespace("");
@@ -57,3 +68,5 @@ namespace Gecko::Exports
 	GECKO_AUTOEXPORT(List, .Type = ::Gecko::Exports::AutoExportType::Property, .Namespace = Ns_, .Class = Class_, .Decl = Decl_, .Offset = (int)(Offset_))
 #define GECKO_EXPORT_GLOBAL(List, Ns_, Decl_, Addr_) \
 	GECKO_AUTOEXPORT(List, .Type = ::Gecko::Exports::AutoExportType::Global, .Namespace = Ns_, .Decl = Decl_, .Address = (void*)(Addr_))
+#define GECKO_EXPORT_ENUM(List, Ns_, Name_, Names_, Values_) \
+	GECKO_AUTOEXPORT(List, .Type = ::Gecko::Exports::AutoExportType::Enum, .Namespace = Ns_, .EnumType = Name_, .EnumNamesSz = sizeof(new const char*[] Names_) / sizeof(const char*), .EnumNames = new const char*[] Names_, .EnumVs = new int[] Values_)
