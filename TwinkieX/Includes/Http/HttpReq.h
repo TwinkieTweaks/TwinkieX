@@ -28,10 +28,13 @@ bool MakeRawHttpRequest(
     bool FollowRedirects = true
 );
 
+// A non-blocking HTTP/HTTPS request. For a blocking method, use MakeRawHttpRequest.
 class HttpRequest
 {
     bool Done = true;
     HttpDownUpInfo DownUpInfo;
+    std::u8string SaveToFilePath;
+    HANDLE RunningThread = NULL;
     friend DWORD WINAPI HttpThread(LPVOID lpParameter);
 public:
     std::u8string Url;
@@ -44,7 +47,6 @@ public:
     std::unordered_map<std::u8string, std::u8string> ResponseHeadersOut;
     std::u8string LastErr;
     std::u8string ContentType;
-    std::u8string SaveToFilePath;
     bool FollowRedirects = true;
 
     HttpRequest(std::u8string Url) : Url(Url) {}
@@ -52,18 +54,51 @@ public:
 
     ~HttpRequest() {}
 
-    bool IsDone()
-    {
-        return Done;
-    }
-
-    bool Begin(std::u8string pUrl = u8"")
+    bool Start(const std::u8string& pUrl = u8"")
     {
         Done = false;
         if (!DataOut.empty()) DataOut.resize(0);
         if (!pUrl.empty()) this->Url = pUrl;
-        if (!CreateThread(NULL, 0, HttpThread, this, 0, NULL))
+        if (!(this->RunningThread = CreateThread(NULL, 0, HttpThread, this, 0, NULL)))
             return false;
         return true;
+    }
+
+    bool StartToFile(const std::u8string& path)
+    {
+        this->SaveToFilePath = path;
+        return Start();
+    }
+
+    bool Finished()
+    {
+        return Done;
+    }
+
+    size_t ProgressDownload()
+    {
+        return DownUpInfo.DownloadedBytes;
+    }
+
+    size_t ProgressDownloadTotal()
+    {
+        return DownUpInfo.BytesToBeDownloaded;
+    }
+
+    size_t ProgressUpload()
+    {
+        return DownUpInfo.UploadedBytes;
+    }
+
+    size_t ProgressUploadTotal()
+    {
+        return DownUpInfo.BytesToBeUploaded;
+    }
+
+    void Cancel()
+    {
+        // TODO: probably shouldn't use TerminateThread here, but HttpThread is safe from leaks
+        TerminateThread(this->RunningThread, 0);
+        this->Done = true;
     }
 };

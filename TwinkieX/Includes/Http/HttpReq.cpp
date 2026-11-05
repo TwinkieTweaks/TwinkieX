@@ -59,12 +59,13 @@ static bool GetHeadersWinHttp(
 
     // Includes nasty things like verb and object.
     // CRLF-separated.
-    wchar_t* ReqHeadersBuf = new wchar_t[ReqHeadersBufSz / sizeof(wchar_t)];
+    std::vector<wchar_t> ReqHeadersBuf;
+    ReqHeadersBuf.resize(ReqHeadersBufSz);
     if (!WinHttpQueryHeaders(
         Request,
         WINHTTP_QUERY_RAW_HEADERS_CRLF | (uint32_t)Where,
         WINHTTP_HEADER_NAME_BY_INDEX,
-        ReqHeadersBuf,
+        ReqHeadersBuf.data(),
         (LPDWORD)&ReqHeadersBufSz,
         WINHTTP_NO_HEADER_INDEX
     ))
@@ -75,7 +76,7 @@ static bool GetHeadersWinHttp(
 
     std::vector<std::wstring> HeaderLines;
     {
-        std::wstringstream HeaderWss(ReqHeadersBuf);
+        std::wstringstream HeaderWss(ReqHeadersBuf.data());
         std::wstring HeaderLine;
         size_t HeaderLineIdx = 0;
         while (std::getline(HeaderWss, HeaderLine, L'\r'))
@@ -94,7 +95,6 @@ static bool GetHeadersWinHttp(
             else break;
         }
     }
-    delete[] ReqHeadersBuf;
 
     for (auto& HeaderLine : HeaderLines)
     {
@@ -338,6 +338,7 @@ DWORD WINAPI HttpThread(LPVOID lpParameter)
     );
 
     Req->Done = true;
+    Req->RunningThread = NULL;
 
     return Result;
 }
