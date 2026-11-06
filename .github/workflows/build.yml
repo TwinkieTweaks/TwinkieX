@@ -55,7 +55,7 @@ jobs:
       uses: microsoft/setup-msbuild@v2
     
     - name: Restore NuGet packages
-      run: dotnet restore
+      run: dotnet restore /p:DisableWarnForInvalidRestoreProjects="true"
 
     - name: Build Project
       run: |
