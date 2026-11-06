@@ -56,7 +56,7 @@ jobs:
     
     - name: Restore NuGet packages
       run:
-        dotnet restore /p:DisableWarnForInvalidRestoreProjects="true" ${{ github.workspace }}\TwinkieX\TwinkieX.vcxproj
+        dotnet restore ${{ github.workspace }}\TwinkieX\TwinkieX.vcxproj /p:DisableWarnForInvalidRestoreProjects="true"
 
     - name: Build Project
       run: |
