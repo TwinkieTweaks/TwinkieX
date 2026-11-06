@@ -72,7 +72,9 @@ jobs:
       uses: microsoft/setup-msbuild@v2
     
     - name: Restore NuGet packages
-      run: dotnet restore /p:DisableWarnForInvalidRestoreProjects="true"
+      run: |
+        cd ${{ github.workspace }}\TwinkieX\
+        dotnet restore /p:DisableWarnForInvalidRestoreProjects="true" TwinkieX.vcxproj
     - name: Build Project
       run: |
         $env:CL = "/experimental:deterministic /pathmap:${{ github.workspace }}\=.\"
