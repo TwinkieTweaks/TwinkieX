@@ -745,6 +745,7 @@
     <None Include="Includes\DiscordGameSDK\x64\discord_game_sdk.dll" />
     <None Include="Includes\DiscordGameSDK\x86\discord_game_sdk.dll" />
     <None Include="Includes\imgui\PATCHES.md" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <MASM Include="Includes\angelscript\sdk\angelscript\source\as_callfunc_x64_msvc_asm.asm">
