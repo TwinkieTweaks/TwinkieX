@@ -273,6 +273,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ESWC|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -280,6 +282,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -287,6 +291,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TM1|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -294,6 +300,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMCN|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -301,6 +309,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMO|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -308,6 +318,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMS|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -315,6 +327,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMU|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -322,6 +336,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='TMSX|Win32'">
     <TargetName>Twinkie$(Configuration)</TargetName>
@@ -329,6 +345,8 @@
     <IntDir>$(SolutionDir)Intermediates\TwinkieX\$(Platform)\$(Configuration)\</IntDir>
     <CustomBuildAfterTargets>
     </CustomBuildAfterTargets>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetName>TwinkieTMCN</TargetName>
@@ -1077,6 +1095,9 @@
     <ClInclude Include="Includes\Modules\IModule.h" />
     <ClInclude Include="Includes\Modules\InputDisplayModule\InputDisplayModule.h" />
     <ClInclude Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.h" />
+    <ClInclude Include="Includes\Resources\ResourceLoader.h" />
+    <ClInclude Include="Includes\stb\stb_image.h" />
+    <ClInclude Include="Includes\Texture\Texture.h" />
     <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
     <ClInclude Include="Includes\TMText\TMText.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
@@ -1191,6 +1212,8 @@
     <ClCompile Include="Includes\Modules\NodExplorerModule\NodExplorerModule.cpp" />
     <ClCompile Include="Includes\Modules\InputDisplayModule\InputDisplayModule.cpp" />
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />
+    <ClCompile Include="Includes\Resources\ResourceLoader.cpp" />
+    <ClCompile Include="Includes\Texture\Texture.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
     <ClCompile Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.cpp" />

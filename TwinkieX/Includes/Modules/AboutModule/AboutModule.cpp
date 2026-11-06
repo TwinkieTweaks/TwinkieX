@@ -4,6 +4,11 @@
 #include <Modules/ModuleAutoExport.h>
 #include <Http/HttpReq.h>
 
+AboutModule::AboutModule(TwinkTrackmania& Twinkie, ILoggert& Loggert) : IModule{ Twinkie, Loggert, "AboutModule", "About" }
+{
+
+}
+
 AboutModule::~AboutModule() {}
 
 void AboutModule::RenderInterface()

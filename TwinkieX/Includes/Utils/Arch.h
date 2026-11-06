@@ -77,3 +77,4 @@
 #endif
 
 #define TWINKIEX_DLL ("Twinkie" TWINKIEX_GAME ".dll")
+#define TWINKIEX_DLLW (L"Twinkie" TWINKIEX_GAME L".dll")

@@ -28,7 +28,7 @@
 #include <Utils/Arch.h>
 
 // Disable all warnings emmitted by DirectX11
-#pragma warning(disable : 4061 4365 4820 4365)
+#pragma warning(disable : 4061 4365 4820 4365 4005 5029 5267)
 #pragma warning(push)
 
 // DirectX (11 for TMCN, 9 otherwise)
@@ -40,6 +40,7 @@
 #else
 
 #include <d3d9.h>
+#include <D3dx9tex.h>
 
 #endif
 
@@ -64,6 +65,7 @@
 
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_internal.h>
+#include <stb/stb_image.h>
 
 #pragma warning(pop)
 
