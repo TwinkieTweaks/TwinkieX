@@ -56,7 +56,7 @@ jobs:
     
     - name: Restore NuGet packages
       run:
-        nuget restore TwinkieX.sln /p:DisableWarnForInvalidRestoreProjects="true"
+        nuget restore TwinkieX.sln
 
     - name: Build Project
       run: |
