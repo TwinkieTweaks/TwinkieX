@@ -4,13 +4,12 @@
 #include <stb/stb_image.h>
 #include <Twinkie/TwinkUi/TwinkUi.h>
 
-#ifdef X64
-using TextureResource = ID3D11ShaderResourceView*;
 
+#ifdef X64
 // Functions from https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-directx11-users
 
 // Simple helper function to load an image into a DX11 texture with common settings
-static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureResource* out_srv, int* out_width, int* out_height)
+static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureResource* out_texture, int* out_width, int* out_height)
 {
     // Load from disk into a raw RGBA buffer
     int image_width = 0;
@@ -47,7 +46,7 @@ static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureRes
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MipLevels = desc.MipLevels;
     srvDesc.Texture2D.MostDetailedMip = 0;
-    TwinkUiState::Device->CreateShaderResourceView(pTexture, &srvDesc, out_srv);
+    TwinkUiState::Device->CreateShaderResourceView(pTexture, &srvDesc, out_texture);
     pTexture->Release();
 
     *out_width = image_width;
@@ -56,10 +55,50 @@ static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureRes
 
     return true;
 }
-#else
-using TextureResource = LPDIRECT3DTEXTURE9;
 
-bool LoadTextureFromFile(const char* filename, TextureResource* out_texture, int* out_width, int* out_height)
+
+// Open and read a file, then forward to LoadTextureFromMemory()
+bool LoadTextureFromFile(const char* file_name, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
+{
+    FILE* f; 
+    fopen_s(&f, file_name, "rb");
+    if (f == NULL)
+        return false;
+    fseek(f, 0, SEEK_END);
+    size_t file_size = (size_t)ftell(f);
+    if (file_size == (size_t)-1)
+        return false;
+    fseek(f, 0, SEEK_SET);
+    void* file_data = IM_ALLOC(file_size);
+    fread(file_data, 1, file_size, f);
+    fclose(f);
+    bool ret = LoadTextureFromMemory(file_data, file_size, out_srv, out_width, out_height);
+    IM_FREE(file_data);
+    return ret;
+}
+#else
+// Functions from https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-directx9-users
+
+// Modified to load from memory.
+static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureResource* out_texture, int* out_width, int* out_height)
+{
+    // Load texture from disk
+    PDIRECT3DTEXTURE9 texture;
+    HRESULT hr = D3DXCreateTextureFromFileInMemory(TwinkUiState::Device, data, data_size, &texture);
+    if (hr != S_OK)
+        return false;
+
+    // Retrieve description of the texture surface so we can access its size
+    D3DSURFACE_DESC my_image_desc;
+    texture->GetLevelDesc(0, &my_image_desc);
+    *out_texture = texture;
+    *out_width = (int)my_image_desc.Width;
+    *out_height = (int)my_image_desc.Height;
+    return true;
+}
+
+// Simple helper function to load an image into a DX9 texture with common settings
+static bool LoadTextureFromFile(const char* filename, PDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height)
 {
     // Load texture from disk
     PDIRECT3DTEXTURE9 texture;
@@ -76,3 +115,27 @@ bool LoadTextureFromFile(const char* filename, TextureResource* out_texture, int
     return true;
 }
 #endif
+
+Texture::Texture() {}
+Texture::Texture(void* Memory, size_t Size) { From(Memory, Size); }
+Texture::Texture(const std::filesystem::path& Path) { From(Path); }
+
+Texture::~Texture()
+{
+    // TODO: Proper cleanup of textures.
+}
+
+bool Texture::From(void* Memory, size_t Size)
+{
+    return LoadTextureFromMemory(Memory, Size, &InternalTexture, (int*)&Width, (int*)&Height);
+}
+
+bool Texture::From(const std::filesystem::path& Path)
+{
+    return LoadTextureFromFile(Path.string().c_str(), &InternalTexture, (int*)&Width, (int*)&Height);
+}
+
+ImTextureID Texture::Get() const
+{
+    return (ImTextureID)(intptr_t)InternalTexture;
+}

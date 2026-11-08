@@ -268,8 +268,6 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 {
 	IoMgr.Update();
 
-	CreateAndExportModules(this->Modules, *this->TrackmaniaMgr, &LoggertCpp);
-
 	this->DocumentsFolderPath = pDocumentsFolderPath;
 
 	// Get the device from the game
@@ -282,6 +280,8 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 		return;
 		// This will quit only when the constructor (TwinkUi::TwinkUi) is called because it is called when initializing the (TwinkUi Twinkie::UiMgr).
 	}
+
+	CreateAndExportModules(this->Modules, *this->TrackmaniaMgr, &LoggertCpp);
 
 	// TMCN
 #ifdef MANIAPLANET

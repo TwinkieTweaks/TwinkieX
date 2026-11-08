@@ -1,12 +1,11 @@
 #include "pch.h"
 #include "AboutModule.h"
-#include <Resources/resource.h>
 #include <Modules/ModuleAutoExport.h>
-#include <Http/HttpReq.h>
 
 AboutModule::AboutModule(TwinkTrackmania& Twinkie, ILoggert& Loggert) : IModule{ Twinkie, Loggert, "AboutModule", "About" }
 {
-
+	Loader.Load(IDB_PNG1, L"PNG");
+	TwinkieXBanner.From(Loader.Data.data(), Loader.Data.size());
 }
 
 AboutModule::~AboutModule() {}
@@ -19,6 +18,8 @@ void AboutModule::RenderInterface()
 
 	if (Begin("About", &AboutWindowVisible, ImGuiWindowFlags_AlwaysAutoResize))
 	{
+		Image(TwinkieXBanner.Get(), { 480, 180 });
+
 		Text("TwinkieX for " TWINKIEX_GAMEFULL);
 		Text(TWINKIEX_VERSION);
 

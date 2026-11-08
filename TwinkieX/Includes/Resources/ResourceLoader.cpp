@@ -1,17 +1,28 @@
 #include "pch.h"
 #include "ResourceLoader.h"
 
-ResourceLoader::ResourceLoader(int Id)
+ResourceLoader::ResourceLoader(int Id, const wchar_t* Type)
 {
-	Load(Id);
+	Load(Id, Type);
 }
 
 ResourceLoader::ResourceLoader() {}
 
-void ResourceLoader::Load(int Id)
+static HMODULE GetCurrentModule()
 {
-	auto TwinkieXModule = GetModuleHandleW(TWINKIEX_DLLW);
-	auto Resource = FindResource(TwinkieXModule, MAKEINTRESOURCE(Id), RT_RCDATA);
+	HMODULE hModule = NULL;
+	GetModuleHandleExW(
+		GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+		reinterpret_cast<LPCWSTR>(&GetCurrentModule),
+		&hModule
+	);
+	return hModule;
+}
+
+void ResourceLoader::Load(int Id, const wchar_t* Type)
+{
+	auto TwinkieXModule = GetCurrentModule();
+	auto Resource = FindResource(TwinkieXModule, MAKEINTRESOURCE(Id), Type);
 	if (!Resource) return;
 
 	auto ResourceHandle = LoadResource(TwinkieXModule, Resource);
