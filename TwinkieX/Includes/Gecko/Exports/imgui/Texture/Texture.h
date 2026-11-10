@@ -34,4 +34,5 @@ public:
 	bool From(void* Memory, size_t Size);
 	bool From(const std::filesystem::path& Path);
 	ImTextureID Get() const;
+	ImVec2 GetSize() const;
 };

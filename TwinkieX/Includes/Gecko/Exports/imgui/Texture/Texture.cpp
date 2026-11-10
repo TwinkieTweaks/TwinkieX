@@ -139,6 +139,11 @@ ImTextureID Texture::Get() const
     return (ImTextureID)(intptr_t)InternalTexture;
 }
 
+ImVec2 Texture::GetSize() const
+{
+    return ImVec2(float(Width), float(Height));
+}
+
 void Texture::AddRef()
 {
     RefCount++;

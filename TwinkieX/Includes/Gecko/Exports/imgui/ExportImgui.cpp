@@ -29,24 +29,6 @@ namespace Gecko::Exports::ImGui
 	// UITexture
 	namespace
 	{
-		ImVec2 GetTextureSize(const Texture* Tex)
-		{
-			TextureResource Resource = (TextureResource)(intptr_t)Tex->Get();
-			if (!Resource) return ImVec2(0, 0);
-#ifdef X64
-			ID3D11Resource* Underlying = nullptr;
-			Resource->GetResource(&Underlying);
-			if (!Underlying) return ImVec2(0, 0);
-			D3D11_TEXTURE2D_DESC Desc{};
-			((ID3D11Texture2D*)Underlying)->GetDesc(&Desc);
-			Underlying->Release();
-#else
-			D3DSURFACE_DESC Desc{};
-			Resource->GetLevelDesc(0, &Desc);
-#endif
-			return ImVec2((float)Desc.Width, (float)Desc.Height);
-		}
-
 		/*
 		!CompatMeta
 		for     UI
@@ -521,7 +503,7 @@ namespace Gecko::Exports::ImGui
 		{
 			Gecko_Exports_ImGui_GuardNonRender();
 			if (!Tex) return;
-			Image(Tex->Get(), GetTextureSize(Tex));
+			Image(Tex->Get(), Tex->GetSize());
 		}
 		UI_EXPORT("void Image(Texture@+ texture)", ImageAs);
 	}
