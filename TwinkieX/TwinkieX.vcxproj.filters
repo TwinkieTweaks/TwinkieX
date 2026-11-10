@@ -396,7 +396,7 @@
     <ClInclude Include="Includes\Resources\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\Http\HttpReq.h">
+    <ClInclude Include="Includes\Gecko\Exports\Net\Http\HttpReq.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Includes\Gecko\Exports\Net\Net.h">
@@ -405,10 +405,13 @@
     <ClInclude Include="Includes\Resources\ResourceLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Includes\Texture\Texture.h">
+    <ClInclude Include="Includes\Gecko\Exports\imgui\Texture\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Includes\stb\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Gecko\Exports\Global\MemoryBuffer\MemoryBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -725,7 +728,7 @@
     <ClCompile Include="Includes\Modules\ModuleAutoExport.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Includes\Http\HttpReq.cpp">
+    <ClCompile Include="Includes\Gecko\Exports\Net\Http\HttpReq.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\Exports\Net\Net.cpp">
@@ -734,7 +737,10 @@
     <ClCompile Include="Includes\Resources\ResourceLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Includes\Texture\Texture.cpp">
+    <ClCompile Include="Includes\Gecko\Exports\imgui\Texture\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\Global\MemoryBuffer\MemoryBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

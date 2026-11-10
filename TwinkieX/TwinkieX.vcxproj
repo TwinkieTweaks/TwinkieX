@@ -1070,6 +1070,7 @@
     <ClInclude Include="Includes\Gecko\CtxSet.h" />
     <ClInclude Include="Includes\Gecko\Exports\GeckoAutoExport.h" />
     <ClInclude Include="Includes\Gecko\Exports\Global\Global.h" />
+    <ClInclude Include="Includes\Gecko\Exports\Global\MemoryBuffer\MemoryBuffer.h" />
     <ClInclude Include="Includes\Gecko\Exports\imgui\ExportImgui.h" />
     <ClInclude Include="Includes\Gecko\Exports\Net\Net.h" />
     <ClInclude Include="Includes\Gecko\Exports\Reflection\Reflection.h" />
@@ -1079,7 +1080,7 @@
     <ClInclude Include="Includes\Gecko\ScriptManager.h" />
     <ClInclude Include="Includes\GlyphTable\IconsForkAwesome.h" />
     <ClInclude Include="Includes\GlyphTable\IconsKenney.h" />
-    <ClInclude Include="Includes\Http\HttpReq.h" />
+    <ClInclude Include="Includes\Gecko\Exports\Net\Http\HttpReq.h" />
     <ClInclude Include="Includes\imgui\imconfig.h" />
     <ClInclude Include="Includes\imgui\imgui.h" />
     <ClInclude Include="Includes\imgui\imgui_impl_dx11.h" />
@@ -1097,7 +1098,7 @@
     <ClInclude Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.h" />
     <ClInclude Include="Includes\Resources\ResourceLoader.h" />
     <ClInclude Include="Includes\stb\stb_image.h" />
-    <ClInclude Include="Includes\Texture\Texture.h" />
+    <ClInclude Include="Includes\Gecko\Exports\imgui\Texture\Texture.h" />
     <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
     <ClInclude Include="Includes\TMText\TMText.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
@@ -1191,6 +1192,7 @@
     <ClCompile Include="Includes\DiscordGameSDK\voice_manager.cpp" />
     <ClCompile Include="Includes\Gecko\CtxSet.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Global\Global.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\Global\MemoryBuffer\MemoryBuffer.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\imgui\ExportImgui.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Net\Net.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Reflection\Reflection.cpp" />
@@ -1198,7 +1200,7 @@
     <ClCompile Include="Includes\Gecko\Gecko.cpp" />
     <ClCompile Include="Includes\Gecko\Script.cpp" />
     <ClCompile Include="Includes\Gecko\ScriptManager.cpp" />
-    <ClCompile Include="Includes\Http\HttpReq.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\Net\Http\HttpReq.cpp" />
     <ClCompile Include="Includes\imgui\imgui.cpp" />
     <ClCompile Include="Includes\imgui\imgui_demo.cpp" />
     <ClCompile Include="Includes\imgui\imgui_draw.cpp" />
@@ -1213,7 +1215,7 @@
     <ClCompile Include="Includes\Modules\InputDisplayModule\InputDisplayModule.cpp" />
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />
     <ClCompile Include="Includes\Resources\ResourceLoader.cpp" />
-    <ClCompile Include="Includes\Texture\Texture.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\imgui\Texture\Texture.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
     <ClCompile Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.cpp" />

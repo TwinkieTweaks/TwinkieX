@@ -4,7 +4,6 @@
 #include <stb/stb_image.h>
 #include <Twinkie/TwinkUi/TwinkUi.h>
 
-
 #ifdef X64
 // Functions from https://github.com/ocornut/imgui/wiki/Image-Loading-and-Displaying-Examples#example-for-directx11-users
 
@@ -138,4 +137,14 @@ bool Texture::From(const std::filesystem::path& Path)
 ImTextureID Texture::Get() const
 {
     return (ImTextureID)(intptr_t)InternalTexture;
+}
+
+void Texture::AddRef()
+{
+    RefCount++;
+}
+
+void Texture::RemoveRef()
+{
+    if (!--RefCount) delete this;
 }

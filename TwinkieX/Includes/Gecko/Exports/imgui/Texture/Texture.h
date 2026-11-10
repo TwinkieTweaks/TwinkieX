@@ -1,6 +1,15 @@
 #pragma once
 #include "pch.h"
 
+namespace Gecko::Exports
+{
+	struct GeckoAutoExport;
+	namespace ImGui
+	{
+		void Registrar(asIScriptEngine*);
+	}
+}
+
 #ifdef X64
 using TextureResource = ID3D11ShaderResourceView*;
 #else
@@ -10,7 +19,12 @@ using TextureResource = IDirect3DTexture9*;
 class Texture
 {
 	TextureResource InternalTexture = nullptr;
-	size_t Width, Height = 0;
+	size_t Width = 0, Height = 0, RefCount = 0;
+
+	friend void Gecko::Exports::ImGui::Registrar(asIScriptEngine*);
+
+	void AddRef();
+	void RemoveRef();
 public:
 	Texture();
 	Texture(void* Memory, size_t Size);

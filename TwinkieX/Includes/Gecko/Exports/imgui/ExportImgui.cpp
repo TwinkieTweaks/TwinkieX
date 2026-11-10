@@ -2,6 +2,8 @@
 #include "pch.h"
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include "ExportImgui.h"
+#include "Texture/Texture.h"
+#include <Gecko/Exports/Global/MemoryBuffer/MemoryBuffer.h>
 
 #define Gecko_Exports_ImGui_GuardNonRender(...) if (!Gecko::TheScriptManager->IsExecutingRenderCallback()) /* TODO: Throw an error */ { (void)0; return __VA_ARGS__; } (void)0
 
@@ -23,6 +25,79 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(decltype(Fn()){}); \
 			return Fn(); \
 		} UI_EXPORT(#ReturnType " " #Fn "()", Fn##As)
+
+	// UITexture
+	namespace
+	{
+		ImVec2 GetTextureSize(const Texture* Tex)
+		{
+			TextureResource Resource = (TextureResource)(intptr_t)Tex->Get();
+			if (!Resource) return ImVec2(0, 0);
+#ifdef X64
+			ID3D11Resource* Underlying = nullptr;
+			Resource->GetResource(&Underlying);
+			if (!Underlying) return ImVec2(0, 0);
+			D3D11_TEXTURE2D_DESC Desc{};
+			((ID3D11Texture2D*)Underlying)->GetDesc(&Desc);
+			Underlying->Release();
+#else
+			D3DSURFACE_DESC Desc{};
+			Resource->GetLevelDesc(0, &Desc);
+#endif
+			return ImVec2((float)Desc.Width, (float)Desc.Height);
+		}
+
+		/*
+		!CompatMeta
+		for     UI
+		with    Texture@ LoadTexture(const string&in filename)
+		as      Texture@ LoadTexture(const string&in filename)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Texture* LoadTextureAs_File(std::u8string& FileName)
+		{
+			Texture* Tex = new Texture();
+			if (!Tex->From(std::filesystem::path(FileName)))
+			{
+				delete Tex;
+				return nullptr;
+			}
+			return Tex;
+		}
+		UI_EXPORT("Texture@+ LoadTexture(const string&in filename)", LoadTextureAs_File);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    Texture@ LoadTexture(MemoryBuffer&in buffer)
+		as      Texture@ LoadTexture(MemoryBuffer&in buffer)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Texture* LoadTextureAs_Buffer(MemoryBuffer& Buffer)
+		{
+			if (!Buffer.GetSize()) return nullptr;
+
+			uint64_t Position = Buffer.GetPosition();
+			Buffer.Seek(0);
+			std::u8string Bytes = Buffer.ReadString(Buffer.GetSize());
+			Buffer.Seek(Position);
+
+			Texture* Tex = new Texture();
+			if (!Tex->From(Bytes.data(), Bytes.size()))
+			{
+				delete Tex;
+				return nullptr;
+			}
+			return Tex;
+		}
+		UI_EXPORT("Texture@+ LoadTexture(MemoryBuffer&in buffer)", LoadTextureAs_Buffer);
+	}
 
 	// Begin/End functions
 	namespace
@@ -296,7 +371,7 @@ namespace Gecko::Exports::ImGui
 			{
 				std::u8string_view vu(s);
 				vu = vu.substr(0, length);
-				TextEx((const char*)&vu.front(), (const char*)&vu.back());
+				Text("%.*s", vu.length(), (const char*)vu.data());
 			}
 			else
 			{
@@ -430,6 +505,25 @@ namespace Gecko::Exports::ImGui
 			return value;
 		}
 		UI_EXPORT("bool Checkbox(const string&in label, bool value)", CheckboxAs);
+
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void Image(Texture@ texture)
+		as      void Image(Texture@ texture)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void ImageAs(Texture* Tex)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (!Tex) return;
+			Image(Tex->Get(), GetTextureSize(Tex));
+		}
+		UI_EXPORT("void Image(Texture@+ texture)", ImageAs);
 	}
 
 	// Flags and state
@@ -568,6 +662,36 @@ namespace Gecko::Exports::ImGui
 
 	void Registrar(asIScriptEngine* Engine)
 	{
+		Engine->SetDefaultNamespace("UI");
+		Engine->RegisterObjectType("Texture", sizeof(Texture), asOBJ_REF);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void $beh5()
+		as      void $beh5()
+		being   behavior
+		of      Texture
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Engine->RegisterObjectBehaviour("Texture", asBEHAVE_ADDREF, "void f()", asMETHOD(Texture, AddRef), asCALL_THISCALL);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void $beh6()
+		as      void $beh6()
+		being   behavior
+		of      Texture
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Engine->RegisterObjectBehaviour("Texture", asBEHAVE_RELEASE, "void f()", asMETHOD(Texture, RemoveRef), asCALL_THISCALL);
+		Engine->SetDefaultNamespace("");
+
 		RegisterAll(Engine, s_Exports);
 	}
 }
