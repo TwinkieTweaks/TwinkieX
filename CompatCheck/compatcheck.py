@@ -280,14 +280,14 @@ else:
 
 if args.pages:
     try:
-        os.makedirs(args.output + "\\json\\")
-        with open(args.output + "\\json\\Output.json", "x") as out:
+        os.makedirs(args.output + "/json/")
+        with open(args.output + "/json/Output.json", "x") as out:
             pass
-        os.remove(args.output + "\\json\\Output.json")
+        os.remove(args.output + "/json/Output.json")
     except FileExistsError:
-        os.remove(args.output + "\\json\\Output.json")
+        os.remove(args.output + "/json/Output.json")
 
-    with open(args.output + "\\json\\Output.json", "x") as out:
+    with open(args.output + "/json/Output.json", "x") as out:
         json.dump(
             { 
                 "export": 
@@ -302,7 +302,7 @@ if args.pages:
             indent=4
         )
 
-    try: os.makedirs(args.output + "\\html\\")
+    try: os.makedirs(args.output + "/html/")
     except: pass
 
     index = html(lang="en")(
@@ -322,16 +322,16 @@ if args.pages:
     )
 
     try:
-        with open(args.output + "\\html\\index.html", "x") as out:
+        with open(args.output + "/html/index.html", "x") as out:
             pass
-        os.remove(args.output + "\\html\\index.html")
+        os.remove(args.output + "/html/index.html")
     except FileExistsError:
-        os.remove(args.output + "\\html\\index.html")
+        os.remove(args.output + "/html/index.html")
 
-    with open(args.output + "\\html\\index.html", "x") as out:
+    with open(args.output + "/html/index.html", "x") as out:
         out.write(str(index))
 
-    shutil.copyfile(args.style, args.output + "\\html\\style.css")
+    shutil.copyfile(args.style, args.output + "/html/style.css")
 
 print(f"------ CompatCheck: checked against {args.against} ------")
 
