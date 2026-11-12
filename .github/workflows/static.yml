@@ -29,6 +29,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
       - name: Install python
         uses: actions/setup-python@v7
       - name: Install python deps
@@ -36,8 +38,6 @@ jobs:
       - name: Run compatcheck.py
         run: | 
           python CompatCheck/compatcheck.py -i ${{ github.workspace }}/ -a CompatCheck/OpenplanetCore.json -r -g
-      - name: Checkout
-        uses: actions/checkout@v4
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
