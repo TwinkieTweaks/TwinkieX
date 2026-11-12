@@ -57,7 +57,7 @@ static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureRes
 
 
 // Open and read a file, then forward to LoadTextureFromMemory()
-bool LoadTextureFromFile(const char* file_name, ID3D11ShaderResourceView** out_srv, int* out_width, int* out_height)
+bool LoadTextureFromFile(const char* file_name, TextureResource* out_srv, int* out_width, int* out_height)
 {
     FILE* f; 
     fopen_s(&f, file_name, "rb");
@@ -97,7 +97,7 @@ static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureRes
 }
 
 // Simple helper function to load an image into a DX9 texture with common settings
-static bool LoadTextureFromFile(const char* filename, PDIRECT3DTEXTURE9* out_texture, int* out_width, int* out_height)
+static bool LoadTextureFromFile(const char* filename, TextureResource* out_texture, int* out_width, int* out_height)
 {
     // Load texture from disk
     PDIRECT3DTEXTURE9 texture;
@@ -121,7 +121,7 @@ Texture::Texture(const std::filesystem::path& Path) { From(Path); }
 
 Texture::~Texture()
 {
-    // TODO: Proper cleanup of textures.
+    InternalTexture->Release();
 }
 
 bool Texture::From(void* Memory, size_t Size)

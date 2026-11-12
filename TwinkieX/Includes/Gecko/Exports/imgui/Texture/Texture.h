@@ -19,7 +19,8 @@ using TextureResource = IDirect3DTexture9*;
 class Texture
 {
 	TextureResource InternalTexture = nullptr;
-	size_t Width = 0, Height = 0, RefCount = 0;
+	size_t Width = 0, Height = 0;
+	mutable size_t RefCount = 0;
 
 	friend void Gecko::Exports::ImGui::Registrar(asIScriptEngine*);
 

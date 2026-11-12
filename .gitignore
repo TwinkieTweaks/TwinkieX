@@ -370,3 +370,6 @@ FodyWeavers.xsd
 
 # Auto-generated version file
 /TwinkieX/Includes/Version.h
+
+# Auto-generated compatiblity docs
+/docs

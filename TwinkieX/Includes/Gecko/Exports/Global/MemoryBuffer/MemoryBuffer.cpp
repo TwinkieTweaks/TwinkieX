@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "MemoryBuffer.h"
 
-MemoryBuffer::MemoryBuffer(void* Data, uint64_t size)
+MemoryBuffer::MemoryBuffer(const void* Data, uint64_t size)
 {
     uint8_t* NewData = (uint8_t*)malloc(size);
     memcpy_s(NewData, size, Data, size);

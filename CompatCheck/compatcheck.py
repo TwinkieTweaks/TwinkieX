@@ -5,6 +5,10 @@ from collections import defaultdict
 import json
 import os
 import traceback
+from pathlib import Path
+import datetime
+import shutil
+from htbuilder import html, head, meta, link, title, body, h2, a, div, ul, li, code, p, span
 
 is_in_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
 
@@ -70,6 +74,34 @@ class CompatInfo:
                 self.reason = arg
             case _: pass
 
+    def ToHtml(self):
+        meta_items = []
+        if self.namespace:
+            meta_items.append(p(_class="meta-item")(f"Namespace: {self.namespace}"))
+        if self.being:
+            meta_items.append(p(_class="meta-item")(f"Type: {self.being}"))
+        if self.of:
+            meta_items.append(p(_class="meta-item")(f"Of: {self.of}"))
+        if self.since:
+            meta_items.append(p(_class="meta-item")(f"Since: {self.since}"))
+        if self.games:
+            meta_items.append(p(_class="meta-item")(f"Games: {', '.join(self.games)}"))
+
+        return div(_class="compat-card")(
+            ul(
+                [li(
+                    a(href=f"https://github.com/TwinkieTweaks/TwinkieX/tree/development/{self.file}#L{self.line}")(
+                        code(wanted)
+                    ),
+                    span(style="padding-left: 5px;", _class=f"{self.decl.value}")(
+                        self.decl.value
+                    )
+                ) for wanted in self.wanted]
+            ),
+            div(_class="compat-meta", style="font-size: 0.9em; color: lightgrey; margin: 5px 0;")(meta_items) if meta_items else "",
+            p(self.reason if len(self.reason) else "<i>No reason provided</i>.") if self.decl != DeclInfo.Full else ""
+        )
+
     def __eq__(self, other: object):
         if not isinstance(other, CompatInfo):
             return NotImplemented
@@ -89,6 +121,14 @@ class CompatInfo:
     def __repr__(self):
         return f'{{"{self.file}", line {self.line}, {self.decl.value}}}'
 
+class MyJSONifier(json.JSONEncoder):
+    def default(self, obj: object):
+        if isinstance(obj, CompatInfo):
+            return obj.__dict__
+        elif isinstance(obj, DeclInfo) or isinstance(obj, BeingInfo):
+            return obj.value
+        return super().default(obj)
+
 parser = argparse.ArgumentParser(
     prog="CompatCheck", 
     description="Creates a compatibility report for Angelscript exports", 
@@ -97,17 +137,24 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument("-i", "--input", help="the directory of files to check")
 parser.add_argument("-a", "--against", help="the OpenplanetCore.json file to check against")
-parser.add_argument("-o", "--output", help="the output direectory of the compatibility report")
+parser.add_argument("-o", "--output", help="the output directory of the compatibility reports", default="../docs/")
 parser.add_argument("-f", "--filter", help="filter files to check", default="**/*.cpp,**/*.h")
 parser.add_argument("-g", "--github", help="store result to github environ", action="store_true")
 parser.add_argument("-n", "--no-fail", help="never exit with code other than 0 except when something fatal happens", action="store_true")
+parser.add_argument("-p", "--pages", help="prepare documentation for github pages to output directory", action="store_true")
 parser.add_argument("-r", "--recursive", action="store_true")
 
 args = parser.parse_args()
 
 print(f"------ CompatCheck: checking against {args.against} ------")
 
+has_unmatched_info = False
+matches: dict[DeclInfo, int] = defaultdict(int)
+infos: list[CompatInfo] = []
+infos_by_being: dict[str, list[CompatInfo]] = defaultdict(list)
 def do():
+    global has_unmatched_info, matches, infos, infos_by_being
+
     if not args.github and is_in_github_actions:
         print("skipping post-build event")
         quit(0)
@@ -116,8 +163,6 @@ def do():
     for filter in args.filter.split(","):
         files += glob(args.input + "/" + filter, recursive=args.recursive)
         
-    infos: list[CompatInfo] = []
-    infos_by_being: dict[str, list[CompatInfo]] = defaultdict(list)
 
     for being_info in BeingInfo:
         infos_by_being[being_info.value] = []
@@ -141,11 +186,11 @@ def do():
                         seen_tag = not seen_tag
                         if not seen_tag:
                             infos[-1].line = idx + 2
-                            infos[-1].file = file.name
+                            infos[-1].file = str(Path(file.name).relative_to(args.input))
                         else:
                             infos.append(CompatInfo())
                             infos[-1].line = idx + 2
-                            infos[-1].file = file.name
+                            infos[-1].file = str(Path(file.name).relative_to(args.input))
                         continue
                     elif seen_tag:
                         line = line.strip().removeprefix("//").strip().split(None, 1)
@@ -161,7 +206,6 @@ def do():
     for info in infos:
         infos_by_being[info.being].append(info)
 
-    matches: dict[DeclInfo, int] = defaultdict(int)
     misses = 0
 
     class_name_to_idx: dict[str, int] = {}
@@ -204,7 +248,6 @@ def do():
             misses += len(contents) - matches_being
             matches_being = 0
 
-    has_unmatched_info = False
     for being in infos_by_being:
         for info in infos_by_being[being]:
             if not info.matched:
@@ -222,9 +265,6 @@ def do():
             f.write(f"COMPLETE_PERCENTAGE={complete * 100:.1f}\n")
             f.write(f"NON_PARTIAL_PERCENTAGE={non_partial * 100:.1f}\n")
 
-    if not args.no_fail: 
-        quit(has_unmatched_info or (len(matches) == 0))
-
 if args.no_fail:
     try:
         do()        
@@ -234,4 +274,62 @@ if args.no_fail:
 else:
     do()
 
+if args.pages:
+    try:
+        os.makedirs(args.output + "\\json\\")
+        with open(args.output + "\\json\\Output.json", "x") as out:
+            pass
+        os.remove(args.output + "\\json\\Output.json")
+    except FileExistsError:
+        os.remove(args.output + "\\json\\Output.json")
+
+    with open(args.output + "\\json\\Output.json", "x") as out:
+        json.dump(
+            { 
+                "export": 
+                {
+                    "time": str(datetime.datetime.now()),
+                    "matches": {key.value: value for key, value in matches.items()}
+                }, 
+                "compats": infos
+            }, 
+            out, 
+            cls=MyJSONifier, 
+            indent=4
+        )
+
+    try: os.makedirs(args.output + "\\html\\")
+    except: pass
+
+    index = html(lang="en")(
+        head(
+            meta(charset="UTF-8"),
+            meta(name="viewport", content="width=device-width, initial-scale=1.0"),
+            link(rel="stylesheet", href="style.css"),
+            title("Testing")
+        ),
+        body(
+            h2(
+                a(href="https://github.com/TwinkieTweaks/TwinkieX/")("TwinkieX"),
+                " Compatibility Report"
+            ),
+            [info.ToHtml() for info in infos]
+        )
+    )
+
+    try:
+        with open(args.output + "\\html\\index.html", "x") as out:
+            pass
+        os.remove(args.output + "\\html\\index.html")
+    except FileExistsError:
+        os.remove(args.output + "\\html\\index.html")
+
+    with open(args.output + "\\html\\index.html", "x") as out:
+        out.write(str(index))
+
+    shutil.copyfile("style.css", args.output + "\\html\\style.css")
+
 print(f"------ CompatCheck: checked against {args.against} ------")
+
+if not args.no_fail: 
+    quit(has_unmatched_info or (len(matches) == 0))

@@ -1,4 +1,5 @@
 #pragma once
+#include "pch.h"
 
 namespace Gecko::Exports::Global
 {
@@ -16,8 +17,8 @@ class MemoryBuffer
 {
 	uint8_t* Data = nullptr;
 	size_t Size = 0;
-	size_t Cursor = 0;
-	size_t RefCount = 0;
+	mutable size_t Cursor = 0;
+	mutable size_t RefCount = 0;
 
 	friend void Gecko::Exports::Global::Registrar(asIScriptEngine*);
 
@@ -27,7 +28,7 @@ class MemoryBuffer
 public:
 	MemoryBuffer() = default;
 	~MemoryBuffer();
-	MemoryBuffer(void* Data, uint64_t Size);
+	MemoryBuffer(const void* Data, uint64_t Size);
 	MemoryBuffer(uint64_t size, uint8_t init = 0);
 
 	MemoryBuffer& operator=(const MemoryBuffer&) = default;
