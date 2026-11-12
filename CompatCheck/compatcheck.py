@@ -145,6 +145,7 @@ parser.add_argument("-f", "--filter", help="filter files to check", default="**/
 parser.add_argument("-g", "--github", help="store result to github environ", action="store_true")
 parser.add_argument("-n", "--no-fail", help="never exit with code other than 0 except when something fatal happens", action="store_true")
 parser.add_argument("-p", "--pages", help="prepare documentation for github pages to output directory", action="store_true")
+parser.add_argument("-s", "--style", help="the style.css file", default="style.css")
 parser.add_argument("-r", "--recursive", action="store_true")
 
 args = parser.parse_args()
@@ -330,7 +331,7 @@ if args.pages:
     with open(args.output + "\\html\\index.html", "x") as out:
         out.write(str(index))
 
-    shutil.copyfile("style.css", args.output + "\\html\\style.css")
+    shutil.copyfile(args.style, args.output + "\\html\\style.css")
 
 print(f"------ CompatCheck: checked against {args.against} ------")
 

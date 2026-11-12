@@ -37,7 +37,7 @@ jobs:
         run: python -m pip install -r ${{ github.workspace }}/CompatCheck/requirements.txt
       - name: Run compatcheck.py
         run: | 
-          python CompatCheck/compatcheck.py -i ${{ github.workspace }}/ -a CompatCheck/OpenplanetCore.json -r -g -p
+          python CompatCheck/compatcheck.py -i ${{ github.workspace }}/ -a CompatCheck/OpenplanetCore.json -r -g -p -s ${{ github.workspace }}/CompatCheck/style.css
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

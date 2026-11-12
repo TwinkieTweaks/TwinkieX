@@ -6,7 +6,8 @@ on:
     paths:
       - 'TwinkieX/**'
       - 'DInput8Loader/**'
-      - '.github/**'
+      - '.github/build.yml'
+      - '.github/test.yml'
       - 'TwinkieX.sln'
       - 'GenerateVersion.ps1'
       - '.gitignore'
@@ -17,7 +18,8 @@ on:
     paths:
       - 'TwinkieX/**'
       - 'DInput8Loader/**'
-      - '.github/**'
+      - '.github/build.yml'
+      - '.github/test.yml'
       - 'TwinkieX.sln'
       - 'GenerateVersion.ps1'
       - '.gitignore'
