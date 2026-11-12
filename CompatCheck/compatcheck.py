@@ -102,7 +102,7 @@ class CompatInfo:
                 ) for wanted in self.wanted]
             ),
             div(_class="compat-meta", style="font-size: 0.9em; color: lightgrey; margin: 5px 0;")(meta_items) if meta_items else "",
-            p(self.reason if len(self.reason) else "<i>No reason provided</i>.") if self.decl != DeclInfo.Full else ""
+            p(self.reason + (f" (implemented as <code>{self.impl}</code>)" if self.impl not in self.wanted else "") if len(self.reason) else "<i>No reason provided</i>.") if self.decl != DeclInfo.Full else ""
         )
 
     def __eq__(self, other: object):
