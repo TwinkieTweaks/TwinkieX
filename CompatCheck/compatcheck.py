@@ -8,9 +8,12 @@ import traceback
 from pathlib import Path
 import datetime
 import shutil
-from htbuilder import html, head, meta, link, title, body, h2, a, div, ul, li, code, p, span
-
 is_in_github_actions = os.getenv("GITHUB_ACTIONS") == "true"
+
+try:
+    from htbuilder import html, head, meta, link, title, body, h2, a, div, ul, li, code, p, span
+except ModuleNotFoundError:
+    if is_in_github_actions: quit(0)
 
 def pluralize(string: str):
     return (string + "s" if string[-1] != "y" else string[:-1] + "ies") if string[-1] != "s" else string + "es"
