@@ -56,9 +56,6 @@ jobs:
       uses: actions/checkout@v7
       with:
         fetch-depth: 0
-    
-    - name: Install python deps
-      run: python -m pip install -r ${{ github.workspace }}/CompatCheck/requirements.txt
 
     - name: Restore file timestamps
       uses: chetan/git-restore-mtime-action@v2
