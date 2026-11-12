@@ -57,6 +57,11 @@ ul
     margin-left: 4px;
 }
 
+.inline-code
+{
+    font-size: larger;
+}
+
 p
 {
     font-size: x-small;
