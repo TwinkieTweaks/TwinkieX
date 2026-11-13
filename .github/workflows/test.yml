@@ -66,20 +66,19 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-msbuild-${{ matrix.config }}-${{ matrix.platform }}-
     
-    - name: vcpkg build
-      uses: johnwason/vcpkg-action@v8
+    - name: Set up vcpkg
       id: vcpkg
-      with:
-        triplet: ${{ matrix.platform }}-windows-release 
-        token: ${{ github.token }}
-    
+      run: |
+        & "$env:VCPKG_INSTALLATION_ROOT\vcpkg.exe" integrate install
+        New-Item -ItemType Directory -Force -Path "${{ runner.temp }}\vcpkg_cache" | Out-Null
+        "VCPKG_DEFAULT_BINARY_CACHE=${{ runner.temp }}\vcpkg_cache" >> $env:GITHUB_ENV
+        "commit=$(git -c safe.directory='*' -C $env:VCPKG_INSTALLATION_ROOT rev-parse HEAD)" >> $env:GITHUB_OUTPUT
+
     - name: Setup vcpkg Binary Caching
       uses: actions/cache@v4
       with:
-        path: |
-          C:/vcpkg/installed
-          ${{ github.workspace }}/vcpkg_installed
-        key: vcpkg-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('vcpkg.json') }}
+        path: ${{ runner.temp }}/vcpkg_cache
+        key: vcpkg-${{ runner.os }}-${{ matrix.platform }}-${{ steps.vcpkg.outputs.commit }}-${{ hashFiles('vcpkg.json') }}
         restore-keys: |
           vcpkg-${{ runner.os }}-${{ matrix.platform }}-
 
