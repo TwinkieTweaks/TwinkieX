@@ -8,6 +8,7 @@
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
 #include "Exports/Reflection/Reflection.h"
+#include "Exports/Net/Net.h"
 
 namespace Gecko
 {
@@ -83,6 +84,7 @@ namespace Gecko
 		Exports::Trackmania::Registrar(Engine);
 		Exports::Global::Registrar(Engine);
 		Exports::ImGui::Registrar(Engine);
+		Exports::Net::Registrar(Engine);
 		Exports::Reflection::Registrar(Engine);
 	}
 
@@ -146,6 +148,8 @@ namespace Gecko
 
 	void ScriptManager::BuildScript(Script& Script)
 	{
+		LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)Script.Name.c_str())));
+
 		if (Engine->GetModule((const char*)Script.Name.c_str()))
 		{
 			Engine->DiscardModule((const char*)Script.Name.c_str());
@@ -226,10 +230,6 @@ namespace Gecko
 			}
 			else
 			{
-				CtxFromCallback->Release();
-				CtxFromCallback = nullptr;
-
-				CtxFromCallback = Engine->CreateContext();
 				auto Module = Engine->GetModule((const char*)Script.Name.c_str());
 				auto CallbackFn = Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType]);
 				CtxFromCallback->Prepare(CallbackFn);

@@ -373,3 +373,4 @@ FodyWeavers.xsd
 
 # Auto-generated compatiblity docs
 /docs
+/vcpkg_installed/x64-windows

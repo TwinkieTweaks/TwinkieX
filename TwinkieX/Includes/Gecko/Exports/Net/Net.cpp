@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Net.h"
 #include <Gecko/Exports/GeckoAutoExport.h>
+#include <Gecko/Exports/Global/MemoryBuffer/MemoryBuffer.h>
 #include <fstream>
 #include <filesystem>
 
@@ -328,24 +329,6 @@ namespace Gecko::Exports::Net
 	/*
 	!CompatMeta
 	for     Net
-	with    string Error()
-	as      string Error()
-	being   method
-	of      HttpRequest
-	declare full
-	since   v0.1.1
-	!CompatMeta
-	*/
-	static std::string HttpRequest_Error(HttpRequest* Req)
-	{
-		if (!Req->Finished()) return "";
-		return ToStr(Req->LastErr);
-	}
-	NET_HTTPREQUEST_METHOD("string Error()", asFUNCTION(HttpRequest_Error), asCALL_CDECL_OBJLAST);
-
-	/*
-	!CompatMeta
-	for     Net
 	with    string ResponseHeader(const string&in key)
 	as      string ResponseHeader(const string&in key)
 	being   method
@@ -417,6 +400,23 @@ namespace Gecko::Exports::Net
 		if (!File.good()) return;
 	}
 	NET_HTTPREQUEST_METHOD("void SaveToFile(const string&in path)", asFUNCTION(HttpRequest_SaveToFile), asCALL_CDECL_OBJLAST);
+
+	/*
+	!CompatMeta
+	for     Net
+	with    MemoryBuffer@ Buffer()
+	as      MemoryBuffer@ Buffer()
+	being   method
+	of      HttpRequest
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	static MemoryBuffer* HttpRequest_Buffer(HttpRequest* Req)
+	{
+		return new MemoryBuffer(Req->DataOut.data(), Req->DataOut.size());
+	}
+	NET_HTTPREQUEST_METHOD("MemoryBuffer@+ Buffer()", asFUNCTION(HttpRequest_Buffer), asCALL_CDECL_OBJLAST);
 
 	/*
 	!CompatMeta

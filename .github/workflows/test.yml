@@ -65,6 +65,16 @@ jobs:
         key: ${{ runner.os }}-msbuild-${{ matrix.config }}-${{ matrix.platform }}-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-msbuild-${{ matrix.config }}-${{ matrix.platform }}-
+    
+    - name: Setup vcpkg Binary Caching
+      uses: actions/cache@v4
+      with:
+        path: |
+          C:/vcpkg/installed
+          ${{ github.workspace }}/vcpkg_installed
+        key: vcpkg-${{ runner.os }}-${{ matrix.platform }}-${{ hashFiles('vcpkg.json') }}
+        restore-keys: |
+          vcpkg-${{ runner.os }}-${{ matrix.platform }}-
 
     - name: Add MSBuild to PATH
       uses: microsoft/setup-msbuild@v2

@@ -60,7 +60,7 @@ namespace Gecko::Exports::Global
 	*/
 	void trace(std::u8string& Str)
 	{
-		LoggertAngelscript.trace(Str);
+		LoggertAngelscript.trace((char8_t*)std::format("[{}] {}", (char*)Gecko::TheScriptManager->GetActiveScript()->Id.c_str(), (char*)Str.c_str()).c_str());
 	}
 	GLOBAL_EXPORT("void trace(const string &in)", trace);
 
@@ -76,7 +76,7 @@ namespace Gecko::Exports::Global
 	*/
 	void print(std::u8string& Str)
 	{
-		LoggertAngelscript.print(Str);
+		LoggertAngelscript.print((char8_t*)std::format("[{}] {}", (char*)Gecko::TheScriptManager->GetActiveScript()->Id.c_str(), (char*)Str.c_str()).c_str());
 	}
 	GLOBAL_EXPORT("void print(const string &in)", print);
 
@@ -92,7 +92,7 @@ namespace Gecko::Exports::Global
 	*/
 	void warn(std::u8string& Str)
 	{
-		LoggertAngelscript.warn(Str);
+		LoggertAngelscript.warn((char8_t*)std::format("[{}] {}", (char*)Gecko::TheScriptManager->GetActiveScript()->Id.c_str(), (char*)Str.c_str()).c_str());
 	}
 	GLOBAL_EXPORT("void warn(const string &in)", warn);
 
@@ -108,7 +108,7 @@ namespace Gecko::Exports::Global
 	*/
 	void error(std::u8string& Str)
 	{
-		LoggertAngelscript.error(Str);
+		LoggertAngelscript.error((char8_t*)std::format("[{}] {}", (char*)Gecko::TheScriptManager->GetActiveScript()->Id.c_str(), (char*)Str.c_str()).c_str());
 	}
 	GLOBAL_EXPORT("void error(const string &in)", error);
 
