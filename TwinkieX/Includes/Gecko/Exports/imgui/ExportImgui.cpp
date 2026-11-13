@@ -136,9 +136,10 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool BeginCombo(const string&in label, const string&in current, int flags = UI::ComboFlags::None)
-		as      bool BeginCombo(const string&in label, const string&in current, int flags)
+		as      bool BeginCombo(const string&in label, const string&in current, int flags = 0)
 		being   function
-		declare full
+		declare partial
+		reason  UI::ComboFlags is not implemented.
 		since   v0.1.1
 		!CompatMeta
 		*/
