@@ -48,6 +48,9 @@ namespace TwinkUiState
 	// The UiMgr
 	TwinkUi* UiMgr = nullptr;
 
+	// Whether the process is exiting, in which case teardown must be skipped
+	bool ProcessTerminating = false;
+
 #ifdef MANIAPLANET
 	// The DirectX11 context.
 	DirectXContext* Context;
@@ -89,6 +92,8 @@ __declspec(noinline) TwinkUi::TwinkUi(TwinkTrackmania& TrackmaniaMgr)
 
 __declspec(noinline) TwinkUi::~TwinkUi()
 {
+	if (TwinkUiState::ProcessTerminating) return;
+
 	Veridian::VastVeridian->PrepareForDestruction();
 
 	for (auto& Module : Modules)
@@ -115,6 +120,13 @@ void TwinkUi::Render()
 	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Main);
 
 	IoMgr.Sync();
+
+	static double LastSaveTime = 0.0;
+	if (GetTime() - LastSaveTime > 1.0)
+	{
+		Veridian::VastVeridian->Save();
+		LastSaveTime = GetTime();
+	}
 
 	if (IsKeyPressed(ImGuiKey_F3, false))
 	{

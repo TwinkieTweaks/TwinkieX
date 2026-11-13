@@ -58,7 +58,7 @@ Twinkie::Twinkie()
 
 Twinkie::~Twinkie()
 {
-	if (not TwinkUiState::ImGuiInit) return;
+	if (not TwinkUiState::ImGuiInit or TwinkUiState::ProcessTerminating) return;
 
 	delete Gecko::TheScriptManager;
 

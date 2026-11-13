@@ -34,6 +34,7 @@ namespace Veridian
                 x = std::stof(First);
                 y = std::stof(Second);
             }
+            else throw std::exception("invalid VVec2");
         }
         VVec2(float x = 0.f, float y = 0.f) : x(x), y(y) {}
 
@@ -64,6 +65,7 @@ namespace Veridian
                 y = std::stof(Second);
                 z = std::stof(Third);
             }
+            else throw std::exception("invalid VVec3");
         }
         VVec3(float x = 0.f, float y = 0.f, float z = 0.f) : x(x), y(y), z(z) {}
 
@@ -109,6 +111,7 @@ namespace Veridian
                 z = std::stof(Third);
                 w = std::stof(Fourth);
             }
+            else throw std::exception("invalid VVec4");
         }
         VVec4(float x = 0.f, float y = 0.f, float z = 0.f, float w = 0.f) : x(x), y(y), z(z), w(w) {}
 
@@ -515,7 +518,8 @@ namespace Veridian
             }
             catch (std::exception&)
             {
-                // ...
+                if (Type != VSettingType::VString) delete Value;
+                Value = nullptr;
             }
         }
     };
@@ -530,7 +534,6 @@ namespace Veridian
         VSetCtx(VSetCtx&&) = default;
         VSetCtx operator=(VSetCtx&) = delete;
         VSetCtx operator=(VSetCtx&&) = delete;
-        ~VSetCtx();
 
         struct Inner
         {
@@ -544,9 +547,12 @@ namespace Veridian
 
         VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {});
 
+        // Writes the settings to disk, only if they changed since the last save
+        void Save();
+
     private:
-        std::fstream FileStream;
-        
+        std::string LastSaved;
+
         void PrepareForDestruction();
     };
 

@@ -65,6 +65,9 @@ namespace TwinkUiState
 	// The UiMgr
 	extern TwinkUi* UiMgr;
 
+	// Whether the process is exiting, in which case teardown must be skipped
+	extern bool ProcessTerminating;
+
 #ifdef MANIAPLANET
 	// The DirectX11 context.
 	extern DirectXContext* Context;
