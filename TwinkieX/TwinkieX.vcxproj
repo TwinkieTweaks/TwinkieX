@@ -414,6 +414,7 @@
   <PropertyGroup Label="Vcpkg">
     <VcpkgEnableManifest>true</VcpkgEnableManifest>
     <VcpkgUseStatic>true</VcpkgUseStatic>
+    <VcpkgUseMD>true</VcpkgUseMD>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <PreBuildEvent>
@@ -441,7 +442,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -473,7 +474,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -505,7 +506,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -537,7 +538,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -569,7 +570,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -601,7 +602,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -633,7 +634,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -665,7 +666,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -697,7 +698,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>try { python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail } catch { exit 0 }</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -727,7 +728,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -759,7 +760,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -791,7 +792,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -823,7 +824,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -855,7 +856,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -887,7 +888,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -919,7 +920,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -951,7 +952,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -983,7 +984,7 @@
       <ImportLibrary>$(OutDir)$(TargetName).lib</ImportLibrary>
     </Link>
     <PostBuildEvent>
-      <Command>py ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail</Command>
+      <Command>python ../CompatCheck/compatcheck.py -i ../../ -a ../CompatCheck/OpenplanetCore.json -r --no-fail || exit /b 0</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
