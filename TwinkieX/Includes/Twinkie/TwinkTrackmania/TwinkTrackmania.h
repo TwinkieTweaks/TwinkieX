@@ -13,6 +13,7 @@
 #include <cassert>
 #include <vector>
 #include <string>
+#include <memory>
 
 // The Trackmania manager class, used by (TwinkTrackmania gTwinkie.TrackmaniaMgr).
 class TwinkTrackmania
@@ -92,6 +93,17 @@ public:
 	// Pushes member to stack.
 	TWINKIEX_API void PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo);
 
+	// Gets the stack item type a PROC parameter must be passed as. Returns ITEM_MEMBER if the type isn't supported.
+	TWINKIEX_API static CMwStack::ItemType GetProcParamItemType(const CMwMemberInfoProc::Type& ParamType);
+
+	// Calls a PROC member on a nod. Args are in the PROC's parameter order, each pointing to storage for that parameter.
+	// Output parameters are written through their pointer. Strings written by the game are allocated by the game.
+	// In TMCN: Returns the PROC's result: 0 on success, 2 on invalid arguments, 8 on a script error, or UINT_MAX if the member can't be called.
+	TWINKIEX_API uint32_t CallProc(CMwNod* Nod, CMwMemberInfo* ProcMember, const std::vector<CMwStack::Item>& Args);
+
+	template<typename... TArgs>
+	uint32_t CallProc(CMwNod* Nod, const char* Name, TArgs&&... Args);
+
 	// Gets the game type.
 	TWINKIEX_API __declspec(noinline) EGame GetGame();
 
@@ -104,7 +116,7 @@ public:
 template<typename ReturnT>
 TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo)
 {
-	// This variable is used only to not let the compiler optimize the type of Stack->ppMemberInfos for GAMEBOX to a single pointer.
+	// This variable is used only to not let the compiler optimize the type of Stack->Items for GAMEBOX to a single pointer.
 	static CMwStack* PreviousUsedStack = nullptr;
 
 	struct
@@ -127,7 +139,7 @@ TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGe
 template<typename ReturnT>
 TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGet(CMwNod* Nod, const char* MemberName)
 {
-	// This variable is used only to not let the compiler optimize the type of Stack->ppMemberInfos for GAMEBOX to a single pointer.
+	// This variable is used only to not let the compiler optimize the type of Stack->Items for GAMEBOX to a single pointer.
 	static CMwStack* PreviousUsedStack = nullptr;
 
 	auto ClassInfo = Nod->MwGetClassInfo();
@@ -317,4 +329,118 @@ bool TwinkTrackmania::ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Valu
 	}
 	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo, *Value);
 	return true;
+}
+
+// Keeps the values passed to a PROC alive until the PROC returns
+using ProcArgStorage = std::vector<std::shared_ptr<void>>;
+
+template<typename T>
+void* TToStackItem(std::vector<CMwStack::Item>& Args, ProcArgStorage& Storage, T&& Arg)
+{
+	using ArgT = std::remove_cvref_t<T>;
+
+	auto Push = [&]<typename ValueT>(ValueT Value, CMwStack::ItemType Type) -> void*
+	{
+		auto Copy = std::make_shared<ValueT>(Value);
+		Storage.push_back(Copy);
+		Args.push_back(CMwStack::Item{ Copy.get(), Type });
+		return Copy.get();
+	};
+
+	if constexpr (std::is_same_v<ArgT, bool>)
+	{
+		return Push((uint32_t)(Arg ? 1 : 0), CMwStack::ITEM_BOOL);
+	}
+	else if constexpr (std::is_enum_v<ArgT>)
+	{
+		return Push((uint32_t)Arg, CMwStack::ITEM_ENUM);
+	}
+	else if constexpr (std::is_null_pointer_v<ArgT>)
+	{
+		return Push((CMwNod*)nullptr, CMwStack::ITEM_OBJECT);
+	}
+	else if constexpr (std::is_convertible_v<ArgT, const char*> or std::is_same_v<ArgT, std::string>)
+	{
+		struct Holder
+		{
+			std::string Text;
+			CFastString String{};
+		};
+		auto Copy = std::make_shared<Holder>();
+		if constexpr (std::is_same_v<ArgT, std::string>) Copy->Text = Arg;
+		else if (Arg) Copy->Text = Arg;
+
+		Copy->String.CStr = Copy->Text.data();
+#ifdef TM1
+		Copy->String.Count = (uint32_t)Copy->Text.size() + 1;
+#else
+		Copy->String.Count = (uint32_t)Copy->Text.size();
+#endif
+		Storage.push_back(Copy);
+		Args.push_back(CMwStack::Item{ &Copy->String, CMwStack::ITEM_STRING });
+		return &Copy->String;
+	}
+#ifdef TMCN
+	else if constexpr (std::is_convertible_v<ArgT, const wchar_t*> or std::is_same_v<ArgT, std::wstring>)
+	{
+		struct Holder
+		{
+			std::wstring Text;
+			CFastStringInt String{};
+		};
+		auto Copy = std::make_shared<Holder>();
+		if constexpr (std::is_same_v<ArgT, std::wstring>) Copy->Text = Arg;
+		else if (Arg) Copy->Text = Arg;
+
+		Copy->String.CStr = Copy->Text.data();
+		Copy->String.Count = (uint32_t)Copy->Text.size();
+		Storage.push_back(Copy);
+		Args.push_back(CMwStack::Item{ &Copy->String, CMwStack::ITEM_WSTRING });
+		return &Copy->String;
+	}
+#endif
+	else if constexpr (std::is_pointer_v<ArgT> and std::is_base_of_v<CMwNod, std::remove_pointer_t<ArgT>>)
+	{
+		return Push((CMwNod*)Arg, CMwStack::ITEM_OBJECT);
+	}
+	else if constexpr (std::is_pointer_v<ArgT>)
+	{
+		using PointeeT = std::remove_pointer_t<ArgT>;
+
+		Args.push_back(CMwStack::Item{ (void*)Arg, TypeToStackItemType<PointeeT>() });
+		return (void*)Arg;
+	}
+	else
+	{
+		return Push((ArgT)Arg, TypeToStackItemType<ArgT>());
+	}
+}
+
+template<typename... TArgs>
+uint32_t TwinkTrackmania::CallProc(CMwNod* Nod, const char* Name, TArgs&&... Args)
+{
+	if (!Nod) return UINT_MAX;
+
+	CMwMemberInfo* MemberResult = nullptr;
+	for (auto ClassInfo = Nod->MwGetClassInfo(); ClassInfo and not MemberResult; ClassInfo = ClassInfo->ParentClassInfo)
+	{
+		for (auto& Member : *ClassInfo)
+		{
+			if (Member->GetName() == Name)
+			{
+				MemberResult = Member;
+				break;
+			}
+		}
+	}
+
+	if (!MemberResult) return UINT_MAX;
+
+	std::vector<CMwStack::Item> MadeUpArgs;
+	ProcArgStorage Storage;
+	MadeUpArgs.reserve(sizeof...(Args));
+
+	(TToStackItem(MadeUpArgs, Storage, std::forward<TArgs>(Args)), ...);
+
+	return CallProc(Nod, MemberResult, MadeUpArgs);
 }

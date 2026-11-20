@@ -3,32 +3,6 @@
 
 extern const char* DashboardStyleNames[];
 
-struct Vec2
-{
-	float x;
-	float y;
-
-	Vec2 operator+(Vec2 B)
-	{
-		return Vec2(this->x + B.x, this->y + B.y);
-	}
-
-	Vec2 operator-(Vec2 B)
-	{
-		return Vec2(this->x - B.x, this->y - B.y);
-	}
-
-	Vec2 operator*(float F)
-	{
-		return Vec2(this->x * F, this->y * F);
-	}
-
-	operator ImVec2()
-	{
-		return ImVec2(this->x, this->y);
-	}
-};
-
 class InputDisplayModule : public IModule
 {
 	ImVec4 ColorSteer = ImVec4(0.976f, 0.737f, 0.008f, 1.f);

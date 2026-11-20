@@ -11,6 +11,10 @@ namespace Gecko::Exports::Trackmania
 {
 	std::unordered_map<uint32_t, CMwClassInfo*> ClassIDToInfo;
 	std::unordered_map<std::string, CMwClassInfo*> ClassNameToInfo;
+#ifdef TMCN
+	std::unordered_map<uint32_t, CMwEnumInfo*> EnumIDToInfo;
+	std::unordered_map<std::string, CMwEnumInfo*> EnumNameToInfo;
+#endif
 
 	static std::vector<GeckoExport> s_BaseExports;
 	static std::vector<GeckoExport> s_Exports;
@@ -312,11 +316,38 @@ namespace Gecko::Exports::Trackmania
 		Engine->RegisterObjectType(Class->GetName().c_str(), 0, asOBJ_REF | asOBJ_NOCOUNT);
 
 		if (Class->CtorFn) Engine->RegisterObjectBehaviour(Class->GetName().c_str(), asBEHAVE_FACTORY, (Class->GetName() + std::string("@ f()")).c_str(), (uintptr_t)Class->CtorFn, asCALL_CDECL);
+	
+//		// TODO: Check if this is how enum registration should be
+//#ifdef TMCN
+//		if (Class->ClassEnums)
+//		{
+//			uint32_t EnumID = Class->ClassID;
+//			for (size_t EnumIdx = 0; EnumIdx < Class->ClassEnumsCount; EnumIdx++)
+//			{
+//				CMwEnumInfo* Enum = Class->ClassEnums[EnumIdx];
+//
+//				Engine->RegisterEnum(Enum->EnumName);
+//
+//				size_t EnumValueIdx = 0;
+//				for (auto& EnumValue : *Enum)
+//				{
+//					Engine->RegisterEnumValue(Enum->EnumName, EnumValue, (int)EnumValueIdx);
+//					EnumValueIdx++;
+//				}
+//
+//				EnumIDToInfo[EnumID] = Enum;
+//				EnumNameToInfo[Enum->EnumName] = Enum;
+//
+//				EnumIdx++;
+//				EnumID++;
+//			}
+//		}
+//#endif
 	}
 
 	static void RegisterMemberVirtual(asIScriptEngine* Engine, CMwClassInfo* Class, CMwMemberInfo* Member)
 	{
-		using enum CMwMemberInfo::eType;
+		using enum CMwMemberInfo::EType;
 
 		// TODO: Add more types.
 		switch (Member->MemberType)
@@ -340,7 +371,7 @@ namespace Gecko::Exports::Trackmania
 
 	static void RegisterMemberNormal(asIScriptEngine* Engine, CMwClassInfo* Class, CMwMemberInfo* Member)
 	{
-		using enum CMwMemberInfo::eType;
+		using enum CMwMemberInfo::EType;
 
 		// TODO: Add more types.
 		switch (Member->MemberType)

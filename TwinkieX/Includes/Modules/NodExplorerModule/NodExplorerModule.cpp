@@ -9,11 +9,11 @@ using namespace Gecko::Exports::Trackmania;
 
 constexpr bool IsMemberClassAdjacent(CMwMemberInfo* Member)
 {
-	std::vector<CMwMemberInfo::eType> ClassTypes = {
+	std::vector<CMwMemberInfo::EType> ClassTypes = {
 		CMwMemberInfo::CLASS
 #ifdef TMCN
 		,
-		CMwMemberInfo::CLASSALT,
+		CMwMemberInfo::NODREF,
 		CMwMemberInfo::CLASSNOTPERSISTENT
 #endif
 	};
@@ -127,7 +127,7 @@ void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 	std::string ClassTypeName = std::format("{}*{}",
 		ClassInfo->ClassName,
 		MemberInfoAsClass and (MemberInfoAsClass->ClassInfo->ClassID != ClassInfo->ClassID) ? std::string(" \\$999(") + MemberInfoAsClass->ClassInfo->ClassName + "*)\\$z" : std::string("")
-	); 
+	);
 	std::string TreeNodeLabel = std::format("{}{} {} ({})",
 		IsNodVirtual ? std::string("\\$66fV\\$z ") : std::string(""),
 		ClassTypeName,
@@ -161,300 +161,320 @@ void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 
 				switch (MemberInfo->MemberType)
 				{
+				case CMwMemberInfo::PROC:
+				{
+					auto ParamTypeToStr = [](const CMwMemberInfoProc::Type& Type) -> std::string {
+						switch (Type.Kind)
+						{
+						case CMwMemberInfoProc::Type::VALUE:
+							return Type.AdditionalInfo < CMwMemberInfo::MAX ? g_MemberTypeSignatures[Type.AdditionalInfo] : std::to_string(Type.AdditionalInfo);
+						case CMwMemberInfoProc::Type::CLASS:
+							return ClassIDToInfo.contains(Type.AdditionalInfo) ? std::string(ClassIDToInfo[Type.AdditionalInfo]->ClassName) + "@" : std::format("0x{:x}@", Type.AdditionalInfo);
+						case CMwMemberInfoProc::Type::ENUM:
+							return 
 #ifdef TMCN
-					case CMwMemberInfo::PROC:
-					{
-						auto ParamToStr = [](CMwMemberInfoProc::Param& Param) {
-							return std::format(
+								EnumIDToInfo.contains(Type.AdditionalInfo) ? std::string(EnumIDToInfo[Type.AdditionalInfo]->EnumName) : 
+#endif
+								std::format("enum<0x{:x}", Type.AdditionalInfo);
+						}
+						return std::format("?<{}>", (uint32_t)Type.Kind);
+						};
+
+					auto ParamToStr = [&ParamTypeToStr](const CMwMemberInfoProc::Param& Param) {
+						return std::format(
 #ifdef _DEBUG
-								"{} ({}, {}, {:x})", 
-								Param.Name, 
-								(uint32_t)Param.Type.Type, 
-								Param.Type.AdditionalInfo < CMwMemberInfo::MAX ?
-									g_MemberTypeNames[Param.Type.AdditionalInfo] :
-									(ClassIDToInfo.contains(Param.Type.AdditionalInfo) ? ClassIDToInfo[Param.Type.AdditionalInfo]->ClassName : std::to_string(Param.Type.AdditionalInfo))
-									,
-									(uint32_t)Param.Flags
+							"{} {} ({}, {:x})",
+							ParamTypeToStr(Param.Type),
+							Param.Name,
+							(uint32_t)Param.Type.Kind,
+							(uint32_t)Param.Flags
 #else
-									"{} {}",
-									Param.Type.AdditionalInfo < CMwMemberInfo::MAX ?
-									g_MemberTypeSignatures[Param.Type.AdditionalInfo] :
-									(ClassIDToInfo.contains(Param.Type.AdditionalInfo) ? ClassIDToInfo[Param.Type.AdditionalInfo]->ClassName : std::to_string(Param.Type.AdditionalInfo))
-										,
-										Param.Name
+							"{} {}",
+							ParamTypeToStr(Param.Type),
+							Param.Name
 #endif
-									);
-									};
+						);
+						};
 
-						CMwMemberInfoProc::Param* ReturnParam = nullptr;
+					const CMwMemberInfoProc::Param* ReturnParam = nullptr;
 
-						auto MemberInfoAsProc = (CMwMemberInfoProc*)MemberInfo;
+					auto MemberInfoAsProc = (CMwMemberInfoProc*)MemberInfo;
 
-						std::vector<CMwMemberInfoProc::Param> Params = MemberInfoAsProc->GetParams();
+					std::vector<CMwMemberInfoProc::Param> Params = MemberInfoAsProc->GetParams();
 
-						std::string ActualProcParameters = "";
+					std::string ActualProcParameters = "";
 
-						for (auto& Param : Params)
-						{
-							if ((Param.Flags & 2) == 2 and not ReturnParam) ReturnParam = &Param;
-							else
-							{
-								ActualProcParameters += ParamToStr(Param) + ", ";
-							}
-						}
-
-						std::string CumulativeProcSignature =
-							ReturnParam ?
-							ReturnParam->Type.AdditionalInfo < CMwMemberInfo::MAX ?
-							(std::string)g_MemberTypeSignatures[ReturnParam->Type.AdditionalInfo] + " " :
-							(std::string)(ClassIDToInfo.contains(ReturnParam->Type.AdditionalInfo) ? ClassIDToInfo[ReturnParam->Type.AdditionalInfo]->ClassName : std::to_string(ReturnParam->Type.AdditionalInfo)) + " "
-							: "void ";
-						CumulativeProcSignature += MemberInfo->MemberName;
-						CumulativeProcSignature += " (";
-						CumulativeProcSignature += ActualProcParameters;
-						// Remove extra ", "
-						CumulativeProcSignature = CumulativeProcSignature.substr(0, CumulativeProcSignature.length() - min(ActualProcParameters.length(), 2));
-						CumulativeProcSignature += ")";
-
-						Text("PROC %s", CumulativeProcSignature.c_str());
-
-						break;
-					}
-					case CMwMemberInfo::CLASSNOTPERSISTENT:
-					case CMwMemberInfo::CLASSALT:
-#endif
-					case CMwMemberInfo::CLASS:
+					for (auto& Param : Params)
 					{
-						CMwNod* ChildNod = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo, IsNodImpersistent);
-
-						RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
-
-						break;
-					}
-
-					case CMwMemberInfo::ACTION:
-					{
-						const auto* MemberInfoAction = static_cast<const CMwMemberInfoAction*>(MemberInfo);
-						if (Button(FancyMemberName.c_str()))
-						{
-							MemberInfoAction->Action(Nod);
-						}
-						break;
-					}
-
-					case CMwMemberInfo::CLASSBUFFER:
-					{
-						CFastBuffer<CMwNod*>* Array = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Nod, MemberInfo, IsNodImpersistent);
-						if (Array)
-						{
-							PushID((void*)Array);
-
-							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-
-							std::string ElementNameSingular =
-#ifndef TMU
-								MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
-#endif
-								MemberInfoArray->MemberName;
-							std::string ArrayName = std::format("CFastBuffer<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
-
-							bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
-
-							if (HasRightClickedOnItem())
-							{
-								SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
-							}
-
-							if (ArrayTreeNodeOpened)
-							{
-								for (auto& ArrayNod : *Array)
-								{
-									RenderNod(ArrayNod, ElementNameSingular);
-								}
-								TreePop();
-							}
-							PopID();
-						}
+						if ((Param.Flags & CMwMemberInfoProc::PARAM_OUT) and not ReturnParam) ReturnParam = &Param;
 						else
 						{
-							BeginDisabled();
-
-							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-							std::string ArrayName = std::format("CFastBuffer<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
-							
-							Text(ArrayName.c_str());
-							
-							EndDisabled();
+							ActualProcParameters += ParamToStr(Param) + ", ";
 						}
-						break;
 					}
-					case CMwMemberInfo::CLASSARRAY:
+
+					std::string CumulativeProcSignature = ReturnParam ? ParamTypeToStr(ReturnParam->Type) + " " : "void ";
+					CumulativeProcSignature += MemberInfo->MemberName;
+					CumulativeProcSignature += " (";
+					CumulativeProcSignature += ActualProcParameters;
+					// Remove extra ", "
+					CumulativeProcSignature = CumulativeProcSignature.substr(0, CumulativeProcSignature.length() - min(ActualProcParameters.length(), 2));
+					CumulativeProcSignature += ")";
+
+					PushID((void*)MemberInfo);
+					bool ProcTreeNodeOpened = TreeNodeEx(("PROC " + CumulativeProcSignature).c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+
+					if (HasRightClickedOnItem())
 					{
-						CFastArray<CMwNod*>* Array = Twinkie->ParamGet<CFastArray<CMwNod*>>(Nod, MemberInfo, IsNodImpersistent);
-						if (Array)
-						{
-							PushID((void*)Array);
-
-							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-
-							std::string ElementNameSingular =
-#ifndef TMU
-								MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
-#endif
-								MemberInfoArray->MemberName;
-							std::string ArrayName = std::format("CFastArray<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
-
-							bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
-
-							if (HasRightClickedOnItem())
-							{
-								SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
-							}
-
-							if (ArrayTreeNodeOpened)
-							{
-								for (auto& ArrayNod : *Array)
-								{
-									RenderNod(ArrayNod, ElementNameSingular);
-								}
-								TreePop();
-							}
-							PopID();
-						}
-						else
-						{
-							BeginDisabled();
-
-							CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-							CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-							std::string ArrayName = std::format("CFastArray<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
-
-							Text(ArrayName.c_str());
-
-							EndDisabled();
-						}
-						break;
+						SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo, IsNodImpersistent);
 					}
+					IgnoreRightClicks = true;
+
+					if (ProcTreeNodeOpened)
+					{
+						RenderProcCall(Nod, MemberInfoAsProc, Params);
+						TreePop();
+					}
+					PopID();
+
+					break;
+				}
+#ifdef TMCN
+				case CMwMemberInfo::CLASSNOTPERSISTENT:
+				case CMwMemberInfo::NODREF:
+#endif
+				case CMwMemberInfo::CLASS:
+				{
+					CMwNod* ChildNod = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo, IsNodImpersistent);
+
+					RenderNod(ChildNod, std::format("{} (+0x{:x})", MemberInfo->MemberName, MemberInfo->MemberOffset), MemberInfo);
+
+					break;
+				}
+
+				case CMwMemberInfo::ACTION:
+				{
+					const auto* MemberInfoAction = static_cast<const CMwMemberInfoAction*>(MemberInfo);
+					if (Button(FancyMemberName.c_str()))
+					{
+						MemberInfoAction->Action(Nod);
+					}
+					break;
+				}
+
+				case CMwMemberInfo::CLASSBUFFER:
+				{
+					CFastBuffer<CMwNod*>* Array = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Nod, MemberInfo, IsNodImpersistent);
+					if (Array)
+					{
+						PushID((void*)Array);
+
+						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+
+						std::string ElementNameSingular =
+#ifndef TMU
+							MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+#endif
+							MemberInfoArray->MemberName;
+						std::string ArrayName = std::format("CFastBuffer<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
+
+						bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+
+						if (HasRightClickedOnItem())
+						{
+							SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
+						}
+
+						if (ArrayTreeNodeOpened)
+						{
+							for (auto& ArrayNod : *Array)
+							{
+								RenderNod(ArrayNod, ElementNameSingular);
+							}
+							TreePop();
+						}
+						PopID();
+					}
+					else
+					{
+						BeginDisabled();
+
+						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+						std::string ArrayName = std::format("CFastBuffer<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
+
+						Text(ArrayName.c_str());
+
+						EndDisabled();
+					}
+					break;
+				}
+				case CMwMemberInfo::CLASSARRAY:
+				{
+					CFastArray<CMwNod*>* Array = Twinkie->ParamGet<CFastArray<CMwNod*>>(Nod, MemberInfo, IsNodImpersistent);
+					if (Array)
+					{
+						PushID((void*)Array);
+
+						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+
+						std::string ElementNameSingular =
+#ifndef TMU
+							MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+#endif
+							MemberInfoArray->MemberName;
+						std::string ArrayName = std::format("CFastArray<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
+
+						bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+
+						if (HasRightClickedOnItem())
+						{
+							SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
+						}
+
+						if (ArrayTreeNodeOpened)
+						{
+							for (auto& ArrayNod : *Array)
+							{
+								RenderNod(ArrayNod, ElementNameSingular);
+							}
+							TreePop();
+						}
+						PopID();
+					}
+					else
+					{
+						BeginDisabled();
+
+						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
+						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+						std::string ArrayName = std::format("CFastArray<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
+
+						Text(ArrayName.c_str());
+
+						EndDisabled();
+					}
+					break;
+				}
 #ifndef TMCN
-					case CMwMemberInfo::REALRANGE:
+				case CMwMemberInfo::REALRANGE:
 #endif
 #ifdef TMU
 					// TODO: oh god
-					case CMwMemberInfo::IDBUFFERCAT:
+				case CMwMemberInfo::IDBUFFERCAT:
 #endif
-					case CMwMemberInfo::REAL:
+				case CMwMemberInfo::REAL:
+				{
+					float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Float) goto RerenderMember;
+					float FloatV = *Float;
+					if (InputFloat(FancyMemberName.c_str(), &FloatV))
 					{
-						float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo, IsNodImpersistent);
-						if (!Float) goto RerenderMember;
-						float FloatV = *Float;
-						if (InputFloat(FancyMemberName.c_str(), &FloatV))
-						{
-							Twinkie->ParamSet(Nod, MemberInfo, &FloatV);
-						}
-						break;
+						Twinkie->ParamSet(Nod, MemberInfo, &FloatV);
 					}
+					break;
+				}
 #ifdef TMCN
-					case CMwMemberInfo::REALRANGE:
+				case CMwMemberInfo::REALRANGE:
+				{
+					CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
+					float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Float) goto RerenderMember;
+					float FloatV = *Float;
+					if (SliderFloat(FancyMemberName.c_str(), &FloatV, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax))
 					{
-						CMwMemberInfoRealRange* MemberAsRealRange = (CMwMemberInfoRealRange*)MemberInfo;
-						float* Float = Twinkie->ParamGet<float>(Nod, MemberInfo, IsNodImpersistent);
-						if (!Float) goto RerenderMember;
-						float FloatV = *Float;
-						if (SliderFloat(FancyMemberName.c_str(), &FloatV, MemberAsRealRange->ValueMin, MemberAsRealRange->ValueMax))
-						{
-							Twinkie->ParamSet(Nod, MemberInfo, &FloatV);
-						}
-						break;
+						Twinkie->ParamSet(Nod, MemberInfo, &FloatV);
 					}
+					break;
+				}
 
-					case CMwMemberInfo::INTRANGE:
+				case CMwMemberInfo::INTRANGE:
+				{
+					CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
+					int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Int) goto RerenderMember;
+					int IntV = *Int;
+					if (SliderInt(FancyMemberName.c_str(), &IntV, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax))
 					{
-						CMwMemberInfoIntRange* MemberAsIntRange = (CMwMemberInfoIntRange*)MemberInfo;
-						int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo, IsNodImpersistent);
-						if (!Int) goto RerenderMember;
-						int IntV = *Int;
-						if (SliderInt(FancyMemberName.c_str(), &IntV, MemberAsIntRange->ValueMin, MemberAsIntRange->ValueMax))
-						{
-							Twinkie->ParamSet(Nod, MemberInfo, &IntV);
-						}
-						break;
+						Twinkie->ParamSet(Nod, MemberInfo, &IntV);
 					}
+					break;
+				}
 
-					case CMwMemberInfo::ENUM:
+				case CMwMemberInfo::ENUM:
+				{
+					CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
+					int* CurrentItem = Twinkie->ParamGet<int>(Nod, MemberInfo, IsNodImpersistent);
+					if (!CurrentItem) goto RerenderMember;
+					int CurrentItemV = *CurrentItem;
+					if (MemberAsEnum->EnumValueNames)
 					{
-						CMwMemberInfoEnum* MemberAsEnum = (CMwMemberInfoEnum*)MemberInfo;
-						int* CurrentItem = Twinkie->ParamGet<int>(Nod, MemberInfo, IsNodImpersistent);
-						if (!CurrentItem) goto RerenderMember;
-						int CurrentItemV = *CurrentItem;
-						if (MemberAsEnum->EnumValueNames)
+						if (Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), &CurrentItemV, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength))
 						{
-							if (Combo((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), &CurrentItemV, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength))
-							{
-								Twinkie->ParamSet(Nod, MemberInfo, &CurrentItemV);
-							}
+							Twinkie->ParamSet(Nod, MemberInfo, &CurrentItemV);
 						}
-						else if (MemberAsEnum->EnumTypeName)
-						{
-							if (InputInt((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), &CurrentItemV))
-							{
-								Twinkie->ParamSet(Nod, MemberInfo, &CurrentItemV);
-							}
-						}
-						else
-						{
-							if (InputInt(FancyMemberName.c_str(), &CurrentItemV))
-							{
-								Twinkie->ParamSet(Nod, MemberInfo, &CurrentItemV);
-							}
-						}
-						break;
 					}
+					else if (MemberAsEnum->EnumTypeName)
+					{
+						if (InputInt((MemberAsEnum->EnumTypeName + (" " + FancyMemberName)).c_str(), &CurrentItemV))
+						{
+							Twinkie->ParamSet(Nod, MemberInfo, &CurrentItemV);
+						}
+					}
+					else
+					{
+						if (InputInt(FancyMemberName.c_str(), &CurrentItemV))
+						{
+							Twinkie->ParamSet(Nod, MemberInfo, &CurrentItemV);
+						}
+					}
+					break;
+				}
 #endif
 
-					case CMwMemberInfo::NATURAL:
-					case CMwMemberInfo::INT:
+				case CMwMemberInfo::NATURAL:
+				case CMwMemberInfo::INT:
 #ifdef GAMEBOX
-					case CMwMemberInfo::ENUM:
+				case CMwMemberInfo::ENUM:
 #endif
+				{
+					int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Int) goto RerenderMember;
+					int IntV = *Int;
+					if (InputInt((FancyMemberName + std::format(" {:x}", (uint64_t)(uintptr_t)(void*)Int)).c_str(), &IntV))
 					{
-						int* Int = Twinkie->ParamGet<int>(Nod, MemberInfo, IsNodImpersistent);
-						if (!Int) goto RerenderMember;
-						int IntV = *Int;
-						if (InputInt((FancyMemberName + std::format(" {:x}", (uint64_t)(uintptr_t)(void*)Int)).c_str(), &IntV))
-						{
-							Twinkie->ParamSet(Nod, MemberInfo, &IntV);
-						}
-						break;
+						Twinkie->ParamSet(Nod, MemberInfo, &IntV);
 					}
+					break;
+				}
 
-					case CMwMemberInfo::BOOL:
+				case CMwMemberInfo::BOOL:
+				{
+					bool* Bool = Twinkie->ParamGet<bool>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Bool) goto RerenderMember;
+					bool BoolV = *Bool;
+					if (Checkbox(FancyMemberName.c_str(), &BoolV))
 					{
-						bool* Bool = Twinkie->ParamGet<bool>(Nod, MemberInfo, IsNodImpersistent);
-						if (!Bool) goto RerenderMember;
-						bool BoolV = *Bool;
-						if (Checkbox(FancyMemberName.c_str(), &BoolV))
-						{
-							Twinkie->ParamSet(Nod, MemberInfo, &BoolV);
-						}
-						break;
+						Twinkie->ParamSet(Nod, MemberInfo, &BoolV);
 					}
+					break;
+				}
 
-					default:
-					{
-RerenderMember:
-						Text("%s (%s %d)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType], MemberInfo->MemberType);
-						break;
-					}
+				default:
+				{
+				RerenderMember:
+					Text("%s (%s %d)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType], MemberInfo->MemberType);
+					break;
+				}
 				}
 				if (HasRightClickedOnItem() and not IgnoreRightClicks)
 				{
 					SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo, IsNodImpersistent);
 				}
 			}
-			
+
 			if (ClassInfo->ParentClassInfo)
 			{
 				SeparatorText(ClassInfo->ParentClassInfo->ClassName);
@@ -480,6 +500,223 @@ RerenderMember:
 	}
 
 	PopID();
+}
+
+#ifdef TMCN
+static std::string WideToUtf8(const wchar_t* Str, uint32_t Count)
+{
+	if (!Str || !Count) return "";
+	int Size = WideCharToMultiByte(CP_UTF8, 0, Str, (int)Count, nullptr, 0, nullptr, nullptr);
+	if (Size <= 0) return "";
+	std::string Utf8((size_t)Size, '\0');
+	WideCharToMultiByte(CP_UTF8, 0, Str, (int)Count, Utf8.data(), Size, nullptr, nullptr);
+	return Utf8;
+}
+
+static std::wstring Utf8ToWide(const char* Str)
+{
+	int Size = MultiByteToWideChar(CP_UTF8, 0, Str, -1, nullptr, 0);
+	if (Size <= 1) return L"";
+	std::wstring Wide((size_t)Size, L'\0');
+	MultiByteToWideChar(CP_UTF8, 0, Str, -1, Wide.data(), Size);
+	Wide.resize((size_t)Size - 1);
+	return Wide;
+}
+#endif
+
+static void RenderProcValue(CMwStack::ItemType ItemType, const char* Label, ProcCallState::ParamValue& Value, bool ReadOnly)
+{
+	void* Storage = Value.Storage;
+
+	if (ReadOnly) BeginDisabled();
+	switch (ItemType)
+	{
+	case CMwStack::ITEM_BOOL:
+	{
+		bool Checked = *(uint32_t*)Storage != 0;
+		if (Checkbox(Label, &Checked)) *(uint32_t*)Storage = Checked ? 1U : 0U;
+		break;
+	}
+	case CMwStack::ITEM_ENUM:
+	case CMwStack::ITEM_INT:
+		InputInt(Label, (int*)Storage);
+		break;
+	case CMwStack::ITEM_UINT:
+		InputScalar(Label, ImGuiDataType_U32, Storage);
+		break;
+	case CMwStack::ITEM_FLOAT:
+		InputFloat(Label, (float*)Storage);
+		break;
+	case CMwStack::ITEM_VEC2:
+		InputFloat2(Label, (float*)Storage);
+		break;
+	case CMwStack::ITEM_VEC3:
+		InputFloat3(Label, (float*)Storage);
+		break;
+#ifdef TMCN
+	case CMwStack::ITEM_INT2:
+		InputInt2(Label, (int*)Storage);
+		break;
+	case CMwStack::ITEM_INT3:
+		InputInt3(Label, (int*)Storage);
+		break;
+	case CMwStack::ITEM_UINT3:
+		InputScalarN(Label, ImGuiDataType_U32, Storage, 3);
+		break;
+#endif
+	case CMwStack::ITEM_ISO4:
+		if (TreeNodeEx(Label, ImGuiTreeNodeFlags_DrawLinesFull))
+		{
+			InputFloat3("X axis", (float*)Storage);
+			InputFloat3("Y axis", (float*)Storage + 3);
+			InputFloat3("Z axis", (float*)Storage + 6);
+			InputFloat3("Position", (float*)Storage + 9);
+			TreePop();
+		}
+		break;
+	case CMwStack::ITEM_STRING:
+#ifdef TMCN
+	case CMwStack::ITEM_WSTRING:
+#endif
+		if (ReadOnly)
+		{
+			std::string Shown;
+#ifdef TMCN
+			if (ItemType == CMwStack::ITEM_WSTRING) Shown = WideToUtf8(((CFastStringInt*)Storage)->CStr, ((CFastStringInt*)Storage)->Count);
+			else
+#endif
+#ifdef TM1
+			// TM1 counts the null terminator
+			if (((CFastString*)Storage)->CStr) Shown = ((CFastString*)Storage)->CStr;
+#else
+			if (((CFastString*)Storage)->CStr) Shown.assign(((CFastString*)Storage)->CStr, ((CFastString*)Storage)->Count);
+#endif
+			EndDisabled();
+			InputText(Label, Shown.data(), Shown.size() + 1, ImGuiInputTextFlags_ReadOnly);
+			BeginDisabled();
+		}
+		else
+		{
+			InputText(Label, Value.Text, sizeof(Value.Text));
+		}
+		break;
+	case CMwStack::ITEM_OBJECT:
+		InputTextWithHint(Label, "nod address (hex)", Value.Text, sizeof(Value.Text), ImGuiInputTextFlags_CharsHexadecimal);
+		break;
+	default:
+		TextDisabled("%s: type not supported", Label);
+		break;
+	}
+	if (ReadOnly) EndDisabled();
+}
+
+static const char* ProcResultToStr(uint32_t Result)
+{
+	switch (Result)
+	{
+	case 0: return "\\$6f6OK";
+	case 2: return "\\$f66Invalid arguments (2)";
+	case 8: return "\\$f66Script error (8)";
+	case UINT_MAX: return "\\$f66Not callable";
+	default: return "\\$fa6Unknown result";
+	}
+}
+
+void NodExplorerModule::RenderProcCall(CMwNod* Nod, CMwMemberInfoProc* Proc, const std::vector<CMwMemberInfoProc::Param>& Params)
+{
+	ProcCallState& State = ProcCalls[{ Nod, Proc }];
+	if (State.Values.size() != Params.size()) State.Values.assign(Params.size(), ProcCallState::ParamValue{});
+
+	bool CanCall = true;
+	for (size_t ParamIdx = 0; ParamIdx < Params.size(); ParamIdx++)
+	{
+		const CMwMemberInfoProc::Param& Param = Params[ParamIdx];
+		ProcCallState::ParamValue& Value = State.Values[ParamIdx];
+		CMwStack::ItemType ItemType = TwinkTrackmania::GetProcParamItemType(Param.Type);
+		bool IsInput = Param.Flags & CMwMemberInfoProc::PARAM_IN;
+		std::string Label = std::format("{}{}", Param.Name ? Param.Name : "?", IsInput ? "" : " (out)");
+
+		PushID((int)ParamIdx);
+		if (ItemType == CMwStack::ITEM_MEMBER)
+		{
+			TextDisabled("%s: type not supported", Label.c_str());
+			CanCall = false;
+		}
+		else if (IsInput)
+		{
+			RenderProcValue(ItemType, Label.c_str(), Value, false);
+		}
+		else if (!State.HasResult)
+		{
+			TextDisabled("%s", Label.c_str());
+		}
+		else if (ItemType == CMwStack::ITEM_OBJECT)
+		{
+			CMwNod* OutNod = *(CMwNod**)Value.Storage;
+			if (OutNod) RenderNod(OutNod, Label, nullptr);
+			else TextDisabled("%s: null", Label.c_str());
+		}
+		else
+		{
+			RenderProcValue(ItemType, Label.c_str(), Value, true);
+		}
+		PopID();
+	}
+
+	if (!CanCall) BeginDisabled();
+	if (Button("Call"))
+	{
+		std::vector<CMwStack::Item> Args;
+		for (size_t ParamIdx = 0; ParamIdx < Params.size(); ParamIdx++)
+		{
+			const CMwMemberInfoProc::Param& Param = Params[ParamIdx];
+			ProcCallState::ParamValue& Value = State.Values[ParamIdx];
+			CMwStack::ItemType ItemType = TwinkTrackmania::GetProcParamItemType(Param.Type);
+			bool IsInput = Param.Flags & CMwMemberInfoProc::PARAM_IN;
+			bool IsOutput = Param.Flags & CMwMemberInfoProc::PARAM_OUT;
+
+			if (IsInput and ItemType == CMwStack::ITEM_OBJECT)
+			{
+				uintptr_t Address = 0;
+				try { if (Value.Text[0]) Address = (uintptr_t)std::stoull(Value.Text, nullptr, 16); }
+				catch (...) { Address = 0; }
+				*(CMwNod**)Value.Storage = (CMwNod*)Address;
+			}
+			else if (IsInput and not IsOutput and ItemType == CMwStack::ITEM_STRING)
+			{
+				Value.NarrowText = Value.Text;
+				auto String = (CFastString*)Value.Storage;
+				String->CStr = Value.NarrowText.data();
+#ifdef TM1
+				// TM1 counts the null terminator
+				String->Count = (uint32_t)Value.NarrowText.size() + 1;
+#else
+				String->Count = (uint32_t)Value.NarrowText.size();
+#endif
+			}
+#ifdef TMCN
+			else if (IsInput and not IsOutput and ItemType == CMwStack::ITEM_WSTRING)
+			{
+				Value.WideText = Utf8ToWide(Value.Text);
+				auto String = (CFastStringInt*)Value.Storage;
+				String->CStr = Value.WideText.data();
+				String->Count = (uint32_t)Value.WideText.size();
+			}
+#endif
+
+			Args.push_back(CMwStack::Item{ Value.Storage, ItemType });
+		}
+
+		State.Result = Twinkie->CallProc(Nod, Proc, Args);
+		State.HasResult = true;
+	}
+	if (!CanCall) EndDisabled();
+
+	if (State.HasResult)
+	{
+		SameLine();
+		Text("%s", ProcResultToStr(State.Result));
+	}
 }
 
 void NodExplorerModule::RenderMenu()
@@ -584,7 +821,7 @@ void NodExplorerModule::RenderNodInfoMemberInfo()
 		}
 		else
 		{
-			MemberNodClassInfo = 
+			MemberNodClassInfo =
 #endif
 				ChildInfo->MemberNodItself->MwGetClassInfo();
 #ifdef TMCN
@@ -613,7 +850,7 @@ void NodExplorerModule::RenderInterface()
 		RenderNod(Twinkie->GetApp(), "App");
 		EndTabItem();
 	}
-	
+
 	if (BeginTabItem("Other", nullptr, ImGuiTabItemFlags_NoCloseWithMiddleMouseButton))
 	{
 		static uint64_t Temp = 0;
@@ -673,7 +910,7 @@ void NodExplorerModule::RenderInterface()
 			HasSetWindowPositionForPopup = true;
 			SetWindowPos(GetMousePos());
 		}
-		
+
 		if (NodInfo)
 		{
 			std::string Copyable = NodInfo->Name;
@@ -685,7 +922,7 @@ void NodExplorerModule::RenderInterface()
 
 			RenderNodInfoClassInfo(NodInfo->ClassInfo);
 		}
-		
+
 
 		End();
 	}

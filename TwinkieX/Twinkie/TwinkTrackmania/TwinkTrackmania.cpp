@@ -202,27 +202,27 @@ uintptr_t TwinkTrackmania::GetDirectXSwapChain()
 
 #endif
 
-#pragma optimize("", off)
 void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
 {
 #ifdef GAMEBOX
-	static CMwMemberInfo* OptimizationRemover = nullptr;
-	if (!OptimizationRemover) OptimizationRemover = nullptr;
-
-	if (Stack->Size != 0 and Stack->ppMemberInfos)
+	if (Stack->Size == Stack->Capacity)
 	{
-		realloc(Stack->ppMemberInfos, (Stack->Size + 1) * sizeof(CMwMemberInfo*));
-
-		Stack->ppMemberInfos[Stack->Size] = MemberInfo;
-
-		Stack->Size++;
+		uint32_t Capacity = Stack->Capacity ? Stack->Capacity * 2 : 2;
+		auto Items = (void**)realloc(Stack->Items, Capacity * sizeof(void*));
+		if (Items) Stack->Items = Items;
+		auto Types = (CMwStack::ItemType*)realloc(Stack->Types, Capacity * sizeof(CMwStack::ItemType));
+		if (Types) Stack->Types = Types;
+		if (!Items or !Types) return;
+		Stack->Capacity = Capacity;
 	}
-	else
-	{
-		Stack->ppMemberInfos = new CMwMemberInfo* { MemberInfo };
-		Stack->Size = 1;
-	}
-	OptimizationRemover = *Stack->ppMemberInfos;
+
+	// Like the game, new items go at the start: the game reads from the end of the stack towards the start
+	memmove(Stack->Items + 1, Stack->Items, Stack->Size * sizeof(void*));
+	memmove(Stack->Types + 1, Stack->Types, Stack->Size * sizeof(CMwStack::ItemType));
+	Stack->Items[0] = MemberInfo;
+	Stack->Types[0] = CMwStack::ITEM_MEMBER;
+	Stack->Size++;
+	Stack->CurrentPos = (int32_t)Stack->Size - 1;
 #else
 	if (Stack->Size < 2)
 	{
@@ -246,7 +246,108 @@ void TwinkTrackmania::PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo)
 	}
 #endif
 }
-#pragma optimize("", on)
+
+CMwStack::ItemType TwinkTrackmania::GetProcParamItemType(const CMwMemberInfoProc::Type& ParamType)
+{
+	switch (ParamType.Kind)
+	{
+	case CMwMemberInfoProc::Type::CLASS:
+		return CMwStack::ITEM_OBJECT;
+	case CMwMemberInfoProc::Type::ENUM:
+		return CMwStack::ITEM_ENUM;
+	case CMwMemberInfoProc::Type::VALUE:
+		switch (ParamType.AdditionalInfo)
+		{
+		case CMwMemberInfo::BOOL:      return CMwStack::ITEM_BOOL;
+		case CMwMemberInfo::ENUM:      return CMwStack::ITEM_ENUM;
+		case CMwMemberInfo::INT:       return CMwStack::ITEM_INT;
+		case CMwMemberInfo::NATURAL:   return CMwStack::ITEM_UINT;
+		case CMwMemberInfo::REAL:      return CMwStack::ITEM_FLOAT;
+		case CMwMemberInfo::ISO4:      return CMwStack::ITEM_ISO4;
+		case CMwMemberInfo::VEC2:      return CMwStack::ITEM_VEC2;
+		case CMwMemberInfo::VEC3:      return CMwStack::ITEM_VEC3;
+		case CMwMemberInfo::STRING:    return CMwStack::ITEM_STRING;
+#ifdef TMCN
+		case CMwMemberInfo::INT2:      return CMwStack::ITEM_INT2;
+		case CMwMemberInfo::INT3:      return CMwStack::ITEM_INT3;
+		case CMwMemberInfo::NAT3:      return CMwStack::ITEM_UINT3;
+		case CMwMemberInfo::STRINGINT: return CMwStack::ITEM_WSTRING;
+#endif
+		default:                       return CMwStack::ITEM_MEMBER;
+		}
+	}
+	return CMwStack::ITEM_MEMBER;
+}
+
+#ifdef TMCN
+uint32_t TwinkTrackmania::CallProc(CMwNod* Nod, CMwMemberInfo* ProcMember, const std::vector<CMwStack::Item>& Args)
+{
+	if (!Nod || !ProcMember || ProcMember->MemberType != CMwMemberInfo::PROC) return UINT_MAX;
+
+	auto Proc = (CMwMemberInfoProc*)ProcMember;
+	CMwMemberInfoProc::ProcFn Method = Proc->MethodItself ? Proc->MethodItself : Proc->MethodAlt;
+	if (!Method) return UINT_MAX;
+
+	size_t ItemCount = Args.size() + 1;
+	if (ItemCount > 0xFF) return UINT_MAX;
+
+	std::vector<CMwStack::Item> Items;
+	Items.reserve(ItemCount);
+	Items.push_back(CMwStack::Item{ ProcMember, CMwStack::ITEM_MEMBER });
+	for (auto Arg = Args.rbegin(); Arg != Args.rend(); ++Arg) Items.push_back(*Arg);
+
+	CMwStack Stack{};
+	Stack.Size = (uint8_t)ItemCount;
+	Stack.CurrentPos = 1;
+	for (size_t ItemIdx = 0; ItemIdx < ItemCount and ItemIdx < 2; ItemIdx++)
+	{
+		Stack.ContainedItems[ItemIdx] = Items[ItemIdx];
+	}
+	if (ItemCount > 2)
+	{
+		Stack.ExtraItems = Items.data() + 2;
+		Stack.ExtraItemsCapacity = (uint8_t)(ItemCount - 2);
+	}
+
+	return Method(Nod, &Stack);
+}
+#else
+uint32_t TwinkTrackmania::CallProc(CMwNod* Nod, CMwMemberInfo* ProcMember, const std::vector<CMwStack::Item>& Args)
+{
+	if (!Nod || !ProcMember || ProcMember->MemberType != CMwMemberInfo::PROC) return UINT_MAX;
+
+	auto Proc = (CMwMemberInfoProc*)ProcMember;
+	bool IsVirtual = Proc->GetFlags() & CMwMemberInfo::VIRTUAL_SET;
+	if (!IsVirtual and !Proc->Method) return UINT_MAX;
+
+	CMwStack Stack;
+	Stack.Size = (uint32_t)Args.size() + 1;
+	Stack.Capacity = Stack.Size;
+	Stack.Items = (void**)malloc(Stack.Capacity * sizeof(void*));
+	Stack.Types = (CMwStack::ItemType*)malloc(Stack.Capacity * sizeof(CMwStack::ItemType));
+	if (!Stack.Items or !Stack.Types) return UINT_MAX;
+
+	// The arguments go first in the PROC's parameter order, then the PROC: the game reads the PROC from the end and the arguments from the start
+	for (size_t ArgIdx = 0; ArgIdx < Args.size(); ArgIdx++)
+	{
+		Stack.Items[ArgIdx] = Args[ArgIdx].Value;
+		Stack.Types[ArgIdx] = Args[ArgIdx].Type;
+	}
+	Stack.Items[Args.size()] = ProcMember;
+	Stack.Types[Args.size()] = CMwStack::ITEM_MEMBER;
+
+	// Same as CMwNod::Param_Set: virtual PROCs get the cursor on the PROC, the others get it past the PROC
+	if (IsVirtual)
+	{
+		Stack.CurrentPos = (int32_t)Stack.Size - 1;
+		return Nod->VirtualParam_Set(&Stack, nullptr);
+	}
+
+	Stack.CurrentPos = (int32_t)Stack.Size - 2;
+	Proc->Method(Nod, &Stack);
+	return 0;
+}
+#endif
 
 __declspec(noinline) EGame TwinkTrackmania::GetGame()
 {
