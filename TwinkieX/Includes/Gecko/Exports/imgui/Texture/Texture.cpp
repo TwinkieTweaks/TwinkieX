@@ -83,16 +83,14 @@ static bool LoadTextureFromMemory(const void* data, size_t data_size, TextureRes
 {
     // Load texture from disk
     PDIRECT3DTEXTURE9 texture;
-    HRESULT hr = D3DXCreateTextureFromFileInMemory(TwinkUiState::Device, data, data_size, &texture);
+    D3DXIMAGE_INFO image_info;
+    HRESULT hr = D3DXCreateTextureFromFileInMemoryEx(TwinkUiState::Device, data, (UINT)data_size, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 1, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_FILTER_NONE, D3DX_DEFAULT, 0, &image_info, nullptr, &texture);
     if (hr != S_OK)
         return false;
 
-    // Retrieve description of the texture surface so we can access its size
-    D3DSURFACE_DESC my_image_desc;
-    texture->GetLevelDesc(0, &my_image_desc);
     *out_texture = texture;
-    *out_width = (int)my_image_desc.Width;
-    *out_height = (int)my_image_desc.Height;
+    *out_width = (int)image_info.Width;
+    *out_height = (int)image_info.Height;
     return true;
 }
 
@@ -101,16 +99,14 @@ static bool LoadTextureFromFile(const char* filename, TextureResource* out_textu
 {
     // Load texture from disk
     PDIRECT3DTEXTURE9 texture;
-    HRESULT hr = D3DXCreateTextureFromFileA(TwinkUiState::Device, filename, &texture);
+    D3DXIMAGE_INFO image_info;
+    HRESULT hr = D3DXCreateTextureFromFileExA(TwinkUiState::Device, filename, D3DX_DEFAULT_NONPOW2, D3DX_DEFAULT_NONPOW2, 1, 0, D3DFMT_UNKNOWN, D3DPOOL_MANAGED, D3DX_FILTER_NONE, D3DX_DEFAULT, 0, &image_info, nullptr, &texture);
     if (hr != S_OK)
         return false;
 
-    // Retrieve description of the texture surface so we can access its size
-    D3DSURFACE_DESC my_image_desc;
-    texture->GetLevelDesc(0, &my_image_desc);
     *out_texture = texture;
-    *out_width = (int)my_image_desc.Width;
-    *out_height = (int)my_image_desc.Height;
+    *out_width = (int)image_info.Width;
+    *out_height = (int)image_info.Height;
     return true;
 }
 #endif

@@ -11,6 +11,7 @@ on:
       - 'GenerateVersion.ps1'
       - '.gitignore'
       - 'Directory.Build.props'
+      - 'Directory.Build.targets'
   pull_request:
     branches: [ "development" ]
     paths:
@@ -21,6 +22,7 @@ on:
       - 'GenerateVersion.ps1'
       - '.gitignore'
       - 'Directory.Build.props'
+      - 'Directory.Build.targets'
   workflow_dispatch:
 
 jobs:

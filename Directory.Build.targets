@@ -1,0 +1,7 @@
+<Project>
+  <ItemDefinitionGroup Condition="'$(GITHUB_ACTIONS)' == 'true'">
+      <Link>
+        <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      </Link>
+  </ItemDefinitionGroup>
+</Project>
