@@ -65,6 +65,7 @@ void TwinkIo::Update()
 HRESULT WINAPI hkGetDeviceState(IDirectInputDevice8* pDevice, DWORD cbData, LPVOID lpvData)
 {
     HRESULT hr = TwinkIoState::oGetDeviceState(pDevice, cbData, lpvData);
+    if (!ImGui::GetCurrentContext()) return hr;
 
     if (SUCCEEDED(hr) && TwinkUiState::RenderUi)
     {

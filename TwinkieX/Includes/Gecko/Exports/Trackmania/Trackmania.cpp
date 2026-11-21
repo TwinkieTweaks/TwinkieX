@@ -353,6 +353,17 @@ namespace Gecko::Exports::Trackmania
 		switch (Member->MemberType)
 		{
 		case CLASS:
+			if (auto asClass = Engine->GetTypeInfoByName(Class->GetName().c_str()))
+			{
+				if (asClass->GetMethodByName(std::format(
+					"get_{}",
+					Member->GetName()
+				).c_str()))
+				{
+					return;
+				}
+			}
+
 			Engine->RegisterObjectMethod(
 				Class->GetName().c_str(),
 				std::format(
