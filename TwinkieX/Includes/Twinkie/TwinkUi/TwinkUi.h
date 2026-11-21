@@ -142,6 +142,12 @@ public:
 
 	// Updates the internal hooks to be up-to-date
 	void Update(std::filesystem::path DocumentsFolderPath);
+
+	// Adds a font from a file, with the icons merged into it
+	ImFont* AddFont(const char* Path);
+
+	// Merges the icons Gecko's Icons:: strings use (Fonts\ManiaIcons.ttf) into the font added last
+	void MergeIcons();
 };
 
 #ifdef GAMEBOX

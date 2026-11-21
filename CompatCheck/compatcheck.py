@@ -258,8 +258,8 @@ def do():
                 print(f"unmatched info: {info}")
                 has_unmatched_info = True
 
-    complete = (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
-    non_partial = (matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses) if misses else 0
+    complete = (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted]) / float(misses + (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted])) if misses else 0
+    non_partial = (matches[DeclInfo.Full] + matches[DeclInfo.Deleted]) / float(misses + (matches[DeclInfo.Full] + matches[DeclInfo.Partial] + matches[DeclInfo.Deleted])) if misses else 0
 
     print(f'{"".join(f"{matches[m]} {m.value} matches, " if matches[m] != 1 else f"{matches[m]} {m.value} match, " for m in matches)}{misses} {"misses" if misses != 1 else "miss"}')
     print(f'{complete:.2%} complete, {non_partial:.2%} non-partial')

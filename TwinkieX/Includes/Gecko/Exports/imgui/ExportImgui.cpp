@@ -4,6 +4,7 @@
 #include "ExportImgui.h"
 #include "Texture/Texture.h"
 #include <Gecko/Exports/Global/MemoryBuffer/MemoryBuffer.h>
+#include <Gecko/Exports/Math/Math.h>
 
 #define Gecko_Exports_ImGui_GuardNonRender(...) if (!Gecko::TheScriptManager->IsExecutingRenderCallback()) /* TODO: Throw an error */ { (void)0; return __VA_ARGS__; } (void)0
 
@@ -136,10 +137,9 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool BeginCombo(const string&in label, const string&in current, int flags = UI::ComboFlags::None)
-		as      bool BeginCombo(const string&in label, const string&in current, int flags = 0)
+		as      bool BeginCombo(const string&in label, const string&in current, int flags = UI::ComboFlags::None)
 		being   function
-		declare partial
-		reason  UI::ComboFlags is not implemented.
+		declare full
 		since   v0.1.1
 		!CompatMeta
 		*/
@@ -148,7 +148,7 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(false);
 			return BeginCombo((const char*)label.c_str(), (const char*)current.c_str(), flags);
 		}
-		UI_EXPORT("bool BeginCombo(const string&in label, const string&in current, int flags = 0)", BeginComboAs);
+		UI_EXPORT("bool BeginCombo(const string&in label, const string&in current, int flags = UI::ComboFlags::None)", BeginComboAs);
 
 		/*
 		!CompatMeta
@@ -195,7 +195,7 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    void BeginTabBar(const string&in id, int flags = UI::TabBarFlags::None)
-		as      void BeginTabBar(const string&in id, int flags)
+		as      void BeginTabBar(const string&in id, int flags = UI::TabBarFlags::None)
 		being   function
 		declare full
 		since   v0.1.1
@@ -206,7 +206,7 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender();
 			BeginTabBar((const char*)id.c_str(), flags);
 		}
-		UI_EXPORT("void BeginTabBar(const string&in id, int flags = 0)", BeginTabBarAs);
+		UI_EXPORT("void BeginTabBar(const string&in id, int flags = UI::TabBarFlags::None)", BeginTabBarAs);
 
 		/*
 		!CompatMeta
@@ -224,7 +224,7 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool BeginTabItem(const string&in label, int flags = UI::TabItemFlags::None)
-		as      bool BeginTabItem(const string&in label, int flags)
+		as      bool BeginTabItem(const string&in label, int flags = UI::TabItemFlags::None)
 		being   function
 		declare full
 		since   v0.1.1
@@ -235,13 +235,13 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(false);
 			return BeginTabItem((const char*)label.c_str(), nullptr, flags);
 		}
-		UI_EXPORT("bool BeginTabItem(const string&in label, int flags = 0)", BeginTabItemAs_NoOpen);
+		UI_EXPORT("bool BeginTabItem(const string&in label, int flags = UI::TabItemFlags::None)", BeginTabItemAs_NoOpen);
 
 		/*
 		!CompatMeta
 		for     UI
 		with    bool BeginTabItem(const string&in label, bool&out open, int flags = UI::TabItemFlags::None)
-		as      bool BeginTabItem(const string&in label, bool&out open, int flags)
+		as      bool BeginTabItem(const string&in label, bool&out open, int flags = UI::TabItemFlags::None)
 		being   function
 		declare full
 		since   v0.1.1
@@ -252,7 +252,7 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(false);
 			return BeginTabItem((const char*)label.c_str(), open, flags);
 		}
-		UI_EXPORT("bool BeginTabItem(const string&in label, bool&out open, int flags = 0)", BeginTabItemAs_Open);
+		UI_EXPORT("bool BeginTabItem(const string&in label, bool&out open, int flags = UI::TabItemFlags::None)", BeginTabItemAs_Open);
 
 		/*
 		!CompatMeta
@@ -270,19 +270,18 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None, const vec2&in outer_size = vec2(), float inner_width = 0.0f)
-		as      bool BeginTable(const string&in id, int columns, int flags)
+		as      bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None, const vec2&in outer_size = vec2(), float inner_width = 0.0f)
 		being   function
-		declare partial
-		reason  vec2 is not implemented yet
+		declare full
 		since   v0.1.1
 		!CompatMeta
 		*/
-		bool BeginTableAs(std::u8string& id, int columns, int flags)
+		bool BeginTableAs(std::u8string& id, int columns, int flags, const Math::vec2& outer_size, float inner_width)
 		{
 			Gecko_Exports_ImGui_GuardNonRender(false);
-			return BeginTable((const char*)id.c_str(), columns, flags);
+			return BeginTable((const char*)id.c_str(), columns, flags, ImVec2(outer_size.x, outer_size.y), inner_width);
 		}
-		UI_EXPORT("bool BeginTable(const string&in id, int columns, int flags)", BeginTableAs);
+		UI_EXPORT("bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None, const vec2&in outer_size = vec2(), float inner_width = 0.0f)", BeginTableAs);
 
 		/*
 		!CompatMeta
@@ -457,19 +456,18 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool Button(const string&in label, const vec2&in size = vec2())
-		as      bool Button(const string&in label)
+		as      bool Button(const string&in label, const vec2&in size = vec2())
 		being   function
-		declare partial
-		reason  vec2 is not implemented yet
+		declare full
 		since   v0.1.1
 		!CompatMeta
 		*/
-		bool ButtonAs(std::u8string& s)
+		bool ButtonAs(std::u8string& s, const Math::vec2& size)
 		{
 			Gecko_Exports_ImGui_GuardNonRender(false);
-			return Button((const char*)s.c_str());
+			return Button((const char*)s.c_str(), ImVec2(size.x, size.y));
 		}
-		UI_EXPORT("bool Button(const string&in text)", ButtonAs);
+		UI_EXPORT("bool Button(const string&in label, const vec2&in size = vec2())", ButtonAs);
 
 		/*
 		!CompatMeta
@@ -507,6 +505,42 @@ namespace Gecko::Exports::ImGui
 			Image(Tex->Get(), Tex->GetSize());
 		}
 		UI_EXPORT("void Image(Texture@+ texture)", ImageAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void Image(Texture@ texture, const vec2&in size, const vec2&in uv0 = vec2(0, 0), const vec2&in uv1 = vec2(1, 1))
+		as      void Image(Texture@ texture, const vec2&in size, const vec2&in uv0 = vec2(0, 0), const vec2&in uv1 = vec2(1, 1))
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void ImageSizedAs(Texture* Tex, const Math::vec2& size, const Math::vec2& uv0, const Math::vec2& uv1)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (!Tex) return;
+			Image(Tex->Get(), ImVec2(size.x, size.y), ImVec2(uv0.x, uv0.y), ImVec2(uv1.x, uv1.y));
+		}
+		UI_EXPORT("void Image(Texture@+ texture, const vec2&in size, const vec2&in uv0 = vec2(0, 0), const vec2&in uv1 = vec2(1, 1))", ImageSizedAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    vec2 GetSize()
+		as      vec2 GetSize()
+		being   method
+		of      Texture
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Math::vec2 TextureGetSize(Texture* Tex)
+		{
+			ImVec2 Size = Tex->GetSize();
+			return { Size.x, Size.y };
+		}
+		GECKO_EXPORT_METHOD(s_Exports, "UI", "Texture", "vec2 GetSize()", asFUNCTION(TextureGetSize), asCALL_CDECL_OBJLAST);
 	}
 
 	// Flags and state
@@ -516,7 +550,7 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool IsItemHovered(int flags = UI::HoveredFlags::None)
-		as      bool IsItemHovered(int flags = 0)
+		as      bool IsItemHovered(int flags = UI::HoveredFlags::None)
 		being   function
 		declare full
 		since   v0.1.1
@@ -527,7 +561,7 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(false);
 			return IsItemHovered(flags);
 		}
-		UI_EXPORT("bool IsItemHovered(int flags = 0)", IsItemHoveredAs);
+		UI_EXPORT("bool IsItemHovered(int flags = UI::HoveredFlags::None)", IsItemHoveredAs);
 
 		/*
 		!CompatMeta
@@ -634,17 +668,30 @@ namespace Gecko::Exports::ImGui
 		with    void Separator()
 		with    void Separator(int flags, float thickness = 1.0f)
 		as      void Separator()
+		as      void Separator(int flags, float thickness = 1.0f)
 		being   function
-		declare partial
-		reason  flags and thickness variant is not implemented
+		declare full
 		since   v0.1.1
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialFn(Separator);
+
+		void SeparatorExAs(int flags, float thickness)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+
+			// Dear ImGui asserts on a separator that's neither horizontal nor vertical
+			if (not (flags & (ImGuiSeparatorFlags_Horizontal | ImGuiSeparatorFlags_Vertical))) flags |= ImGuiSeparatorFlags_Horizontal;
+			SeparatorEx(flags, thickness);
+		}
+		UI_EXPORT("void Separator(int flags, float thickness = 1.0f)", SeparatorExAs);
 	}
 
 	void Registrar(asIScriptEngine* Engine)
 	{
+		// First, since some functions' default arguments use them
+		RegisterEnums(Engine);
+
 		Engine->SetDefaultNamespace("UI");
 		Engine->RegisterObjectType("Texture", sizeof(Texture), asOBJ_REF);
 

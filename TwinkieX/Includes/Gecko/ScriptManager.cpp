@@ -7,6 +7,9 @@
 #include <fstream>
 
 #include "Exports/Global/Global.h"
+#include "Exports/Math/Math.h"
+#include "Exports/Text/ExportText.h"
+#include "Exports/Icons/Icons.h"
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
 #include "Exports/Reflection/Reflection.h"
@@ -83,8 +86,13 @@ namespace Gecko
 		Engine->SetEngineProperty(asEP_PROPERTY_ACCESSOR_MODE, 2);
 		Engine->SetMessageCallback(asFUNCTION(MessageCallback), nullptr, asCALL_CDECL);
 
+		// The math types come first, since the game's classes have members of those types
+		Exports::Math::RegisterTypes(Engine);
 		Exports::Trackmania::Registrar(Engine);
 		Exports::Global::Registrar(Engine);
+		Exports::Math::Registrar(Engine);
+		Exports::Text::Registrar(Engine);
+		Exports::Icons::Registrar(Engine);
 		Exports::ImGui::Registrar(Engine);
 		Exports::Net::Registrar(Engine);
 		Exports::Reflection::Registrar(Engine);
@@ -100,9 +108,6 @@ namespace Gecko
 		Engine->ShutDownAndRelease();
 
 		Exports::Trackmania::Cleanup();
-		// Exports::Global::Cleanup();
-		// Exports::ImGui::Cleanup();
-		// Exports::Reflection::Cleanup();
 	}
 
 	Script* ScriptManager::GetActiveScript()

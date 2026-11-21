@@ -415,6 +415,30 @@ namespace Gecko::Exports::Trackmania
 		case INT:
 		case NATURAL:
 		case REAL:
+		// The math types have the same layout as the game's (see Gecko/Exports/Math/Math.h)
+		case VEC2:
+		case VEC3:
+		case VEC4:
+		case ISO3:
+		case ISO4:
+#ifdef TMCN
+		case INT2:
+		case INT3:
+		case NAT2:
+		case NAT3:
+#endif
+		// MwFastArray<T> has the same layout as the game's arrays
+		case VEC2ARRAY:
+		case VEC3ARRAY:
+		case VEC4ARRAY:
+		case ISO3ARRAY:
+		case ISO4ARRAY:
+#ifdef TMCN
+		case INT2ARRAY:
+		case INT3ARRAY:
+		case NAT2ARRAY:
+		case NAT3ARRAY:
+#endif
 		{
 			Engine->RegisterObjectProperty(
 				Class->GetName().c_str(),

@@ -260,7 +260,7 @@ void TwinkUi::Render()
 #ifdef TMCN
 #pragma warning(pop)
 #endif
-					Font = GetIO().Fonts->AddFontFromFileTTF((char*)UTF8FontPath);
+					Font = AddFont((char*)UTF8FontPath);
 					FontPath = UTF8FontPath;
 					break;
 				}
@@ -275,6 +275,28 @@ void TwinkUi::Render()
 	DiscordMgr->Update();
 }
 
+
+ImFont* TwinkUi::AddFont(const char* Path)
+{
+	ImFont* NewFont = ImGui::GetIO().Fonts->AddFontFromFileTTF(Path);
+	if (NewFont) MergeIcons();
+	return NewFont;
+}
+
+void TwinkUi::MergeIcons()
+{
+	std::filesystem::path IconsPath = DocumentsFolderPath / L"TwinkieX\\Fonts\\ManiaIcons.ttf";
+
+	std::error_code Error;
+	if (not std::filesystem::exists(IconsPath, Error)) return;
+
+	ImFontConfig Config;
+	Config.MergeMode = true;
+	Config.PixelSnapH = true;
+
+	// Dear ImGui opens files as UTF-8, and the Documents folder can have any characters in it
+	ImGui::GetIO().Fonts->AddFontFromFileTTF((const char*)IconsPath.u8string().c_str(), 0.0f, &Config);
+}
 
 __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolderPath)
 {
@@ -413,6 +435,10 @@ void InitImGui(DirectXDevice* Device)
 
 	ImGuiIo.IniFilename = ImGuiIniFilePath.c_str();
 
+	// The default font, with the icons merged into it
+	ImGuiIo.Fonts->AddFontDefault();
+	TwinkUiState::UiMgr->MergeIcons();
+
 	ImGui_ImplWin32_Init(TwinkUiState::Window);
 	ImGui_ImplDX9_Init(Device);
 }
@@ -465,7 +491,7 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 
 		if (MustUpdateFont and not TwinkUiState::UiMgr->FontPath.empty())
 		{
-			TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF((char*)TwinkUiState::UiMgr->FontPath.c_str());
+			TwinkUiState::UiMgr->Font = TwinkUiState::UiMgr->AddFont((char*)TwinkUiState::UiMgr->FontPath.c_str());
 		}
 
 		TwinkUiState::UiMgr->Render();
@@ -503,6 +529,10 @@ static long __stdcall hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* 
 void InitImGui(DirectXContext* Context, DirectXDevice* Device)
 {
 	ImGui::CreateContext();
+
+	// The default font, with the icons merged into it
+	ImGui::GetIO().Fonts->AddFontDefault();
+	TwinkUiState::UiMgr->MergeIcons();
 
 	ImGui_ImplWin32_Init(TwinkUiState::Window);
 	ImGui_ImplDX11_Init(Device, Context);
@@ -585,7 +615,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	{
 		if (not TwinkUiState::UiMgr->FontPath.empty())
 		{
-			TwinkUiState::UiMgr->Font = ImGui::GetIO().Fonts->AddFontFromFileTTF((char*)TwinkUiState::UiMgr->FontPath.c_str());
+			TwinkUiState::UiMgr->Font = TwinkUiState::UiMgr->AddFont((char*)TwinkUiState::UiMgr->FontPath.c_str());
 		}
 		TwinkUiState::ImGuiInit = true;
 	}
