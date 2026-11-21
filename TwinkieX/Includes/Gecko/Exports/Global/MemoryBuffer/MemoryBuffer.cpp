@@ -1,18 +1,40 @@
 #include "pch.h"
 #include "MemoryBuffer.h"
 
-MemoryBuffer::MemoryBuffer(const void* Data, uint64_t size)
+MemoryBuffer::MemoryBuffer(const void* data, uint64_t size)
 {
-    uint8_t* NewData = (uint8_t*)malloc(size);
-    memcpy_s(NewData, size, Data, size);
-    this->Data = NewData;
-    Size = size;
+    Resize(size);
+    if (size) memcpy(Data, data, size);
 }
 
 MemoryBuffer::MemoryBuffer(uint64_t size, uint8_t init)
 {
-    uint8_t* NewData = (uint8_t*)malloc(size);
-    memset(NewData, init, size);
+    Resize(size);
+    if (size) memset(Data, init, size);
+}
+
+MemoryBuffer::MemoryBuffer(const MemoryBuffer& Other)
+    : MemoryBuffer(Other.Data, Other.Size)
+{
+    Cursor = Other.Cursor;
+}
+
+MemoryBuffer::MemoryBuffer(MemoryBuffer&& Other) noexcept
+    : Data(Other.Data), Size(Other.Size), Cursor(Other.Cursor)
+{
+    Other.Data = nullptr;
+    Other.Size = 0;
+    Other.Cursor = 0;
+}
+
+MemoryBuffer& MemoryBuffer::operator=(const MemoryBuffer& Other)
+{
+    if (this == &Other) return *this;
+
+    Resize(Other.Size);
+    if (Size) memcpy(Data, Other.Data, Size);
+    Cursor = Other.Cursor;
+    return *this;
 }
 
 MemoryBuffer::~MemoryBuffer()
@@ -30,19 +52,27 @@ void MemoryBuffer::RemoveRef()
     if (!--RefCount) delete this;
 }
 
+// New bytes are zeroed
 void MemoryBuffer::Resize(uint64_t size)
 {
-    uint8_t* OldData = Data;
-    uint8_t* NewData = (uint8_t*)malloc(size);
+    if (size == Size) return;
+    if (size > SIZE_MAX) return;
 
-    memcpy_s(NewData, size, OldData, Size);
+    if (size == 0)
+    {
+        free(Data);
+        Data = nullptr;
+    }
+    else
+    {
+        uint8_t* NewData = (uint8_t*)realloc(Data, size);
+        if (!NewData) return;
+        if (size > Size) memset(NewData + Size, 0, size - Size);
+        Data = NewData;
+    }
 
-    Data = NewData;
     Size = size;
-    // Not a bug, this       vvvv   is correct behaviour
     Cursor = Cursor > Size ? Size : Cursor;
-
-    free(OldData);
 }
 
 uint64_t MemoryBuffer::GetSize() const
@@ -63,13 +93,10 @@ void MemoryBuffer::Seek(uint64_t pos, SeekingDirection dir)
         Cursor = pos;
         break;
     case SeekingDirection::Forwards:
-        Cursor += pos;
+        Cursor = pos > Size - Cursor ? Size : Cursor + pos;
         break;
     case SeekingDirection::Backwards:
-        if (pos <= Cursor)
-            Cursor -= pos;
-        else
-            Cursor = 0;
+        Cursor = pos <= Cursor ? Cursor - pos : 0;
         break;
     }
 
@@ -78,18 +105,31 @@ void MemoryBuffer::Seek(uint64_t pos, SeekingDirection dir)
 
 bool MemoryBuffer::AtEnd() const
 {
-    return Size ? Cursor >= Size : true;
+    return Cursor >= Size;
 }
 
-template<typename T>
-using MakeP = T*;
-
-#define MemoryBuffer_WriteFn(T) void MemoryBuffer::Write(const T& i) \
-{ \
-    if (sizeof(decltype(i)) > Size - Cursor) return; \
-    *(MakeP<std::remove_cvref_t<decltype(i)>>)(Data + Cursor) = i; \
-    Cursor += sizeof(decltype(i)); \
+uint64_t MemoryBuffer::Remaining() const
+{
+    return Size - Cursor;
 }
+
+bool MemoryBuffer::MakeRoom(uint64_t Count)
+{
+    if (Count <= Remaining()) return true;
+    if (Count > UINT64_MAX - Cursor) return false;
+
+    Resize(Cursor + Count);
+    return Count <= Remaining();
+}
+
+void MemoryBuffer::WriteBytes(const void* Bytes, uint64_t Count)
+{
+    if (Count == 0 || !MakeRoom(Count)) return;
+    memcpy(Data + Cursor, Bytes, Count);
+    Cursor += Count;
+}
+
+#define MemoryBuffer_WriteFn(T) void MemoryBuffer::Write(const T& i) { WriteBytes(&i, sizeof(T)); }
 
 MemoryBuffer_WriteFn(uint8_t);
 MemoryBuffer_WriteFn(uint16_t);
@@ -104,67 +144,56 @@ MemoryBuffer_WriteFn(double);
 
 void MemoryBuffer::Write(const std::u8string& str)
 {
-    if (str.size() > Size - Cursor) return;
-    memcpy_s(Data + Cursor, Size - Cursor, str.data(), str.size());
+    WriteBytes(str.data(), str.size());
 }
 
+// Copies from the start of buf
 void MemoryBuffer::Write(const MemoryBuffer& buf, uint64_t size)
 {
-    if (size > Size - Cursor) return;
-    memcpy_s(Data + Cursor, Size - Cursor, buf.Data, size);
+    if (size > buf.Size) size = buf.Size;
+
+    // buf can be this buffer, which growing would move
+    std::vector<uint8_t> Bytes(buf.Data, buf.Data + size);
+    WriteBytes(Bytes.data(), Bytes.size());
 }
 
-// TODO: Rewrite.
+static const char* Base64Alphabet(bool url)
+{
+    return url ? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
+               : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+}
+
 void MemoryBuffer::WriteFromBase64(const std::u8string& str, bool url)
 {
-    if (str.empty()) return;
+    int Values[256];
+    std::fill(std::begin(Values), std::end(Values), -1);
+    const char* Alphabet = Base64Alphabet(url);
+    for (int i = 0; i < 64; i++) Values[(unsigned char)Alphabet[i]] = i;
 
-    const char* Alphabet = url ? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_"
-        : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    std::u8string_view Input = str;
+    while (!Input.empty() && Input.back() == '=') Input.remove_suffix(1);
+    if (Input.size() % 4 == 1 || str.size() - Input.size() > 2) return;
 
-    auto GetVal = [Alphabet](char8_t c) -> int {
-        if (c == '=') return -2;
-        for (int i = 0; i < 64; ++i) {
-            if (Alphabet[i] == c) return i;
-        }
-        return -1;
-        };
+    std::vector<uint8_t> Bytes;
+    Bytes.reserve(Input.size() * 3 / 4);
 
-    size_t Len = str.size();
-    if (Len % 4 != 0) return;
+    uint32_t Bits = 0;
+    int BitCount = 0;
+    for (char8_t c : Input)
+    {
+        int Value = Values[(unsigned char)c];
+        if (Value < 0) return;
 
-    size_t Padding = 0;
-    if (Len > 0 && str[Len - 1] == '=') Padding++;
-    if (Len > 1 && str[Len - 2] == '=') Padding++;
-
-    uint64_t DecodedSize = (Len / 4) * 3 - Padding;
-    if (DecodedSize > Size - Cursor) return;
-
-    std::vector<uint8_t> Temp;
-    Temp.reserve(DecodedSize);
-
-    for (size_t i = 0; i < Len; i += 4) {
-        int V0 = GetVal(str[i]);
-        int V1 = GetVal(str[i + 1]);
-        int V2 = GetVal(str[i + 2]);
-        int V3 = GetVal(str[i + 3]);
-
-        if (V0 < 0 || V1 < 0 || (V2 < -1) || (V3 < -1)) return;
-
-        uint32_t Triple = (V0 << 18) | (V1 << 12) | ((V2 == -2 ? 0 : V2) << 6) | (V3 == -2 ? 0 : V3);
-
-        Temp.push_back((uint8_t)((Triple >> 16) & 0xFF));
-        if (V2 != -2) {
-            Temp.push_back((uint8_t)((Triple >> 8) & 0xFF));
-        }
-        if (V3 != -2) {
-            Temp.push_back((uint8_t)(Triple & 0xFF));
+        Bits = (Bits << 6) | (uint32_t)Value;
+        BitCount += 6;
+        if (BitCount >= 8)
+        {
+            BitCount -= 8;
+            Bytes.push_back((uint8_t)(Bits >> BitCount));
         }
     }
 
-    if (Temp.size() != DecodedSize) return;
-    memcpy_s(Data + Cursor, Size - Cursor, Temp.data(), DecodedSize);
-    Cursor += DecodedSize;
+    WriteBytes(Bytes.data(), Bytes.size());
 }
 
 static int HexCharToInt(char8_t c)
@@ -179,27 +208,26 @@ void MemoryBuffer::WriteFromHex(const std::u8string& str)
 {
     if (str.size() % 2 != 0) return;
 
-    uint64_t ByteCount = str.size() / 2;
-    if (ByteCount > Size - Cursor) return;
-
-    for (size_t i = 0; i < str.size(); ++i)
-    {
-        if (HexCharToInt(str[i]) == -1) return;
-    }
-
+    std::vector<uint8_t> Bytes;
+    Bytes.reserve(str.size() / 2);
     for (size_t i = 0; i < str.size(); i += 2)
     {
         int High = HexCharToInt(str[i]);
         int Low = HexCharToInt(str[i + 1]);
-        Data[Cursor++] = (uint8_t)((High << 4) | Low);
+        if (High < 0 || Low < 0) return;
+        Bytes.push_back((uint8_t)((High << 4) | Low));
     }
+
+    WriteBytes(Bytes.data(), Bytes.size());
 }
 
 #define MemoryBuffer_ReadFn(T, Name) T MemoryBuffer::Read##Name() \
 { \
-    if (sizeof(T) > Size - Cursor) return T{};\
+    T Value{}; \
+    if (sizeof(T) > Remaining()) return Value; \
+    memcpy(&Value, Data + Cursor, sizeof(T)); \
     Cursor += sizeof(T); \
-    return *(T*)(Data + Cursor); \
+    return Value; \
 }
 
 MemoryBuffer_ReadFn(uint8_t, UInt8);
@@ -215,36 +243,43 @@ MemoryBuffer_ReadFn(double, Double);
 
 std::u8string MemoryBuffer::ReadString(uint64_t size)
 {
-    return std::u8string((char8_t*)(Data + Cursor), size);
+    if (size > Remaining()) size = Remaining();
+
+    std::u8string Result((const char8_t*)(Data + Cursor), size);
+    Cursor += size;
+    return Result;
 }
 
 MemoryBuffer MemoryBuffer::ReadBuffer(uint64_t size)
 {
-    return MemoryBuffer(Data, size);
+    if (size > Remaining()) size = Remaining();
+
+    MemoryBuffer Result(Data + Cursor, size);
+    Cursor += size;
+    return Result;
 }
 
 std::u8string MemoryBuffer::ReadToBase64(uint64_t size, bool url)
 {
-    if (size > Size - Cursor) size = Size - Cursor;
-    if (size == 0) return {};
+    if (size > Remaining()) size = Remaining();
 
-    const char* Alphabet = url ? "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_" : "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-
+    const char* Alphabet = Base64Alphabet(url);
     std::u8string Result;
-    Result.reserve(((size + 2) / 3) * 4);
+    Result.reserve((size + 2) / 3 * 4);
 
-    uint64_t I = 0;
-    while (I < size) {
-        uint32_t OctetA = I < size ? Data[Cursor + I++] : 0;
-        uint32_t OctetB = I < size ? Data[Cursor + I++] : 0;
-        uint32_t OctetC = I < size ? Data[Cursor + I++] : 0;
+    for (uint64_t i = 0; i < size; i += 3)
+    {
+        uint64_t Count = size - i < 3 ? size - i : 3;
+        uint32_t Triple = 0;
+        for (uint64_t b = 0; b < 3; b++)
+        {
+            Triple = (Triple << 8) | (b < Count ? Data[Cursor + i + b] : 0);
+        }
 
-        uint32_t Triple = (OctetA << 16) + (OctetB << 8) + OctetC;
-
-        Result.push_back(Alphabet[(Triple >> 18) & 0x3F]);
-        Result.push_back(Alphabet[(Triple >> 12) & 0x3F]);
-        Result.push_back(I > size + 1 ? '=' : Alphabet[(Triple >> 6) & 0x3F]);
-        Result.push_back(I > size ? '=' : Alphabet[Triple & 0x3F]);
+        for (uint64_t c = 0; c < 4; c++)
+        {
+            Result.push_back(c <= Count ? Alphabet[(Triple >> (18 - 6 * c)) & 0x3F] : '=');
+        }
     }
 
     Cursor += size;
@@ -253,15 +288,15 @@ std::u8string MemoryBuffer::ReadToBase64(uint64_t size, bool url)
 
 std::u8string MemoryBuffer::ReadToHex(uint64_t size, bool upper)
 {
-    if (size > Size - Cursor) size = Size - Cursor;
+    if (size > Remaining()) size = Remaining();
 
     const char* HexDigits = upper ? "0123456789ABCDEF" : "0123456789abcdef";
     std::u8string Result;
     Result.reserve(size * 2);
 
-    for (uint64_t I = 0; I < size; ++I)
+    for (uint64_t i = 0; i < size; i++)
     {
-        uint8_t B = Data[Cursor + I];
+        uint8_t B = Data[Cursor + i];
         Result.push_back(HexDigits[B >> 4]);
         Result.push_back(HexDigits[B & 0x0F]);
     }

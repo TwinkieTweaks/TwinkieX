@@ -25,13 +25,19 @@ class MemoryBuffer
 	void AddRef();
 	void RemoveRef();
 
+	uint64_t Remaining() const;
+	bool MakeRoom(uint64_t Count);
+	void WriteBytes(const void* Bytes, uint64_t Count);
+
 public:
 	MemoryBuffer() = default;
 	~MemoryBuffer();
 	MemoryBuffer(const void* Data, uint64_t Size);
 	MemoryBuffer(uint64_t size, uint8_t init = 0);
 
-	MemoryBuffer& operator=(const MemoryBuffer&) = default;
+	MemoryBuffer(const MemoryBuffer&);
+	MemoryBuffer(MemoryBuffer&&) noexcept;
+	MemoryBuffer& operator=(const MemoryBuffer&);
 
 	void Resize(uint64_t size);
 	uint64_t GetSize() const;

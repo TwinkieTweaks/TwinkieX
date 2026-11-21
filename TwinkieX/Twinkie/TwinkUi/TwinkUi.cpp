@@ -147,8 +147,6 @@ void TwinkUi::Render()
 
 	if (TwinkUiState::RenderUi)
 	{
-		static bool ShowLogs = true;
-
 		if (BeginMainMenuBar())
 		{
 			PushItemFlag(ImGuiItemFlags_AutoClosePopups, false);
@@ -168,6 +166,10 @@ void TwinkUi::Render()
 				if (MenuItem("Settings", "", ShowSettings))
 				{
 					ShowSettings = !ShowSettings;
+				}
+				if (MenuItem("Logs", "", Logger.Visible))
+				{
+					Logger.Visible = !Logger.Visible;
 				}
 				if (BeginMenu("Modules"))
 				{
@@ -215,7 +217,7 @@ void TwinkUi::Render()
 
 	if (ShowSettings)
 	{
-		if (Begin("Settings##Twinkie", &ShowSettings))
+		if (Begin("Settings##Twinkie", &ShowSettings, TwinkUiState::DefaultWindowFlags()))
 		{
 			Veridian::RenderAll("Twinkie");
 		}
@@ -275,6 +277,18 @@ void TwinkUi::Render()
 	DiscordMgr->Update();
 }
 
+
+int TwinkUi::GetDefaultWindowFlags() const
+{
+	int Flags = ImGuiWindowFlags_None;
+	if (not EnableWindowCollapsing) Flags |= ImGuiWindowFlags_NoCollapse;
+	return Flags;
+}
+
+int TwinkUiState::DefaultWindowFlags()
+{
+	return UiMgr ? UiMgr->GetDefaultWindowFlags() : ImGuiWindowFlags_None;
+}
 
 ImFont* TwinkUi::AddFont(const char* Path)
 {

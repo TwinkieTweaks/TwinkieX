@@ -6,6 +6,7 @@
 #include "Font/Font.h"
 #include <Gecko/Exports/Global/MemoryBuffer/MemoryBuffer.h>
 #include <Gecko/Exports/Math/Math.h>
+#include <Twinkie/TwinkUi/TwinkUi.h>
 
 #define Gecko_Exports_ImGui_GuardNonRender(...) if (!Gecko::TheScriptManager->IsExecutingRenderCallback()) /* TODO: Throw an error */ { (void)0; return __VA_ARGS__; } (void)0
 
@@ -354,11 +355,10 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		for     UI
 		with    bool Begin(const string&in title, int flags = UI::GetDefaultWindowFlags())
-		as      bool Begin(const string&in title, int flags)
+		as      bool Begin(const string&in title, int flags = UI::GetDefaultWindowFlags())
 		being   function
-		declare partial
+		declare full
 		since   v0.1.1
-		reason  Flags are not pulled from any function before use.
 		!CompatMeta
 		*/
 		bool BeginAs_NoOpen(std::u8string& title, int flags)
@@ -366,17 +366,16 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(false);
 			return Begin((const char*)title.c_str(), nullptr, flags);
 		}
-		UI_EXPORT("bool Begin(const string&in title, int flags = 0)", BeginAs_NoOpen);
+		UI_EXPORT("bool Begin(const string&in title, int flags = UI::GetDefaultWindowFlags())", BeginAs_NoOpen);
 
 		/*
 		!CompatMeta
 		for     UI
 		with    bool Begin(const string&in title, bool&out open, int flags = UI::GetDefaultWindowFlags())
-		as      bool Begin(const string&in title, bool&out open, int flags)
+		as      bool Begin(const string&in title, bool&out open, int flags = UI::GetDefaultWindowFlags())
 		being   function
-		declare partial
+		declare full
 		since   v0.1.1
-		reason  Flags are not pulled from any function before use.
 		!CompatMeta
 		*/
 		bool BeginAs_Open(std::u8string& title, bool* open, int flags)
@@ -384,7 +383,23 @@ namespace Gecko::Exports::ImGui
 			Gecko_Exports_ImGui_GuardNonRender(false);
 			return Begin((const char*)title.c_str(), open, flags);
 		}
-		UI_EXPORT("bool Begin(const string&in title, bool&out open, int flags = 0)", BeginAs_Open);
+		UI_EXPORT("bool Begin(const string&in title, bool&out open, int flags = UI::GetDefaultWindowFlags())", BeginAs_Open);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    int GetDefaultWindowFlags()
+		as      int GetDefaultWindowFlags()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		int GetDefaultWindowFlagsAs()
+		{
+			return TwinkUiState::DefaultWindowFlags();
+		}
+		UI_EXPORT("int GetDefaultWindowFlags()", GetDefaultWindowFlagsAs);
 
 		/*
 		!CompatMeta

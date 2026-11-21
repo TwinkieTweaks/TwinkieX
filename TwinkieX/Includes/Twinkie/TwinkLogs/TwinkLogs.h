@@ -27,6 +27,9 @@ private:
 	void UpdateLogFileLoc(std::filesystem::path& Loc);
 
 public:
+	// Whether the Logs window is open. The logs are still written to the log file while it's closed.
+	bool Visible = true;
+
 	TwinkLogs();
 	~TwinkLogs();
 

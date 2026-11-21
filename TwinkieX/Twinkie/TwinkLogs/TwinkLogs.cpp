@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Twinkie/TwinkLogs/TwinkLogs.h"
+#include <Twinkie/TwinkUi/TwinkUi.h>
 
 TwinkLogs::TwinkLogs() 
 {
@@ -54,17 +55,24 @@ void TwinkLogs::Render()
 
 	PullFromLoggerts();
 
-	Begin("Logs##Twinkie", nullptr, ImGuiWindowFlags_MenuBar);
+	if (not Visible) return;
 
-	BeginMenuBar();
-
-	if (MenuItem("Clear"))
+	if (not Begin("Logs##Twinkie", &Visible, ImGuiWindowFlags_MenuBar | TwinkUiState::DefaultWindowFlags()))
 	{
-		LogPreview.str("");
-		LogPreview.clear();
+		End();
+		return;
 	}
 
-	EndMenuBar();
+	if (BeginMenuBar())
+	{
+		if (MenuItem("Clear"))
+		{
+			LogPreview.str("");
+			LogPreview.clear();
+		}
+
+		EndMenuBar();
+	}
 
 	auto LastPos = LogPreview.tellg();
 	LogPreview.seekg(0);

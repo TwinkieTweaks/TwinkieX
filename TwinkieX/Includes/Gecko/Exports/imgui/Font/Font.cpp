@@ -101,7 +101,10 @@ ScriptFont* ScriptFont::Load(const std::string& Filename, float Size, std::vecto
 			ZipArchive Archive(Script->ScriptPath);
 			for (auto& File : Archive)
 			{
-				if (File.Filename != Wanted) continue;
+				// Windows PowerShell's zips use '\\' between folders
+				std::u8string Name = File.Filename;
+				std::replace(Name.begin(), Name.end(), u8'\\', u8'/');
+				if (Name != Wanted) continue;
 
 				Data.assign((const uint8_t*)File.Data.data(), (const uint8_t*)File.Data.data() + File.Data.size());
 				Key = (const char*)(Script->ScriptPath.u8string() + u8"|" + Wanted).c_str();

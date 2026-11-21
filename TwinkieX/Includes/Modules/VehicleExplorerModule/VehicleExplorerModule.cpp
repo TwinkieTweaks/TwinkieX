@@ -2,6 +2,7 @@
 #ifdef TMCN
 #include <Modules/VehicleExplorerModule/VehicleExplorerModule.h>
 #include <Modules/ModuleAutoExport.h>
+#include <Twinkie/TwinkUi/TwinkUi.h>
 #include <format>
 
 #define CopyButton(Thing) do { if (SmallButton("Copy")) { TempPtrBuffer = PtrToString(Thing); SetClipboardText(TempPtrBuffer.c_str()); MemAddress = (uint64_t)Thing; } } while (false)
@@ -24,7 +25,8 @@ void VehicleExplorer::Render()
 
 	auto Playground = Twinkie->ParamGet<CMwNod*>(Twinkie->GetApp(), "CurrentPlayground");
 	
-	Begin("VehicleExplorer");
+	// Closing it turns the module off; Twinkie > Modules turns it back on
+	Begin("VehicleExplorer", &Enabled, TwinkUiState::DefaultWindowFlags());
 
 	if (not Playground)
 	{

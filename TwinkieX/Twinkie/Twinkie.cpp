@@ -54,6 +54,12 @@ Twinkie::Twinkie()
 		} 
 	});
 
+	Veridian::Register("Twinkie", "LogsVisible", "Show logs", Veridian::VSettingType::VBool, &UiMgr.Logger.Visible, true);
+
+	Veridian::Register("Overlay", "EnableWindowCollapsing", "Enable window collapsing", Veridian::VSettingType::VBool, &UiMgr.EnableWindowCollapsing);
+	Veridian::Register("Overlay", "EnableWindowDocking", "Enable window docking", Veridian::VSettingType::VBool, &UiMgr.EnableWindowDocking);
+	Veridian::Register("Overlay", "EnableWindowDockingWithShift", "Enable window docking with shift", Veridian::VSettingType::VBool, &UiMgr.EnableWindowDockingWithShift);
+
 	for (IModule*& Module : UiMgr.Modules)
 	{
 		Veridian::Register("Modules", Module->ID, Module->Name, Veridian::VSettingType::VBool, &Module->Enabled);

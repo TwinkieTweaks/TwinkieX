@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "NodExplorerModule.h"
 #include <Modules/ModuleAutoExport.h>
+#include <Twinkie/TwinkUi/TwinkUi.h>
 #include <format>
 
 #define HasRightClickedOnItem() IsMouseClicked(ImGuiMouseButton_Right) and IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)
@@ -841,7 +842,7 @@ void NodExplorerModule::RenderInterface()
 
 	if (!Visible) return;
 
-	Begin("NodExplorer");
+	Begin("NodExplorer", &Visible, TwinkUiState::DefaultWindowFlags());
 
 	BeginTabBar("NodExplorerTabBar");
 
@@ -891,7 +892,7 @@ void NodExplorerModule::RenderInterface()
 
 	if (NodInfoPopup)
 	{
-		Begin("##NodExplorerNodInfoPopup", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+		Begin("##NodExplorerNodInfoPopup", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | TwinkUiState::DefaultWindowFlags());
 
 		if (!IsWindowFocused())
 		{
@@ -928,7 +929,7 @@ void NodExplorerModule::RenderInterface()
 	}
 	else if (MemberInfoPopup)
 	{
-		Begin("##NodExplorerMemberInfoPopup", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize);
+		Begin("##NodExplorerMemberInfoPopup", nullptr, ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | TwinkUiState::DefaultWindowFlags());
 
 		if (!IsWindowFocused())
 		{

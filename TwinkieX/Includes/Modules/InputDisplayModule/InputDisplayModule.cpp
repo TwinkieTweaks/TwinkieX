@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "InputDisplayModule.h"
 #include <Modules/ModuleAutoExport.h>
+#include <Twinkie/TwinkUi/TwinkUi.h>
 
 const char* DashboardStyleNames[] = { "Pad", "Keyboard", "TMViz" };
 
@@ -156,7 +157,8 @@ void InputDisplayModule::Render()
 	InputInfo.Brake = ReadAddr(float, ((uintptr_t)Vehicle) + 0x9C);
 #endif
 
-	int DashboardWindowFlags = ImGuiWindowFlags_NoTitleBar;
+	// No title bar, so no X either: it's closed by turning the module off
+	int DashboardWindowFlags = ImGuiWindowFlags_NoTitleBar | TwinkUiState::DefaultWindowFlags();
 
 	if (StyleName == "TMViz" and ForceTMVizDimensions)
 	{

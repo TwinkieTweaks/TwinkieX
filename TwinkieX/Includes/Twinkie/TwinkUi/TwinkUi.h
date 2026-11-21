@@ -65,6 +65,9 @@ namespace TwinkUiState
 	// The UiMgr
 	extern TwinkUi* UiMgr;
 
+	// The flags every Twinkie and Gecko window starts from, from the Overlay settings
+	int DefaultWindowFlags();
+
 	// Whether the process is exiting, in which case teardown must be skipped
 	extern bool ProcessTerminating;
 
@@ -126,6 +129,13 @@ public:
 
 	// True if the current font is set to be destroyed/removed.
 	bool DestroyCurrentFont = false;
+
+	// Overlay settings for UI::GetDefaultWindowFlags()
+	bool EnableWindowCollapsing = false;
+	bool EnableWindowDocking = false;
+	bool EnableWindowDockingWithShift = false;
+
+	int GetDefaultWindowFlags() const;
 
 	TwinkLogs Logger;
 

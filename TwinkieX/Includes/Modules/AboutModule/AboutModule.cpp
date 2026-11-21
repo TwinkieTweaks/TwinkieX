@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "AboutModule.h"
 #include <Modules/ModuleAutoExport.h>
+#include <Twinkie/TwinkUi/TwinkUi.h>
 
 AboutModule::AboutModule(TwinkTrackmania& Twinkie, ILoggert& Loggert) : IModule{ Twinkie, Loggert, "AboutModule", "About" }
 {
@@ -16,7 +17,7 @@ void AboutModule::RenderInterface()
 
 	if (not AboutWindowVisible) return;
 
-	if (Begin("About", &AboutWindowVisible, ImGuiWindowFlags_AlwaysAutoResize))
+	if (Begin("About", &AboutWindowVisible, ImGuiWindowFlags_AlwaysAutoResize | TwinkUiState::DefaultWindowFlags()))
 	{
 		Image(TwinkieXBanner.Get(), { 480, 180 });
 
