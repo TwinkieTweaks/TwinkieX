@@ -54,8 +54,7 @@ namespace Gecko::Exports::Global
 	with    void trace(const string&in)
 	as      void trace(const string&in)
 	being   function
-	declare partial
-	reason  Did not implement generic yet (where first arg is anything)
+	declare full
 	!CompatMeta
 	*/
 	void trace(std::u8string& Str)
@@ -70,8 +69,7 @@ namespace Gecko::Exports::Global
 	with    void print(const string&in)
 	as      void print(const string&in)
 	being   function
-	declare partial
-	reason  Did not implement generic yet (where first arg is anything)
+	declare full
 	!CompatMeta
 	*/
 	void print(std::u8string& Str)
@@ -86,8 +84,7 @@ namespace Gecko::Exports::Global
 	with    void warn(const string&in)
 	as      void warn(const string&in)
 	being   function
-	declare partial
-	reason  Did not implement generic yet (where first arg is anything)
+	declare full
 	!CompatMeta
 	*/
 	void warn(std::u8string& Str)
@@ -102,8 +99,7 @@ namespace Gecko::Exports::Global
 	with    void error(const string&in)
 	as      void error(const string&in)
 	being   function
-	declare partial
-	reason  Did not implement generic yet (where first arg is anything)
+	declare full
 	!CompatMeta
 	*/
 	void error(std::u8string& Str)
@@ -111,6 +107,163 @@ namespace Gecko::Exports::Global
 		LoggertAngelscript.error((char8_t*)std::format("[{}] {}", (char*)Gecko::TheScriptManager->GetActiveScript()->Id.c_str(), (char*)Str.c_str()).c_str());
 	}
 	GLOBAL_EXPORT("void error(const string &in)", error);
+
+	static bool CallToString(asIScriptEngine* Engine, asIScriptFunction* Method, void* Object, std::string& Out)
+	{
+		asIScriptContext* Ctx = asGetActiveContext();
+		bool Nested = Ctx and Ctx->GetEngine() == Engine and Ctx->PushState() >= 0;
+		if (not Nested) Ctx = Engine->RequestContext();
+		if (not Ctx) return false;
+
+		bool Done = Ctx->Prepare(Method) >= 0 and Ctx->SetObject(Object) >= 0 and Ctx->Execute() == asEXECUTION_FINISHED;
+		if (Done) Out = *(std::string*)Ctx->GetReturnObject();
+
+		if (Nested) Ctx->PopState();
+		else Engine->ReturnContext(Ctx);
+		return Done;
+	}
+
+	static std::string TypeName(asITypeInfo* Type)
+	{
+		std::string Namespace = Type->GetNamespace() ? Type->GetNamespace() : "";
+		return Namespace.empty() ? Type->GetName() : Namespace + "::" + Type->GetName();
+	}
+
+	static std::string ValueToString(asIScriptEngine* Engine, void* Ref, int TypeId)
+	{
+		switch (TypeId)
+		{
+		case asTYPEID_BOOL:   return *(const bool*)Ref ? "true" : "false";
+		case asTYPEID_INT8:   return std::to_string(*(const int8_t*)Ref);
+		case asTYPEID_INT16:  return std::to_string(*(const int16_t*)Ref);
+		case asTYPEID_INT32:  return std::to_string(*(const int32_t*)Ref);
+		case asTYPEID_INT64:  return std::to_string(*(const int64_t*)Ref);
+		case asTYPEID_UINT8:  return std::to_string(*(const uint8_t*)Ref);
+		case asTYPEID_UINT16: return std::to_string(*(const uint16_t*)Ref);
+		case asTYPEID_UINT32: return std::to_string(*(const uint32_t*)Ref);
+		case asTYPEID_UINT64: return std::to_string(*(const uint64_t*)Ref);
+		case asTYPEID_FLOAT:  return std::format("{}", *(const float*)Ref);
+		case asTYPEID_DOUBLE: return std::format("{}", *(const double*)Ref);
+		default: break;
+		}
+
+		asITypeInfo* Type = Engine->GetTypeInfoById(TypeId);
+		if (not Type) return {};
+
+		if (Type->GetFlags() & asOBJ_ENUM)
+		{
+			int Value = *(const int*)Ref;
+			for (asUINT i = 0; i < Type->GetEnumValueCount(); i++)
+			{
+				int EnumValue = 0;
+				const char* Name = Type->GetEnumValueByIndex(i, &EnumValue);
+				if (EnumValue == Value) return Name;
+			}
+			return std::to_string(Value);
+		}
+
+		void* Object = (TypeId & asTYPEID_OBJHANDLE) ? *(void**)Ref : Ref;
+		if (not Object) return "null";
+
+		if (std::strcmp(Type->GetName(), "string") == 0 and not (TypeId & asTYPEID_OBJHANDLE)) return *(const std::string*)Object;
+
+		asIScriptFunction* Method = Type->GetMethodByDecl("string ToString() const");
+		if (not Method) Method = Type->GetMethodByDecl("string ToString()");
+
+		std::string Out;
+		if (Method and CallToString(Engine, Method, Object, Out)) return Out;
+
+		return TypeName(Type);
+	}
+
+	/*
+	!CompatMeta
+	for     Global
+	with    string tostring(const ?&in)
+	as      string tostring(const ?&in)
+	being   function
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	static void tostring(asIScriptGeneric* Gen)
+	{
+		std::string Result = ValueToString(Gen->GetEngine(), Gen->GetArgAddress(0), Gen->GetArgTypeId(0));
+		Gen->SetReturnObject(&Result);
+	}
+	GECKO_EXPORT_FN_EX(s_Exports, "", "string tostring(const ?&in)", asFUNCTION(tostring), asCALL_GENERIC);
+
+	/*
+	!CompatMeta
+	for     Global
+	with    void trace(?&in)
+	as      void trace(?&in)
+	being   function
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	static void traceAny(asIScriptGeneric* Gen)
+	{
+		std::string Message = ValueToString(Gen->GetEngine(), Gen->GetArgAddress(0), Gen->GetArgTypeId(0));
+		std::u8string Str(Message.begin(), Message.end());
+		trace(Str);
+	}
+	GECKO_EXPORT_FN_EX(s_Exports, "", "void trace(?&in)", asFUNCTION(traceAny), asCALL_GENERIC);
+
+	/*
+	!CompatMeta
+	for     Global
+	with    void print(?&in)
+	as      void print(?&in)
+	being   function
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	static void printAny(asIScriptGeneric* Gen)
+	{
+		std::string Message = ValueToString(Gen->GetEngine(), Gen->GetArgAddress(0), Gen->GetArgTypeId(0));
+		std::u8string Str(Message.begin(), Message.end());
+		print(Str);
+	}
+	GECKO_EXPORT_FN_EX(s_Exports, "", "void print(?&in)", asFUNCTION(printAny), asCALL_GENERIC);
+
+	/*
+	!CompatMeta
+	for     Global
+	with    void warn(?&in)
+	as      void warn(?&in)
+	being   function
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	static void warnAny(asIScriptGeneric* Gen)
+	{
+		std::string Message = ValueToString(Gen->GetEngine(), Gen->GetArgAddress(0), Gen->GetArgTypeId(0));
+		std::u8string Str(Message.begin(), Message.end());
+		warn(Str);
+	}
+	GECKO_EXPORT_FN_EX(s_Exports, "", "void warn(?&in)", asFUNCTION(warnAny), asCALL_GENERIC);
+
+	/*
+	!CompatMeta
+	for     Global
+	with    void error(?&in)
+	as      void error(?&in)
+	being   function
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	static void errorAny(asIScriptGeneric* Gen)
+	{
+		std::string Message = ValueToString(Gen->GetEngine(), Gen->GetArgAddress(0), Gen->GetArgTypeId(0));
+		std::u8string Str(Message.begin(), Message.end());
+		error(Str);
+	}
+	GECKO_EXPORT_FN_EX(s_Exports, "", "void error(?&in)", asFUNCTION(errorAny), asCALL_GENERIC);
 
 	static void CopyMemoryBuffer(MemoryBuffer& Dst, const MemoryBuffer& Src)
 	{
