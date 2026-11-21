@@ -508,6 +508,39 @@ void InitImGui(DirectXContext* Context, DirectXDevice* Device)
 	ImGui_ImplDX11_Init(Device, Context);
 }
 
+// Creates the render target view for the swap chain's current back buffer
+static bool CreateMainRenderTargetView(IDXGISwapChain* pSwapChain)
+{
+	ID3D11Texture2D* pBackBuffer = nullptr;
+	if (FAILED(pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer)) or not pBackBuffer) return false;
+
+	// Get the color format from the swap chain's back buffer for use with the render target view
+	D3D11_TEXTURE2D_DESC BackBufferDesc;
+	pBackBuffer->GetDesc(&BackBufferDesc);
+	DXGI_FORMAT BackBufferColorFmt = BackBufferDesc.Format;
+
+	// Remove sRGB from the backbuffer color format, since imgui already uses sRGB
+	if (BackBufferColorFmt == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
+	{
+		BackBufferColorFmt = DXGI_FORMAT_R8G8B8A8_UNORM;
+	}
+	else if (BackBufferColorFmt == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB)
+	{
+		BackBufferColorFmt = DXGI_FORMAT_B8G8R8A8_UNORM;
+	}
+
+	D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
+	RenderTargetViewDesc.Format = BackBufferColorFmt;
+	RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+
+	HRESULT Result = TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
+
+	// Release the buffer in every case: a reference left on it makes every later ResizeBuffers fail
+	pBackBuffer->Release();
+
+	return SUCCEEDED(Result);
+}
+
 HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT Flags)
 {
 	// If we haven't initialized ImGui yet...
@@ -526,40 +559,8 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			// so we can get the window out of it
 			TwinkUiState::Window = sd.OutputWindow;
 
-			// Get the 2D back buffer of the swap chain
-			ID3D11Texture2D* pBackBuffer;
-			pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
-
-			if (not pBackBuffer) return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
-
-			// Get the color format from the swap chain's back buffer for use with the render target view
-			DXGI_FORMAT BackBufferColorFmt;
-			{
-				D3D11_TEXTURE2D_DESC desc;
-				pBackBuffer->GetDesc(&desc);
-				BackBufferColorFmt = desc.Format;
-			}
-
-			// Remove sRGB from the backbuffer color format, since imgui already uses sRGB
-			if (BackBufferColorFmt == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
-			{
-				BackBufferColorFmt = DXGI_FORMAT_R8G8B8A8_UNORM;
-			}
-			else if (BackBufferColorFmt == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB)
-			{
-				BackBufferColorFmt = DXGI_FORMAT_B8G8R8A8_UNORM;
-			}
-
-			// Use the new render target view description with the new color format
-			D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-			RenderTargetViewDesc.Format = BackBufferColorFmt;
-			RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
-			// Create a target view using the buffer we got to render our UI on
-			TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
-
-			// Release the buffer so that the game can use it later
-			pBackBuffer->Release();
+			// Create a target view using the back buffer to render our UI on
+			if (not CreateMainRenderTargetView(pSwapChain)) return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
 
 			// Hook the window process
 			TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
@@ -593,11 +594,15 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 	ImGui::Render();
 
-	// Set the render target for the draw data rendering
-	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::MainRenderTargetView, NULL);
+	// The view is released when the buffers are resized, so make one for the new back buffer
+	if (TwinkUiState::MainRenderTargetView or CreateMainRenderTargetView(pSwapChain))
+	{
+		// Set the render target for the draw data rendering
+		TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::MainRenderTargetView, NULL);
 
-	// Draw from the draw data
-	ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		// Draw from the draw data
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
 
 	if (TwinkUiState::UiMgr->DestroyCurrentFont and TwinkUiState::UiMgr->Font)
 	{
@@ -611,68 +616,22 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
 }
 
-// https://github.com/GHFear/Universal-ImGui-D3D11-Hook-WithResize/blob/8bcad6865e4e579ab841ebe9ff16be09000251c4/DX11HookWithResize_Kiero_ImGui/DX11.h
 HRESULT hkResizeBuffers(IDXGISwapChain* pSwapChain, UINT BufferCount, UINT Width, UINT Height, DXGI_FORMAT NewFormat, UINT SwapChainFlags)
 {
+	// ResizeBuffers fails while anything still references the back buffer, which leaves the game with its old,
+	// smaller buffer. So let go of our view of it first.
 	if (TwinkUiState::MainRenderTargetView)
 	{
-		TwinkUiState::Context->OMSetRenderTargets(0, 0, 0);
+		TwinkUiState::Context->OMSetRenderTargets(0, nullptr, nullptr);
 		TwinkUiState::MainRenderTargetView->Release();
-		TwinkUiState::MainRenderTargetView = nullptr; // Good practice to null it out
+		TwinkUiState::MainRenderTargetView = nullptr;
+
+		// D3D11 destroys released objects lazily, so without a flush the view can still hold the buffer
+		TwinkUiState::Context->Flush();
 	}
 
-	HRESULT oResizeBuffersResult = TwinkUiState::oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
-
-	ID3D11Texture2D* pBackBuffer;
-
-	HRESULT BufferResult = pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&pBackBuffer);
-	if (BufferResult != S_OK or not pBackBuffer)
-	{
-		return oResizeBuffersResult;
-	}
-
-	D3D11_TEXTURE2D_DESC desc;
-	pBackBuffer->GetDesc(&desc);
-	DXGI_FORMAT BackBufferColorFmt = desc.Format;
-
-	if (BackBufferColorFmt == DXGI_FORMAT_R8G8B8A8_UNORM_SRGB)
-	{
-		BackBufferColorFmt = DXGI_FORMAT_R8G8B8A8_UNORM;
-	}
-	else if (BackBufferColorFmt == DXGI_FORMAT_B8G8R8A8_UNORM_SRGB)
-	{
-		BackBufferColorFmt = DXGI_FORMAT_B8G8R8A8_UNORM;
-	}
-
-	D3D11_RENDER_TARGET_VIEW_DESC RenderTargetViewDesc = {};
-	RenderTargetViewDesc.Format = BackBufferColorFmt;
-	RenderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-
-	// Pass our explicit descriptor instead of NULL
-	HRESULT pDeviceRenderTarget = TwinkUiState::Device->CreateRenderTargetView(pBackBuffer, &RenderTargetViewDesc, &TwinkUiState::MainRenderTargetView);
-	if (pDeviceRenderTarget != S_OK)
-	{
-		return oResizeBuffersResult;
-	}
-
-	// Release buffer
-	pBackBuffer->Release();
-
-	// Set Rendertarget
-	TwinkUiState::Context->OMSetRenderTargets(1, &TwinkUiState::MainRenderTargetView, NULL);
-
-	// Set up the viewport.
-	D3D11_VIEWPORT vp = {};
-	vp.Width = (FLOAT)Width;   // Cast to FLOAT to satisfy the struct and avoid warnings
-	vp.Height = (FLOAT)Height;
-	vp.MinDepth = 0.0f;
-	vp.MaxDepth = 1.0f;
-	vp.TopLeftX = 0;
-	vp.TopLeftY = 0;
-	TwinkUiState::Context->RSSetViewports(1, &vp);
-
-	// Return resizeBuffers
-	return oResizeBuffersResult;
+	// The view for the new back buffer is made on the next Present, so the game's state isn't touched here
+	return TwinkUiState::oResizeBuffers(pSwapChain, BufferCount, Width, Height, NewFormat, SwapChainFlags);
 }
 #endif
 
