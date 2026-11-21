@@ -14,6 +14,8 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <algorithm>
+#include <cstring>
 
 // The Trackmania manager class, used by (TwinkTrackmania gTwinkie.TrackmaniaMgr).
 class TwinkTrackmania
@@ -101,8 +103,10 @@ public:
 	// In TMCN: Returns the PROC's result: 0 on success, 2 on invalid arguments, 8 on a script error, or UINT_MAX if the member can't be called.
 	TWINKIEX_API uint32_t CallProc(CMwNod* Nod, CMwMemberInfo* ProcMember, const std::vector<CMwStack::Item>& Args);
 
-	template<typename... TArgs>
-	uint32_t CallProc(CMwNod* Nod, const char* Name, TArgs&&... Args);
+	// Calls a PROC by name. Its first OUT parameter isn't passed: the PROC fills it and it's returned as ReturnT.
+	// Returns a default ReturnT if the PROC isn't found, or if its first OUT parameter doesn't have the type of ReturnT.
+	template<typename ReturnT = void, typename... TArgs>
+	ReturnT CallProc(CMwNod* Nod, const char* Name, TArgs&&... Args);
 
 	// Gets the game type.
 	TWINKIEX_API __declspec(noinline) EGame GetGame();
@@ -416,10 +420,42 @@ void* TToStackItem(std::vector<CMwStack::Item>& Args, ProcArgStorage& Storage, T
 	}
 }
 
-template<typename... TArgs>
-uint32_t TwinkTrackmania::CallProc(CMwNod* Nod, const char* Name, TArgs&&... Args)
+// How the first OUT parameter of a PROC is stored before being returned as ReturnT
+template<typename ReturnT>
+struct ProcReturnStorage
 {
-	if (!Nod) return UINT_MAX;
+	using Type = ReturnT;
+};
+
+template<>
+struct ProcReturnStorage<bool>
+{
+	using Type = uint32_t;
+};
+
+template<>
+struct ProcReturnStorage<std::string>
+{
+	using Type = CFastString;
+};
+
+#ifdef TMCN
+template<>
+struct ProcReturnStorage<std::wstring>
+{
+	using Type = CFastStringInt;
+};
+#endif
+
+template<typename ReturnT, typename... TArgs>
+ReturnT TwinkTrackmania::CallProc(CMwNod* Nod, const char* Name, TArgs&&... Args)
+{
+	auto Fail = []() -> ReturnT
+	{
+		if constexpr (not std::is_void_v<ReturnT>) return ReturnT{};
+	};
+
+	if (!Nod) return Fail();
 
 	CMwMemberInfo* MemberResult = nullptr;
 	for (auto ClassInfo = Nod->MwGetClassInfo(); ClassInfo and not MemberResult; ClassInfo = ClassInfo->ParentClassInfo)
@@ -434,13 +470,71 @@ uint32_t TwinkTrackmania::CallProc(CMwNod* Nod, const char* Name, TArgs&&... Arg
 		}
 	}
 
-	if (!MemberResult) return UINT_MAX;
+	if (!MemberResult or MemberResult->MemberType != CMwMemberInfo::PROC) return Fail();
+
+	auto Params = ((CMwMemberInfoProc*)MemberResult)->GetParams();
+	auto OutParam = std::find_if(Params.begin(), Params.end(), [](const CMwMemberInfoProc::Param& Param) { return Param.Flags & CMwMemberInfoProc::PARAM_OUT; });
+
+	CMwStack::ItemType OutType = OutParam != Params.end() ? GetProcParamItemType(OutParam->Type) : CMwStack::ITEM_MEMBER;
+	if constexpr (std::is_void_v<ReturnT>)
+	{
+		if (OutParam != Params.end() and OutType == CMwStack::ITEM_MEMBER) return;
+	}
+	else
+	{
+		using StorageT = typename ProcReturnStorage<ReturnT>::Type;
+
+		constexpr CMwStack::ItemType ReturnType = std::is_same_v<ReturnT, bool> ? CMwStack::ITEM_BOOL : TypeToStackItemType<StorageT>();
+		if (OutParam == Params.end() or OutType != ReturnType) return Fail();
+	}
+
+	// Big enough for any parameter type
+	alignas(16) uint8_t OutValue[64] = {};
 
 	std::vector<CMwStack::Item> MadeUpArgs;
 	ProcArgStorage Storage;
-	MadeUpArgs.reserve(sizeof...(Args));
+	MadeUpArgs.reserve(sizeof...(Args) + 1);
 
 	(TToStackItem(MadeUpArgs, Storage, std::forward<TArgs>(Args)), ...);
 
-	return CallProc(Nod, MemberResult, MadeUpArgs);
+	if (OutParam != Params.end())
+	{
+		size_t OutIdx = (size_t)(OutParam - Params.begin());
+		if (OutIdx > MadeUpArgs.size()) OutIdx = MadeUpArgs.size();
+		MadeUpArgs.insert(MadeUpArgs.begin() + OutIdx, CMwStack::Item{ OutValue, OutType });
+	}
+
+	CallProc(Nod, MemberResult, MadeUpArgs);
+
+	if constexpr (not std::is_void_v<ReturnT>)
+	{
+		using StorageT = typename ProcReturnStorage<ReturnT>::Type;
+		StorageT Result;
+		std::memcpy(&Result, OutValue, sizeof(StorageT));
+
+		if constexpr (std::is_same_v<ReturnT, bool>)
+		{
+			return Result != 0;
+		}
+		else if constexpr (std::is_same_v<ReturnT, std::string>)
+		{
+			if (!Result.CStr) return {};
+#ifdef TM1
+			// TM1 counts the null terminator
+			return std::string(Result.CStr);
+#else
+			return std::string(Result.CStr, Result.Count);
+#endif
+		}
+#ifdef TMCN
+		else if constexpr (std::is_same_v<ReturnT, std::wstring>)
+		{
+			return Result.CStr ? std::wstring(Result.CStr, Result.Count) : std::wstring();
+		}
+#endif
+		else
+		{
+			return Result;
+		}
+	}
 }
