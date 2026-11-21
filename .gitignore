@@ -374,3 +374,4 @@ FodyWeavers.xsd
 # Auto-generated compatiblity docs
 /docs
 /vcpkg_installed/
+/Tools
