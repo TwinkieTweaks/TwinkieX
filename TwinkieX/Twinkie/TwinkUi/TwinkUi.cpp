@@ -315,27 +315,10 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 	// Everything else
 #else
 
-	// Create a creation parameters struct to hold the result
-	D3DDEVICE_CREATION_PARAMETERS D3DCreationParams = {};
-
-	// While (          we could not get the creation parameters successfully          ) or (the parameters have no window,)
-	while ((TwinkUiState::Device->GetCreationParameters(&D3DCreationParams) != D3D_OK) or !D3DCreationParams.hFocusWindow)
-	{
-		// Wait
-		Sleep(1);
-	}
-
-	// Get the window from the creation parameters
-	TwinkUiState::Window = D3DCreationParams.hFocusWindow;
-
-	// Set our new window process
-	TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
-	// TMU already resizes the window by itself
-#ifndef TMU
-	unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
-	WindowStyle |= WS_OVERLAPPEDWINDOW;
-	SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
-#endif
+	// Only patch the vtable here. Calling into the device or changing the window style from this thread
+	// can deadlock the game: d3d9 keeps its lock owned by this thread after a device call, and changing
+	// the style waits for the game thread, which can be stuck in Present waiting for that lock.
+	// The device and window setup happens in hkPresent instead, on the game thread.
 
 	// Before hooking, make sure that our memory is writable
 	Unprotect(VirtualPtr(O_V_PRESENT, (uintptr_t)TwinkUiState::Device), sizeof(uintptr_t));
@@ -440,6 +423,26 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 
 	if (!TwinkUiState::ImGuiInit)
 	{
+		// This runs on the game thread, which owns both the device and the window
+		D3DDEVICE_CREATION_PARAMETERS D3DCreationParams = {};
+		if (pDevice->GetCreationParameters(&D3DCreationParams) != D3D_OK or !D3DCreationParams.hFocusWindow)
+		{
+			// Try again next frame
+			return TwinkUiState::oPresent(pDevice, A, B, C, D);
+		}
+
+		// Get the window from the creation parameters
+		TwinkUiState::Window = D3DCreationParams.hFocusWindow;
+
+		// Set our new window process
+		TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
+		// TMU already resizes the window by itself
+#ifndef TMU
+		unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
+		WindowStyle |= WS_OVERLAPPEDWINDOW;
+		SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
+#endif
+
 		InitImGui(pDevice);
 		TwinkUiState::ImGuiInit = true;
 		MustUpdateFont = true;
