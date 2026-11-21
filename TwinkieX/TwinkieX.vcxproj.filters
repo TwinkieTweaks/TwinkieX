@@ -414,6 +414,9 @@
     <ClInclude Include="Includes\Gecko\Exports\imgui\Texture\Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Gecko\Exports\imgui\Font\Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Includes\stb\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -783,6 +786,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\Exports\imgui\Texture\Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\imgui\Font\Font.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\Exports\Global\MemoryBuffer\MemoryBuffer.cpp">

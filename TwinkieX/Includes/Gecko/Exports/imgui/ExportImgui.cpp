@@ -3,6 +3,7 @@
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include "ExportImgui.h"
 #include "Texture/Texture.h"
+#include "Font/Font.h"
 #include <Gecko/Exports/Global/MemoryBuffer/MemoryBuffer.h>
 #include <Gecko/Exports/Math/Math.h>
 
@@ -80,6 +81,270 @@ namespace Gecko::Exports::ImGui
 			return Tex;
 		}
 		UI_EXPORT("Texture@+ LoadTexture(MemoryBuffer&in buffer)", LoadTextureAs_Buffer);
+	}
+
+	// UI::Font
+	namespace
+	{
+		// Glyph ranges from a script: pairs of first and last characters, optionally ending with 0
+		std::vector<ImWchar> RangesFrom(const CScriptArray* Ranges)
+		{
+			std::vector<ImWchar> Out;
+			if (!Ranges) return Out;
+
+			for (asUINT i = 0; i < Ranges->GetSize(); i++)
+			{
+				uint32_t Char = *(const uint32_t*)Ranges->At(i);
+				if (Char == 0) break;
+				Out.push_back((ImWchar)(std::min)(Char, (uint32_t)IM_UNICODE_CODEPOINT_MAX));
+			}
+			if (Out.size() % 2) Out.pop_back();
+			return Out;
+		}
+
+		std::string ToStr(const std::u8string& Str)
+		{
+			return std::string(Str.begin(), Str.end());
+		}
+
+		/*
+		!CompatMeta
+		for     UI
+		with    float get_FontSize()
+		as      float get_FontSize() const property
+		being   method
+		of      Font
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		float FontGetFontSize(const ScriptFont* Font)
+		{
+			return Font->Size;
+		}
+		GECKO_EXPORT_METHOD(s_Exports, "UI", "Font", "float get_FontSize() const property", asFUNCTION(FontGetFontSize), asCALL_CDECL_OBJLAST);
+
+		/*
+		!CompatMeta
+		for     UI::Font
+		with    UI::Font@ get_Default()
+		with    UI::Font@ get_DefaultBold()
+		with    UI::Font@ get_DefaultMono()
+		as      UI::Font@ get_Default() property
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		GECKO_EXPORT_FN(s_Exports, "UI::Font", "UI::Font@+ get_Default() property", ScriptFont::GetDefault);
+		GECKO_EXPORT_FN(s_Exports, "UI::Font", "UI::Font@+ get_DefaultBold() property", ScriptFont::GetDefaultBold);
+		GECKO_EXPORT_FN(s_Exports, "UI::Font", "UI::Font@+ get_DefaultMono() property", ScriptFont::GetDefaultMono);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    Font@ LoadFont(const string&in filename, float size = 16.0f)
+		as      Font@ LoadFont(const string&in filename, float size = 16.0f)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		ScriptFont* LoadFontAs(std::u8string& Filename, float Size)
+		{
+			return ScriptFont::Load(ToStr(Filename), Size);
+		}
+		UI_EXPORT("Font@+ LoadFont(const string&in filename, float size = 16.0f)", LoadFontAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    Font@ LoadFont(const string&in filename, float size, const uint[]@, bool ba = false, bool bb = false, bool bc = false)
+		as      Font@ LoadFont(const string&in filename, float size, const uint[]@ ranges, bool ba = false, bool bb = false, bool bc = false)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		ScriptFont* LoadFontAs_Ranges(std::u8string& Filename, float Size, CScriptArray* Ranges, bool, bool, bool)
+		{
+			return ScriptFont::Load(ToStr(Filename), Size, RangesFrom(Ranges));
+		}
+		UI_EXPORT("Font@+ LoadFont(const string&in filename, float size, const uint[]@+ ranges, bool ba = false, bool bb = false, bool bc = false)", LoadFontAs_Ranges);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    Font@ LoadFont(const string&in filename, float size, int minChars, int maxChars, bool = false, bool = false, bool = false)
+		as      Font@ LoadFont(const string&in filename, float size, int minChars, int maxChars, bool = false, bool = false, bool = false)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		ScriptFont* LoadFontAs_MinMax(std::u8string& Filename, float Size, int MinChars, int MaxChars, bool, bool, bool)
+		{
+			auto Clamp = [](int Char) { return (ImWchar)(std::max)(1, (std::min)(Char, (int)IM_UNICODE_CODEPOINT_MAX)); };
+			return ScriptFont::Load(ToStr(Filename), Size, { Clamp(MinChars), Clamp(MaxChars) });
+		}
+		UI_EXPORT("Font@+ LoadFont(const string&in filename, float size, int minChars, int maxChars, bool = false, bool = false, bool = false)", LoadFontAs_MinMax);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    Font@ LoadSystemFont(const string&in filename)
+		as      Font@ LoadSystemFont(const string&in filename)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		ScriptFont* LoadSystemFontAs(std::u8string& Filename)
+		{
+			return ScriptFont::LoadSystem(ToStr(Filename));
+		}
+		UI_EXPORT("Font@+ LoadSystemFont(const string&in filename)", LoadSystemFontAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PushFont(Font@ font)
+		as      void PushFont(Font@ font)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void PushFontAs(ScriptFont* Font)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			PushFont(Font ? Font->Get() : nullptr, Font ? Font->Size : 0.0f);
+		}
+		UI_EXPORT("void PushFont(Font@+ font)", PushFontAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PushFont(Font@ font, float size)
+		as      void PushFont(Font@ font, float size)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void PushFontAs_Size(ScriptFont* Font, float Size)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			PushFont(Font ? Font->Get() : nullptr, Size);
+		}
+		UI_EXPORT("void PushFont(Font@+ font, float size)", PushFontAs_Size);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PopFont()
+		as      void PopFont()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialFn(PopFont);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PushFontSize(float size)
+		as      void PushFontSize(float size)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void PushFontSizeAs(float Size)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			PushFont(nullptr, Size);
+		}
+		UI_EXPORT("void PushFontSize(float size)", PushFontSizeAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PopFontSize()
+		as      void PopFontSize()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void PopFontSizeAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			PopFont();
+		}
+		UI_EXPORT("void PopFontSize()", PopFontSizeAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    float GetFontSize()
+		as      float GetFontSize()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(GetFontSize, float);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    int CalcWordWrapPosition(float size, const string&in text, float wrap_width, int text_offset = 0, Font@ font = null)
+		as      int CalcWordWrapPosition(float size, const string&in text, float wrap_width, int text_offset = 0, Font@ font = null)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		int CalcWordWrapPositionAs(float Size, std::u8string& Text, float WrapWidth, int TextOffset, ScriptFont* Font)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(0);
+
+			ImFont* Using = Font ? Font->Get() : nullptr;
+			if (!Using) Using = GetFont();
+
+			const char* Begin = (const char*)Text.c_str();
+			const char* End = Begin + Text.size();
+			const char* From = Begin + std::clamp(TextOffset, 0, (int)Text.size());
+			return (int)(Using->CalcWordWrapPosition(Size, From, End, WrapWidth) - Begin);
+		}
+		UI_EXPORT("int CalcWordWrapPosition(float size, const string&in text, float wrap_width, int text_offset = 0, Font@+ font = null)", CalcWordWrapPositionAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    vec2 MeasureString(const string&in str, Font@ font = null, float size = 0.0f, float wrapWidth = 0.0f)
+		as      vec2 MeasureString(const string&in str, Font@ font = null, float size = 0.0f, float wrapWidth = 0.0f)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Math::vec2 MeasureStringAs(std::u8string& Str, ScriptFont* Font, float Size, float WrapWidth)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(Math::vec2{});
+
+			ImFont* Using = Font ? Font->Get() : nullptr;
+			if (!Using) Using = GetFont();
+			if (Size <= 0.0f) Size = Font ? Font->Size : GetFontSize();
+
+			const char* Begin = (const char*)Str.c_str();
+			ImVec2 Measured = Using->CalcTextSizeA(Size, FLT_MAX, WrapWidth, Begin, Begin + Str.size());
+
+			return { ceilf(Measured.x), Measured.y};
+		}
+		UI_EXPORT("vec2 MeasureString(const string&in str, Font@+ font = null, float size = 0.0f, float wrapWidth = 0.0f)", MeasureStringAs);
 	}
 
 	// Begin/End functions
@@ -720,6 +985,10 @@ namespace Gecko::Exports::ImGui
 		!CompatMeta
 		*/
 		Engine->RegisterObjectBehaviour("Texture", asBEHAVE_RELEASE, "void f()", asMETHOD(Texture, RemoveRef), asCALL_THISCALL);
+
+		Engine->RegisterObjectType("Font", 0, asOBJ_REF);
+		Engine->RegisterObjectBehaviour("Font", asBEHAVE_ADDREF, "void f()", asMETHOD(ScriptFont, AddRef), asCALL_THISCALL);
+		Engine->RegisterObjectBehaviour("Font", asBEHAVE_RELEASE, "void f()", asMETHOD(ScriptFont, RemoveRef), asCALL_THISCALL);
 		Engine->SetDefaultNamespace("");
 
 		RegisterAll(Engine, s_Exports);

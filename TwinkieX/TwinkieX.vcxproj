@@ -1115,6 +1115,7 @@
     <ClInclude Include="Includes\Resources\ResourceLoader.h" />
     <ClInclude Include="Includes\stb\stb_image.h" />
     <ClInclude Include="Includes\Gecko\Exports\imgui\Texture\Texture.h" />
+    <ClInclude Include="Includes\Gecko\Exports\imgui\Font\Font.h" />
     <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
     <ClInclude Include="Includes\TMText\TMText.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
@@ -1427,6 +1428,7 @@
     <ClCompile Include="Includes\Modules\VehicleExplorerModule\VehicleExplorerModule.cpp" />
     <ClCompile Include="Includes\Resources\ResourceLoader.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\imgui\Texture\Texture.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\imgui\Font\Font.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
     <ClCompile Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.cpp" />
