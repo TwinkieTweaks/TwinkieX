@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "Script.h"
 
+#include <ZipArchive/ZipArchive.h>
 #include <Twinkie/TwinkLogs/AngelscriptLoggert/AngelscriptLoggert.h>
 
 namespace Gecko
@@ -85,11 +86,14 @@ namespace Gecko
 		void RenderDevMenu();
 		void BuildAll();
 		void BuildScript(Script&);
-		bool ReloadScript(Script&);
 		void BuildScriptByCallback(Script&, CallbackType);
 		void RunAll(CallbackType CallbackType);
-		bool AddFromFile(const std::filesystem::path& FilePath);
-		bool AddFromSource(std::u8string Source, std::u8string ScriptName, std::filesystem::path Filepath = "");
+		// Adds a script from an .op archive, or from a folder whose .as files (subfolders included) are built as one script
+		void AddFromFile(const std::filesystem::path&, const std::u8string&);
+		void ReloadScript(Script&);
+		// Reads and preprocesses the script's source codes from its ScriptPath
+		void LoadSources(Script&);
+		void Preprocess(std::u8string& Src);
 	};
 
 	extern ScriptManager* TheScriptManager;

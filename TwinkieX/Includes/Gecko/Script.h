@@ -17,7 +17,9 @@ namespace Gecko
 		std::filesystem::path ScriptPath = "";
 		std::u8string Id = u8"";
 		std::u8string Name = u8"";
-		std::u8string SourceCode = u8"";
+		std::vector<std::u8string> SourceCodes;
+		// Section name of each source code, used in compiler messages
+		std::vector<std::u8string> SourceNames;
 		/* TODO: Logging */
 		CtxSet Ctxs{};
 		size_t YieldFor = 0;

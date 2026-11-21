@@ -91,9 +91,10 @@ void Twinkie::Update()
 
 	for (const auto& File : std::filesystem::directory_iterator(DocumentsFolderPath / "TwinkieX\\Scripts"))
 	{
-		if (File.path().extension() != ".as") continue;
+		// .op archives, and folders of .as files
+		if (not File.is_directory() and File.path().extension() != ".op") continue;
 
-		Gecko::TheScriptManager->AddFromFile(File.path());
+		Gecko::TheScriptManager->AddFromFile(File.path(), u8"");
 	}
 
 	for (const auto& File : std::filesystem::directory_iterator(DocumentsFolderPath / "TwinkieX\\Modules"))

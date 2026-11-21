@@ -4,6 +4,8 @@
 #define CCPP_IMPL
 #include <ccpp.h>
 
+#include <fstream>
+
 #include "Exports/Global/Global.h"
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
@@ -156,7 +158,13 @@ namespace Gecko
 		}
 
 		ScriptBuilder.StartNewModule(Engine, (const char*)Script.Name.c_str());
-		ScriptBuilder.AddSectionFromMemory((const char*)Script.Name.c_str(), (const char*)Script.SourceCode.c_str());
+		for (size_t SourceIdx = 0; SourceIdx < Script.SourceCodes.size(); SourceIdx++)
+		{
+			// The builder skips sections whose name was already added, so every source needs its own name
+			const std::u8string& SectionName = SourceIdx < Script.SourceNames.size() ? Script.SourceNames[SourceIdx] : Script.Name;
+			LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)SectionName.c_str())));
+			ScriptBuilder.AddSectionFromMemory((const char*)SectionName.c_str(), (const char*)Script.SourceCodes[SourceIdx].c_str());
+		}
 		ScriptBuilder.BuildModule();
 
 		CallbackType CallbackType = CallbackType::Main;
@@ -258,130 +266,115 @@ namespace Gecko
 		return nullptr;
 	}
 
-	bool ScriptManager::AddFromFile(const std::filesystem::path& FilePath)
+	void ScriptManager::Preprocess(std::u8string& Src)
 	{
-		try
+		ccpp::processor Preprocessor;
+
 		{
-			std::ostringstream SourceCodeStream;
-
-			std::ifstream ScriptFile(FilePath);
-
-			SourceCodeStream << ScriptFile.rdbuf();
-
-			// TODO: Error checking
-			AddFromSource(FromStr(SourceCodeStream.str()), FilePath.filename().u8string(), FilePath);
-		}
-		catch (...)
-		{
-			return false;
-		}
-
-		return true;
-	}
-
-	bool ScriptManager::AddFromSource(std::u8string Source, std::u8string ScriptName, std::filesystem::path FilePath)
-	{
-		try
-		{
-			Script NewScript;
-			NewScript.ScriptPath = FilePath.empty() ? ScriptName : FilePath;
-			NewScript.Name = ScriptName;
-
-			ccpp::processor Preprocessor;
-
-			{
-				Preprocessor.add_define("TWINKIEX");
-				Preprocessor.add_define(TWINKIEX_GAME);
+			Preprocessor.add_define("TWINKIEX");
+			Preprocessor.add_define(TWINKIEX_GAME);
 #ifdef TMCN
-				Preprocessor.add_define("TMNEXT");
+			Preprocessor.add_define("TMNEXT");
 #endif
 #ifdef _DEBUG
-				Preprocessor.add_define("DEVELOPER");
+			Preprocessor.add_define("DEVELOPER");
 #endif
 #ifdef X86
-				Preprocessor.add_define("MANIA32");
+			Preprocessor.add_define("MANIA32");
 #else
-				Preprocessor.add_define("MANIA64");
+			Preprocessor.add_define("MANIA64");
 #endif
-				// TODO: Maybe add a signature toggle?
-				Preprocessor.add_define("SIG_DEVELOPER");
+			// TODO: Maybe add a signature toggle?
+			Preprocessor.add_define("SIG_DEVELOPER");
 
-				auto NtDll = LoadLibrary(L"ntdll.dll");
-				if (NtDll && GetProcAddress(NtDll, "wine_get_version"))
-					Preprocessor.add_define("WINDOWS_WINE");
+			auto NtDll = LoadLibrary(L"ntdll.dll");
+			if (NtDll && GetProcAddress(NtDll, "wine_get_version"))
+				Preprocessor.add_define("WINDOWS_WINE");
 
-				Preprocessor.add_define("WINDOWS");
-			}
-
-			// ...ugh
-			char* Buffer = new char[Source.size() + 1];
-			strcpy_s(Buffer, Source.size() + 1, (const char*)Source.c_str());
-
-			Preprocessor.process(Buffer, Source.size());
-			NewScript.SourceCode = (char8_t*)Buffer;
-
-			delete[] Buffer;
-
-			Scripts.push_back(std::move(NewScript));
-		}
-		catch (...)
-		{
-			return false;
+			Preprocessor.add_define("WINDOWS");
 		}
 
-		return true;
+		// ...ugh
+		char* Buffer = new char[Src.size() + 1];
+		strcpy_s(Buffer, Src.size() + 1, (const char*)Src.c_str());
+
+		Preprocessor.process(Buffer, Src.size());
+		Src = (char8_t*)Buffer;
+
+		delete[] Buffer;
 	}
 
-	bool ScriptManager::ReloadScript(Script& Script)
+	static std::u8string ReadWholeFile(const std::filesystem::path& Path)
 	{
-		try
+		std::ifstream Stream(Path, std::ios::binary);
+		std::string Contents((std::istreambuf_iterator<char>(Stream)), std::istreambuf_iterator<char>());
+		return std::u8string((const char8_t*)Contents.data(), Contents.size());
+	}
+
+	void ScriptManager::LoadSources(Script& Script)
+	{
+		Script.SourceCodes.clear();
+		Script.SourceNames.clear();
+
+		if (std::filesystem::is_directory(Script.ScriptPath))
 		{
-			std::ostringstream SourceCodeStream;
-			std::ifstream ScriptFile(Script.ScriptPath);
-
-			SourceCodeStream << ScriptFile.rdbuf();
-
-			ccpp::processor Preprocessor;
-
+			std::vector<std::filesystem::path> Files;
+			try
 			{
-				Preprocessor.add_define("TWINKIEX");
-				Preprocessor.add_define(TWINKIEX_GAME);
-#ifdef TMCN
-				Preprocessor.add_define("TMNEXT");
-#endif
-#ifdef _DEBUG
-				Preprocessor.add_define("DEVELOPER");
-#endif
-#ifdef X86
-				Preprocessor.add_define("MANIA32");
-#else
-				Preprocessor.add_define("MANIA64");
-#endif
-				// TODO: Maybe add a signature toggle?
-				Preprocessor.add_define("SIG_DEVELOPER");
-
-				auto NtDll = LoadLibrary(L"ntdll.dll");
-				if (NtDll && GetProcAddress(NtDll, "wine_get_version"))
-					Preprocessor.add_define("WINDOWS_WINE");
-
-				Preprocessor.add_define("WINDOWS");
+				for (auto& Entry : std::filesystem::recursive_directory_iterator(Script.ScriptPath, std::filesystem::directory_options::skip_permission_denied))
+				{
+					if (Entry.is_regular_file() and Entry.path().extension() == ".as") Files.push_back(Entry.path());
+				}
+			}
+			catch (const std::filesystem::filesystem_error& Error)
+			{
+				LoggertAngelscript.error(FromStr(std::format("Couldn't read the folder of {}: {}", (const char*)Script.Name.c_str(), Error.what())));
 			}
 
-			// ...ugh
-			char* Buffer = new char[SourceCodeStream.str().size() + 1];
-			strcpy_s(Buffer, SourceCodeStream.str().size() + 1, (const char*)SourceCodeStream.str().c_str());
+			// Sorted so the build doesn't depend on the order the file system lists files in
+			std::sort(Files.begin(), Files.end());
 
-			Preprocessor.process(Buffer, SourceCodeStream.str().size());
-			Script.SourceCode = (char8_t*)Buffer;
+			for (auto& File : Files)
+			{
+				std::u8string SourceCode = ReadWholeFile(File);
+				Preprocess(SourceCode);
 
-			delete[] Buffer;
+				Script.SourceCodes.push_back(SourceCode);
+				Script.SourceNames.push_back(std::filesystem::relative(File, Script.ScriptPath).generic_u8string());
+			}
+			return;
 		}
-		catch (...)
+
+		ZipArchive Archive(Script.ScriptPath);
+
+		for (auto& File : Archive)
 		{
-			return false;
-		}
+			// Archives also contain files like info.toml
+			if (std::filesystem::path(File.Filename).extension() != ".as") continue;
 
-		return true;
+			std::u8string SourceCode(File.Data.begin(), File.Data.end());
+			Preprocess(SourceCode);
+
+			Script.SourceCodes.push_back(SourceCode);
+			Script.SourceNames.push_back(File.Filename);
+		}
+	}
+
+	void ScriptManager::AddFromFile(const std::filesystem::path& FilePath, const std::u8string& ScriptName)
+	{
+		Script NewScript;
+		NewScript.ScriptPath = FilePath;
+		NewScript.Name = ScriptName.empty() ? FilePath.u8string() : ScriptName;
+		NewScript.Id = FilePath.filename().u8string();
+
+		LoadSources(NewScript);
+
+		Scripts.push_back(NewScript);
+	}
+
+	void ScriptManager::ReloadScript(Script& Script)
+	{
+		LoadSources(Script);
 	}
 
 	void ScriptManager::RenderDevMenu()
@@ -394,7 +387,7 @@ namespace Gecko
 			{
 				for (auto& Module : Scripts)
 				{
-					if (MenuItem((const char*)Module.Name.c_str()))
+					if (MenuItem((const char*)Module.Id.c_str()))
 					{
 						ReloadScript(Module);
 						BuildScript(Module);

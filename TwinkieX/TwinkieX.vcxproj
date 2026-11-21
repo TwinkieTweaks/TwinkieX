@@ -1135,6 +1135,7 @@
     <ClInclude Include="Includes\Twinkie\Twinkie.h" />
     <ClInclude Include="Includes\Twinkie\TwinkTrackmania\TwinkTrackmania.h" />
     <ClInclude Include="Includes\Resources\resource.h" />
+    <ClInclude Include="Includes\ZipArchive\ZipArchive.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp" />
@@ -1425,6 +1426,7 @@
     <ClCompile Include="Includes\Twinkie\TwinkLogs\CppLoggert\CppLoggert.cpp" />
     <ClCompile Include="Includes\Twinkie\TwinkLogs\ILoggert.cpp" />
     <ClCompile Include="Includes\Twinkie\TwinkLogs\TwinkLoggert\TwinkLoggert.cpp" />
+    <ClCompile Include="Includes\ZipArchive\ZipArchive.cpp" />
     <ClCompile Include="Twinkie\TwinkFilePicker\TwinkFilePicker.cpp" />
     <ClCompile Include="Includes\Utils\Offsets.cpp" />
     <ClCompile Include="Includes\Veridian\Veridian.cpp" />

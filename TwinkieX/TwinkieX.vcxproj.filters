@@ -438,6 +438,9 @@
     <ClInclude Include="Includes\minhook\src\trampoline.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\ZipArchive\ZipArchive.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -780,6 +783,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\minhook\src\trampoline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\ZipArchive\ZipArchive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
