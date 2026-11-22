@@ -311,6 +311,29 @@ namespace Gecko::Exports::Trackmania
 		CMwNod* App = ReadAddr(CMwNod*, (uintptr_t)GetModuleHandleA(NULL) + O_APP);
 		return App;
 	}
+	/*
+	!CompatMeta
+	for     Global
+	with    CGameCtnApp@ GetApp()
+	as      CGameCtnApp@ GetApp()
+	being   function
+	declare full
+	games   TMCN
+	since   v0.1.0
+	!CompatMeta
+	*/
+	/*
+	!CompatMeta
+	for     Global
+	with    CGameCtnApp@ GetApp()
+	as      CGameApp@ GetApp()
+	being   function
+	declare partial
+	reason  These games have no CGameCtnApp, so it returns the app as a CGameApp
+	games   TMU, ESWC, TMSX, TMO, TMS, TM1
+	since   v0.1.0
+	!CompatMeta
+	*/
 #ifdef TMCN
 	GECKO_EXPORT_FN_EX(s_Exports, "", "CGameCtnApp@ GetApp()", asFUNCTION(GetApp), asCALL_STDCALL);
 #else

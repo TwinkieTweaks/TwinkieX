@@ -511,6 +511,7 @@ namespace Gecko::Exports::Nvg
 	/*
 	!CompatMeta
 	for     nvg
+	with    ~Paint()
 	with    Paint()
 	with    Paint(const nvg::Paint&in)
 	being   behavior
@@ -521,6 +522,17 @@ namespace Gecko::Exports::Nvg
 	*/
 	GECKO_EXPORT_BEHAVIOUR(s_Exports, "nvg", "Paint", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(PaintConstruct), asCALL_CDECL_OBJLAST);
 	GECKO_EXPORT_BEHAVIOUR(s_Exports, "nvg", "Paint", asBEHAVE_CONSTRUCT, "void f(const nvg::Paint&in)", asFUNCTION(PaintConstructCopy), asCALL_CDECL_OBJLAST);
+	/*
+	!CompatMeta
+	for     nvg
+	with    nvg::Paint& opAssign(const nvg::Paint&in)
+	as      nvg::Paint& opAssign(const nvg::Paint&in)
+	being   method
+	of      Paint
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
 	GECKO_EXPORT_METHOD(s_Exports, "nvg", "Paint", "nvg::Paint& opAssign(const nvg::Paint&in)", asFUNCTION(PaintAssign), asCALL_CDECL_OBJLAST);
 
 	static void RegisterEnum(asIScriptEngine* Engine, const char* Name, std::initializer_list<std::pair<const char*, int>> Values)
@@ -533,6 +545,16 @@ namespace Gecko::Exports::Nvg
 	{
 		Engine->SetDefaultNamespace("nvg");
 
+		/*
+		!CompatMeta
+		for     nvg
+		with    TextureFlags
+		as      TextureFlags
+		being   enum
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
 		RegisterEnum(Engine, "TextureFlags", {
 			{ "None", 0 },
 			{ "GenerateMipmaps", NVG_IMAGE_GENERATE_MIPMAPS },
@@ -542,6 +564,16 @@ namespace Gecko::Exports::Nvg
 			{ "Premultiplied", NVG_IMAGE_PREMULTIPLIED },
 			{ "Nearest", NVG_IMAGE_NEAREST },
 		});
+		/*
+		!CompatMeta
+		for     nvg
+		with    LineCapType
+		as      LineCapType
+		being   enum
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
 		RegisterEnum(Engine, "LineCapType", {
 			{ "Butt", NVG_BUTT },
 			{ "Round", NVG_ROUND },
@@ -549,10 +581,30 @@ namespace Gecko::Exports::Nvg
 			{ "Bevel", NVG_BEVEL },
 			{ "Miter", NVG_MITER },
 		});
+		/*
+		!CompatMeta
+		for     nvg
+		with    Winding
+		as      Winding
+		being   enum
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
 		RegisterEnum(Engine, "Winding", {
 			{ "CCW", NVG_CCW },
 			{ "CW", NVG_CW },
 		});
+		/*
+		!CompatMeta
+		for     nvg
+		with    Align
+		as      Align
+		being   enum
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
 		RegisterEnum(Engine, "Align", {
 			{ "Left", NVG_ALIGN_LEFT },
 			{ "Center", NVG_ALIGN_CENTER },

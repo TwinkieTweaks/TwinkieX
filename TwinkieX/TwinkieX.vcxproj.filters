@@ -366,6 +366,9 @@
     <ClInclude Include="Includes\Gecko\Awaitable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Gecko\Exports\Deleted.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Includes\Gecko\Gecko.h">
       <Filter>Header Files</Filter>
     </ClInclude>

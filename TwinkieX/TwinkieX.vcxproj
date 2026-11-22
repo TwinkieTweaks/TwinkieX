@@ -1074,6 +1074,7 @@
     <ClInclude Include="Includes\DiscordGameSDK\voice_manager.h" />
     <ClInclude Include="Includes\Gecko\CtxSet.h" />
     <ClInclude Include="Includes\Gecko\Awaitable.h" />
+    <ClInclude Include="Includes\Gecko\Exports\Deleted.h" />
     <ClInclude Include="Includes\Gecko\Exports\GeckoAutoExport.h" />
     <ClInclude Include="Includes\Gecko\Exports\Global\Global.h" />
     <ClInclude Include="Includes\Gecko\Exports\Math\Math.h" />

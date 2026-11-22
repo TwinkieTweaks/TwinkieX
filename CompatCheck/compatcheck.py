@@ -108,18 +108,10 @@ class CompatInfo:
     def __eq__(self, other: object):
         if not isinstance(other, CompatInfo):
             return NotImplemented
-        return self.namespace == other.namespace or \
-            self.impl == other.impl or \
-            self.being == other.being or \
-            self.of == other.of
+        return self.file == other.file and self.line == other.line
 
     def __hash__(self) -> int:
-        return hash((
-                self.namespace,
-                self.impl,
-                self.being,
-                self.of
-            ))
+        return hash((self.file, self.line))
 
     def __repr__(self):
         return f'{{"{self.file}", line {self.line}, {self.decl.value}}}'
@@ -220,37 +212,58 @@ def do():
         for i, c in enumerate(core_contents["classes"]):
             class_name_to_idx[c["name"]] = i
 
+        class_by_key: dict[tuple[str, str], int] = {}
+        for i, c in enumerate(core_contents["classes"]):
+            class_by_key[(c.get("ns") or "Global", c["name"])] = i
+
+        def class_index(info: CompatInfo):
+            if (info.namespace, info.of) in class_by_key:
+                return class_by_key[(info.namespace, info.of)]
+            return class_name_to_idx.get(info.of)
+
+        def member_decl(being: str, thing: dict):
+            if being == "behavior":
+                return thing["func"]["decl"]
+            if being == "prop":
+                return thing["typedecl"] + " " + thing["name"]
+            return thing["decl"]
+
+        class_beings = ["method", "behavior", "prop"]
+        scope: set = set()
+        matched: set = set()
+
+        def count(key, info: CompatInfo):
+            info.matched = True
+            if key not in matched:
+                matched.add(key)
+                matches[info.decl] += 1
+
         for being_key in infos_by_being:
-            is_of_class = being_key in ["method", "behavior", "prop"]
+            if being_key in class_beings:
+                continue
             being = being_key if being_key != "global" else "prop"
-
-            if not is_of_class:
-                key = pluralize(being)
-                contents = core_contents[key]
-
-                for thing in contents:
-                    for info in infos_by_being[being_key]:
-                        if thing["decl" if being not in ["enum", "prop"] else "name"] in info.wanted:
-                            matches[info.decl] += 1
-                            matches_being += 1
-
-                            info.matched = True
-            else:
+            for idx, thing in enumerate(core_contents[pluralize(being)]):
+                scope.add((being_key, idx))
+                name = thing["decl" if being not in ["enum", "prop"] else "name"]
                 for info in infos_by_being[being_key]:
-                    if info.of == "" and is_of_class:
-                        raise SyntaxError(f"{info}: {info.being} of what?")
-                    
-                    contents = core_contents["classes"][class_name_to_idx[info.of]][pluralize(being)]
-                    for thing in contents:
-                        against = thing["decl"] if being not in ["prop", "behavior"] else ((thing["typedecl"] + " " + thing["name"]) if being != "behavior" else thing["func"]["decl"])
-                        if against in info.wanted:
-                            matches[info.decl] += 1
-                            matches_being += 1
+                    if info.namespace == (thing.get("ns") or "Global") and name in info.wanted:
+                        count((being_key, idx), info)
 
-                            info.matched = True
+        for being_key in class_beings:
+            for info in infos_by_being[being_key]:
+                if info.of == "":
+                    raise SyntaxError(f"{info}: {info.being} of what?")
+                class_idx = class_index(info)
+                if class_idx is None:
+                    continue
+                for kind in class_beings:
+                    for idx in range(len(core_contents["classes"][class_idx][pluralize(kind)])):
+                        scope.add((kind, class_idx, idx))
+                for idx, thing in enumerate(core_contents["classes"][class_idx][pluralize(being_key)]):
+                    if member_decl(being_key, thing) in info.wanted:
+                        count((being_key, class_idx, idx), info)
 
-            misses += len(contents) - matches_being
-            matches_being = 0
+        misses = len(scope) - len(matched)
 
     for being in infos_by_being:
         for info in infos_by_being[being]:

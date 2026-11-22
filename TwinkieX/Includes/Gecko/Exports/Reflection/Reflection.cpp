@@ -69,7 +69,18 @@ namespace Gecko::Exports::Reflection
 	*/
 	REFLECTION_PROP("MwClassInfo", "const MwClassInfo@ BaseType", asOFFSET(CMwClassInfo, ParentClassInfo));
 
-	REFLECTION_METHOD("MwClassInfo", "string get_Name() property", asMETHOD(CMwClassInfo, GetName), asCALL_THISCALL);
+	/*
+	!CompatMeta
+	for     Reflection
+	with    const string get_Name() const
+	as      string get_Name() const
+	being   method
+	of      MwClassInfo
+	declare full
+	since   v0.2.0
+	!CompatMeta
+	*/
+	REFLECTION_METHOD("MwClassInfo", "string get_Name() const property", asMETHOD(CMwClassInfo, GetName), asCALL_THISCALL);
 #ifdef MANIAPLANET
 	/*
 	!CompatMeta

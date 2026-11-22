@@ -797,6 +797,41 @@ namespace Gecko::Exports::Global
 
 	void RegisterBaseTypes(asIScriptEngine* Engine)
 	{
+		/*
+		!CompatMeta
+		for     Global
+		with    ~string()
+		with    string()
+		with    string(const string&in)
+		being   behavior
+		of      string
+		declare full
+		since   v0.1.0
+		!CompatMeta
+		*/
+		/*
+		!CompatMeta
+		for     Global
+		with    int opCmp(const string&in) const
+		with    uint8& opIndex(uint)
+		with    const uint8& opIndex(uint) const
+		with    string& opAssign(const string&in)
+		with    string& opAddAssign(const string&in)
+		with    string opAdd(const string&in) const
+		with    string opAdd(int64) const
+		with    string opAdd_r(int64) const
+		with    string opAdd(uint64) const
+		with    string opAdd_r(uint64) const
+		with    string opAdd(float) const
+		with    string opAdd_r(float) const
+		with    string opAdd(bool) const
+		with    string opAdd_r(bool) const
+		being   method
+		of      string
+		declare full
+		since   v0.1.0
+		!CompatMeta
+		*/
 		RegisterStdString(Engine);
 		RegisterScriptArray(Engine, true);
 		RegisterCoroutines(Engine);
