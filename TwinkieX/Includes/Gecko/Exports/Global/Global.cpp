@@ -17,16 +17,13 @@ namespace Gecko::Exports::Global
 	with    void yield()
 	as      void yield()
 	being   function
-	declare partial
-	reason  Does not raise error when called in non-main context.
+	declare full
 	since   v0.1.0
 	!CompatMeta
 	*/
 	void yield()
 	{
-		auto Main = TheScriptManager->GetActiveScript()->Ctxs.CtxMain;
-		if (Main && TheScriptManager->ActiveCallbackType == CallbackType::Main) Main->Suspend();
-		else if (TheScriptManager->ActiveCallbackType != CallbackType::Main) (void)0; // TODO: raise an error
+		if (WaitState* Wait = SuspendCurrentContext()) Wait->Frames = 0;
 	}
 	GLOBAL_EXPORT("void yield()", yield);
 
@@ -36,15 +33,14 @@ namespace Gecko::Exports::Global
 	with    void yield(uint frames)
 	as      void yield(uint frames)
 	being   function
-	declare partial
-	reason  Does not raise error when called in non-main context.
+	declare full
 	since   v0.1.0
 	!CompatMeta
 	*/
 	void yieldFor(uint32_t For)
 	{
-		TheScriptManager->GetActiveScript()->YieldFor = For ? For - 1 : 0;
-		if (For) yield();
+		if (!For) return;
+		if (WaitState* Wait = SuspendCurrentContext()) Wait->Frames = For - 1;
 	}
 	GLOBAL_EXPORT("void yield(uint)", yieldFor);
 
@@ -803,6 +799,7 @@ namespace Gecko::Exports::Global
 	{
 		RegisterStdString(Engine);
 		RegisterScriptArray(Engine, true);
+		RegisterCoroutines(Engine);
 	}
 
 	void Registrar(asIScriptEngine* Engine)

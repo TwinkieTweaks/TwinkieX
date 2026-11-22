@@ -1073,6 +1073,7 @@
     <ClInclude Include="Includes\DiscordGameSDK\user_manager.h" />
     <ClInclude Include="Includes\DiscordGameSDK\voice_manager.h" />
     <ClInclude Include="Includes\Gecko\CtxSet.h" />
+    <ClInclude Include="Includes\Gecko\Awaitable.h" />
     <ClInclude Include="Includes\Gecko\Exports\GeckoAutoExport.h" />
     <ClInclude Include="Includes\Gecko\Exports\Global\Global.h" />
     <ClInclude Include="Includes\Gecko\Exports\Math\Math.h" />
@@ -1227,6 +1228,8 @@
     <ClCompile Include="Includes\DiscordGameSDK\user_manager.cpp" />
     <ClCompile Include="Includes\DiscordGameSDK\voice_manager.cpp" />
     <ClCompile Include="Includes\Gecko\CtxSet.cpp" />
+    <ClCompile Include="Includes\Gecko\Awaitable.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\Global\Coroutines.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Global\Global.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Math\Math.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Icons\Icons.cpp" />

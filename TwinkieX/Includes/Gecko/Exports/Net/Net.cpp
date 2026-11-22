@@ -2,8 +2,19 @@
 #include "Net.h"
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include <Gecko/Exports/Global/MemoryBuffer/MemoryBuffer.h>
+#include <Gecko/Awaitable.h>
 #include <fstream>
 #include <filesystem>
+
+class HttpRequestAwaitable final : public Gecko::Awaitable
+{
+	HttpRequest* Request;
+public:
+	HttpRequestAwaitable(HttpRequest* Request) : Request(Request) { Request->AddRef(); }
+	~HttpRequestAwaitable() { Request->RemoveRef(); }
+
+	bool IsRunning() const override { return !Request->Finished(); }
+};
 
 namespace Gecko::Exports::Net
 {
@@ -199,37 +210,42 @@ namespace Gecko::Exports::Net
 	!CompatMeta
 	for     Net
 	with    awaitable@ Start()
-	as      bool Start()
+	as      awaitable@ Start()
 	being   method
 	of      HttpRequest
-	declare partial
+	declare full
 	since   v0.2.0
-	reason  awaitable is not implemented. Returns whether the request could be started.
 	!CompatMeta
 	*/
-	static bool HttpRequest_Start(HttpRequest* Req)
+	static Gecko::Awaitable* HttpRequest_Start(HttpRequest* Req)
 	{
-		return Req->Start();
+		if (!Req->HasStarted()) Req->Start();
+		return new HttpRequestAwaitable(Req);
 	}
-	NET_HTTPREQUEST_METHOD("bool Start()", asFUNCTION(HttpRequest_Start), asCALL_CDECL_OBJLAST);
+	NET_HTTPREQUEST_METHOD("awaitable@ Start()", asFUNCTION(HttpRequest_Start), asCALL_CDECL_OBJLAST);
 
 	/*
 	!CompatMeta
 	for     Net
 	with    awaitable@ StartToFile(const string&in path)
-	as      bool StartToFile(const string&in path)
+	as      awaitable@ StartToFile(const string&in path)
 	being   method
 	of      HttpRequest
-	declare partial
+	declare full
 	since   v0.2.0
-	reason  awaitable is not implemented. Returns whether the request could be started.
 	!CompatMeta
 	*/
-	static bool HttpRequest_StartToFile(const std::string& Path, HttpRequest* Req)
+	static Gecko::Awaitable* HttpRequest_StartToFile(const std::string& Path, HttpRequest* Req)
 	{
-		return Req->StartToFile(FromStr(Path));
+		if (Req->HasStarted())
+		{
+			if (auto Ctx = asGetActiveContext()) Ctx->SetException("The request has already been started");
+			return nullptr;
+		}
+		Req->StartToFile(FromStr(Path));
+		return new HttpRequestAwaitable(Req);
 	}
-	NET_HTTPREQUEST_METHOD("bool StartToFile(const string&in path)", asFUNCTION(HttpRequest_StartToFile), asCALL_CDECL_OBJLAST);
+	NET_HTTPREQUEST_METHOD("awaitable@ StartToFile(const string&in path)", asFUNCTION(HttpRequest_StartToFile), asCALL_CDECL_OBJLAST);
 
 	/*
 	!CompatMeta
@@ -319,12 +335,20 @@ namespace Gecko::Exports::Net
 	as      void Cancel()
 	being   method
 	of      HttpRequest
-	declare partial
+	declare full
 	since   v0.2.0
-	reason  Does not throw an exception when the request has not been started.
 	!CompatMeta
 	*/
-	NET_HTTPREQUEST_METHOD("void Cancel()", asMETHOD(HttpRequest, Cancel), asCALL_THISCALL);
+	static void HttpRequest_Cancel(HttpRequest* Req)
+	{
+		if (!Req->HasStarted())
+		{
+			if (auto Ctx = asGetActiveContext()) Ctx->SetException("The request has not been started");
+			return;
+		}
+		Req->Cancel();
+	}
+	NET_HTTPREQUEST_METHOD("void Cancel()", asFUNCTION(HttpRequest_Cancel), asCALL_CDECL_OBJLAST);
 
 	/*
 	!CompatMeta

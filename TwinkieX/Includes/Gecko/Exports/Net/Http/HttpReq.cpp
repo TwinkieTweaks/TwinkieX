@@ -345,12 +345,21 @@ DWORD WINAPI HttpThread(LPVOID lpParameter)
 
 bool HttpRequest::Start(const std::u8string& pUrl)
 {
+    this->Started = true;
     this->Done = false;
     if (!this->DataOut.empty()) this->DataOut.resize(0);
     if (!pUrl.empty()) this->Url = pUrl;
     if (!(this->RunningThread = CreateThread(NULL, 0, HttpThread, this, 0, NULL)))
+    {
+        this->Done = true;
         return false;
+    }
     return true;
+}
+
+bool HttpRequest::HasStarted() const
+{
+    return Started;
 }
 
 bool HttpRequest::StartToFile(const std::u8string& path)

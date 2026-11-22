@@ -10,6 +10,9 @@ namespace Gecko::Exports::Global
 	// void print(const string&in);
 	void print(std::u8string&);
 
+	WaitState* SuspendCurrentContext();
+	void RegisterCoroutines(asIScriptEngine*);
+
 	void RegisterBaseTypes(asIScriptEngine*);
 
 	// Registers all globals with an engine.

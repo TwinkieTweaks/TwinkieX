@@ -47,10 +47,13 @@ bool MakeRawHttpRequest(
     bool Redirect = true
 );
 
+class HttpRequestAwaitable;
+
 // A non-blocking HTTP/HTTPS request. For a blocking method, use MakeRawHttpRequest.
 class HttpRequest
 {
     bool Done = true;
+    bool Started = false;
     HttpDownUpInfo DownUpInfo;
     std::u8string SaveToFilePath;
     HANDLE RunningThread = NULL;
@@ -62,6 +65,7 @@ class HttpRequest
     friend struct Gecko::Exports::GeckoAutoExport;
     friend void Gecko::Exports::Net::Registrar(asIScriptEngine*);
     friend DWORD WINAPI HttpThread(LPVOID lpParameter);
+    friend class HttpRequestAwaitable;
 public:
     std::u8string Url;
     // Don't change unless you know what you're doing!
@@ -83,6 +87,7 @@ public:
     bool Start(const std::u8string& pUrl = u8"");
     bool StartToFile(const std::u8string& path);
     bool Finished();
+    bool HasStarted() const;
 
     size_t ProgressDownload();
     size_t ProgressDownloadTotal();

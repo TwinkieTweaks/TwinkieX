@@ -82,6 +82,9 @@ namespace Gecko
 		asIScriptContext* GetActiveContext();
 		Script* GetScriptFromCtx(asIScriptContext* Ctx);
 		bool IsExecutingRenderCallback();
+		WaitState* CurrentWaitState();
+		void StopCoroutines(Script&);
+		void RunMainTick(Script&);
 
 		void RenderDevMenu();
 		void BuildAll();

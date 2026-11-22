@@ -363,6 +363,9 @@
     <ClInclude Include="Includes\Gecko\CtxSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Gecko\Awaitable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Includes\Gecko\Gecko.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -798,6 +801,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\CtxSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Awaitable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\Global\Coroutines.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\Gecko.cpp">

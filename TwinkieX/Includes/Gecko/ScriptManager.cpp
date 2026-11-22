@@ -85,6 +85,27 @@ namespace Gecko
 			LoggertAngelscript.error(message);
 	}
 
+	static void LogException(const Script& Script, asIScriptContext* Ctx)
+	{
+		const char* Section = nullptr;
+		int Line = Ctx->GetExceptionLineNumber(nullptr, &Section);
+		asIScriptFunction* Function = Ctx->GetExceptionFunction();
+		LoggertAngelscript.error(FromStr(std::format("[{}] Exception '{}' in {} ({}, line {})", (const char*)Script.Id.c_str(), Ctx->GetExceptionString(), Function ? Function->GetDeclaration() : "?", Section ? Section : "?", Line)));
+	}
+
+	static int ExecuteContext(Script& Script, asIScriptContext* Ctx, [[maybe_unused]] std::chrono::milliseconds Timeout)
+	{
+#ifndef _DEBUG
+		static std::chrono::time_point<std::chrono::system_clock> When;
+		When = std::chrono::system_clock::now() + Timeout;
+
+		Ctx->SetLineCallback(asFUNCTION(ScriptCtxLineCallback), &When, asCALL_CDECL);
+#endif
+		int r = Ctx->Execute();
+		if (r == asEXECUTION_EXCEPTION) LogException(Script, Ctx);
+		return r;
+	}
+
 	ScriptManager::ScriptManager()
 	{
 		Engine->SetEngineProperty(asEP_PROPERTY_ACCESSOR_MODE, 2);
@@ -113,6 +134,7 @@ namespace Gecko
 	{
 		for (auto& Script : Scripts)
 		{
+			StopCoroutines(Script);
 			Script.Ctxs.ReleaseAll();
 		}
 
@@ -168,9 +190,65 @@ namespace Gecko
 		}
 	}
 
+	WaitState* ScriptManager::CurrentWaitState()
+	{
+		asIScriptContext* Ctx = asGetActiveContext();
+		if (!Ctx || Ctx->IsNested() || ActiveCallbackType != CallbackType::Main) return nullptr;
+		if (ActiveScriptIdx < 0 || ActiveScriptIdx >= (intmax_t)Scripts.size()) return nullptr;
+
+		Script& Current = Scripts[ActiveScriptIdx];
+		if (Ctx == Current.Ctxs[(size_t)CallbackType::Main]) return &Current.MainWait;
+		for (Coroutine* Co : Current.Coroutines)
+		{
+			if (Co->Ctx == Ctx) return &Co->Wait;
+		}
+		return nullptr;
+	}
+
+	void ScriptManager::StopCoroutines(Script& Script)
+	{
+		for (Coroutine* Co : Script.Coroutines)
+		{
+			Co->Stop();
+			Co->Release();
+		}
+		Script.Coroutines.clear();
+		Script.MainWait.Clear();
+	}
+
+	void ScriptManager::RunMainTick(Script& Script)
+	{
+		asIScriptContext*& Main = Script.Ctxs[(size_t)CallbackType::Main];
+		if (Main && Script.MainWait.Ready())
+		{
+			if (ExecuteContext(Script, Main, TimeoutDurationMs) != asEXECUTION_SUSPENDED)
+			{
+				Main->Release();
+				Main = nullptr;
+				Script.MainWait.Clear();
+			}
+		}
+
+		for (size_t Idx = 0; Idx < Script.Coroutines.size() && Script.Enabled; Idx++)
+		{
+			Coroutine* Co = Script.Coroutines[Idx];
+			if (!Co->Ctx || !Co->Wait.Ready()) continue;
+			if (ExecuteContext(Script, Co->Ctx, TimeoutDurationMs) != asEXECUTION_SUSPENDED) Co->Stop();
+		}
+
+		std::erase_if(Script.Coroutines, [](Coroutine* Co)
+		{
+			if (Co->Running) return false;
+			Co->Release();
+			return true;
+		});
+	}
+
 	void ScriptManager::BuildScript(Script& Script)
 	{
 		LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)Script.Name.c_str())));
+
+		StopCoroutines(Script);
 
 		if (Engine->GetModule((const char*)Script.Name.c_str()))
 		{
@@ -219,6 +297,13 @@ namespace Gecko
 				continue;
 			}
 
+			if (CallbackType == CallbackType::Main)
+			{
+				RunMainTick(Script);
+				ActiveScriptIdx++;
+				continue;
+			}
+
 			asIScriptContext*& CtxFromCallback = Script.Ctxs[(size_t)CallbackType];
 			if (!CtxFromCallback)
 			{
@@ -226,41 +311,7 @@ namespace Gecko
 				continue;
 			}
 
-			if (CallbackType == CallbackType::Main && Script.YieldFor > 0)
-			{
-				Script.YieldFor--;
-				ActiveScriptIdx++;
-				continue;
-			}
-
-#ifndef _DEBUG
-			static std::chrono::time_point<std::chrono::system_clock> When;
-			When = std::chrono::system_clock::now() + TimeoutDurationMs;
-
-			CtxFromCallback->SetLineCallback(asFUNCTION(ScriptCtxLineCallback), &When, asCALL_CDECL);
-#endif
-
-			int r = CtxFromCallback->Execute();
-			if (r != asEXECUTION_FINISHED)
-			{
-				if (r == asEXECUTION_EXCEPTION)
-				{
-					printf("An exception '%s' occurred. Please correct the code and try again.\n", CtxFromCallback->GetExceptionString());
-				}
-			}
-
-			if (r == asEXECUTION_SUSPENDED)
-			{
-				goto Continue;
-			}
-
-			// Main is only run once. A rebuild is required to re-run it.
-			if (CallbackType == CallbackType::Main)
-			{
-				CtxFromCallback->Release();
-				CtxFromCallback = nullptr;
-			}
-			else
+			if (ExecuteContext(Script, CtxFromCallback, TimeoutDurationMs) != asEXECUTION_SUSPENDED)
 			{
 				auto Module = Engine->GetModule((const char*)Script.Name.c_str());
 				auto CallbackFn = Module ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType]) : nullptr;
@@ -270,7 +321,7 @@ namespace Gecko
 					CtxFromCallback = nullptr;
 				}
 			}
-		Continue:
+
 			ActiveScriptIdx++;
 		}
 		ActiveCallbackType = CallbackType::Main;

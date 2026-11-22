@@ -227,6 +227,7 @@ namespace Gecko::Exports::Math
 	static void Vec4ConstructXYZW(const vec2& XY, const vec2& ZW, vec4* Self) { *Self = { XY.x, XY.y, ZW.x, ZW.y }; }
 	static void Int3ConstructXY(const int2& XY, int32_t Z, int3* Self) { *Self = { XY.x, XY.y, Z }; }
 	static void Nat3ConstructXY(const nat2& XY, uint32_t Z, nat3* Self) { *Self = { XY.x, XY.y, Z }; }
+	static void Nat3ConstructXYOfNat3(const nat3& XY, uint32_t Z, nat3* Self) { *Self = { XY.x, XY.y, Z }; }
 
 	static vec2 Vec3XY(const vec3& Self) { return { Self.x, Self.y }; }
 	static vec2 Vec3YZ(const vec3& Self) { return { Self.y, Self.z }; }
@@ -1121,17 +1122,17 @@ namespace Gecko::Exports::Math
 	!CompatMeta
 	for     Global
 	with    nat3(const nat3&in xy, uint z)
-	as      nat3(const nat2&in xy, uint z)
+	as      nat3(const nat3&in xy, uint z)
 	being   behavior
 	of      nat3
-	declare partial
-	reason  Takes a nat2 for xy, since a nat3 there looks like a mistake
+	declare full
 	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(nat3, uint);
 	MATH_CONSTRUCT("nat3", "void f(uint x, uint y, uint z)", (ConstructFrom<nat3, uint32_t, uint32_t, uint32_t>));
 	MATH_CONSTRUCT("nat3", "void f(const nat2&in xy, uint z)", Nat3ConstructXY);
+	MATH_CONSTRUCT("nat3", "void f(const nat3&in xy, uint z)", Nat3ConstructXYOfNat3);
 	MATH_METHOD("nat3", "nat2 get_xy() const property", Nat3XY);
 
 	/*

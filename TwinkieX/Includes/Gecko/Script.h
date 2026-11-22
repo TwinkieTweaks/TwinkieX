@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "CtxSet.h"
+#include "Awaitable.h"
 
 namespace Gecko
 {
@@ -22,7 +23,8 @@ namespace Gecko
 		std::vector<std::u8string> SourceNames;
 		/* TODO: Logging */
 		CtxSet Ctxs{};
-		size_t YieldFor = 0;
+		WaitState MainWait;
+		std::vector<Coroutine*> Coroutines;
 		bool Enabled = true;
 	};
 }
