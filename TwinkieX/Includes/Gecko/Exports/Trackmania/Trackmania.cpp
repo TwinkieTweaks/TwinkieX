@@ -361,6 +361,78 @@ namespace Gecko::Exports::Trackmania
 		}
 	}
 
+	void VirtualSetAs(asIScriptGeneric* Script)
+	{
+		using enum CMwMemberInfo::EType;
+
+		CMwNod* Nod = (CMwNod*)Script->GetObject();
+		CMwMemberInfo* Member = (CMwMemberInfo*)Script->GetAuxiliary();
+
+		uint32_t Bool = 0;
+		void* Value = nullptr;
+		switch (Member->MemberType)
+		{
+		case CLASS:
+			Value = Script->GetArgObject(0);
+			break;
+		case BOOL:
+			Bool = *(bool*)Script->GetAddressOfArg(0) ? 1 : 0;
+			Value = &Bool;
+			break;
+		default:
+			Value = (Script->GetArgTypeId(0) & asTYPEID_MASK_OBJECT) ? Script->GetArgObject(0) : Script->GetAddressOfArg(0);
+			break;
+		}
+
+		CMwStack Stack{};
+		gTwinkie.TrackmaniaMgr.PushToStack(&Stack, Member);
+		Nod->VirtualParam_Set(&Stack, Value);
+	}
+
+	static std::string VirtualSetType(CMwMemberInfo* Member)
+	{
+		using enum CMwMemberInfo::EType;
+
+		switch (Member->MemberType)
+		{
+		case CLASS: return std::format("{}@", ((CMwMemberInfoClass*)Member)->ClassInfo->GetName());
+		case BOOL: return "bool";
+		case INT:
+		case INTRANGE: return "int";
+		case NATURAL:
+		case NATURALRANGE: return "uint";
+		case REAL:
+		case REALRANGE: return "float";
+		case COLOR:
+		case VEC3: return "vec3";
+		case VEC2: return "vec2";
+		case VEC4: return "vec4";
+		case ISO3: return "iso3";
+		case ISO4: return "iso4";
+#ifdef TMCN
+		case INT2: return "int2";
+		case INT3: return "int3";
+		case NAT2: return "nat2";
+		case NAT3: return "nat3";
+#endif
+		default: return {};
+		}
+	}
+
+	static void RegisterVirtualSetter(asIScriptEngine* Engine, CMwClassInfo* Class, CMwMemberInfo* Member)
+	{
+		std::string Type = VirtualSetType(Member);
+		if (Type.empty()) return;
+
+		auto asClass = Engine->GetTypeInfoByName(Class->GetName().c_str());
+		if (!asClass) return;
+
+		std::string Decl = std::format("void set_{}({} value) property", Member->GetName(), Type);
+		if (asClass->GetMethodByDecl(Decl.c_str())) return;
+
+		Engine->RegisterObjectMethod(Class->GetName().c_str(), Decl.c_str(), asFUNCTION(VirtualSetAs), asCALL_GENERIC, Member);
+	}
+
 	void CasterNonPersistent(asIScriptGeneric* Script)
 	{
 		Script->SetReturnAddress(nullptr);
@@ -479,7 +551,7 @@ namespace Gecko::Exports::Trackmania
 		template<typename StrT>
 		static bool Set(CMwNod* Nod, CMwMemberInfo* Member, const ScriptT<StrT>& Value)
 		{
-			if (TwinkTrackmania::IsVirtualSet(Member)) return VirtualSet<StrT>(Nod, Member, Value);
+			if (TwinkTrackmania::IsVirtualSet(Member) || !SetLengthFn<StrT>()) return VirtualSet<StrT>(Nod, Member, Value);
 			return Assign((StrT*)((uintptr_t)Nod + Member->MemberOffset), Value);
 		}
 
@@ -512,11 +584,7 @@ namespace Gecko::Exports::Trackmania
 			}
 
 			std::string SetDecl = std::format("void set_{}(const {}&in) property", Member->GetName(), Traits<StrT>::Name);
-			bool CanSet = TwinkTrackmania::IsVirtualSet(Member) || SetLengthFn<StrT>();
-#ifdef TMCN
-			CanSet = CanSet && (Member->MemberFlags & (CMwMemberInfo::SET | CMwMemberInfo::VIRTUAL_SET));
-#endif
-			if (CanSet && !Type->GetMethodByDecl(SetDecl.c_str()))
+			if (!Type->GetMethodByDecl(SetDecl.c_str()))
 			{
 				Engine->RegisterObjectMethod(Class->GetName().c_str(), SetDecl.c_str(), asFUNCTION(Setter<StrT>), asCALL_GENERIC, Member);
 			}
@@ -525,7 +593,7 @@ namespace Gecko::Exports::Trackmania
 		static void Register(asIScriptEngine* Engine, CMwClassInfo* Class, CMwMemberInfo* Member)
 		{
 #ifndef TM1
-			if (Member->MemberType == CMwMemberInfo::STRINGINT) return Register<CFastStringInt>(Engine, Class, Member);
+			if (Member->MemberType == CMwMemberInfo::STRINGINT) Register<CFastStringInt>(Engine, Class, Member);
 #endif
 			Register<CFastString>(Engine, Class, Member);
 		}
@@ -623,6 +691,8 @@ namespace Gecko::Exports::Trackmania
 	static void RegisterMemberVirtual(asIScriptEngine* Engine, CMwClassInfo* Class, CMwMemberInfo* Member)
 	{
 		using enum CMwMemberInfo::EType;
+
+		RegisterVirtualSetter(Engine, Class, Member);
 
 		if (auto asClass = Engine->GetTypeInfoByName(Class->GetName().c_str()))
 		{

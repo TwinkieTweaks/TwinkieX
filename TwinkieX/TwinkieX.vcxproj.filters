@@ -39,6 +39,9 @@
     <ClInclude Include="Includes\Twinkie\TwinkUi\TwinkUi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Twinkie\TwinkNvg\TwinkNvg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Includes\imgui\imconfig.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -465,6 +468,42 @@
     <ClInclude Include="Includes\Gecko\Exports\Text\ExportText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\D3D9PixelShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\D3D9PixelShaderAA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\D3D9VertexShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\D3D11PixelShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\D3D11PixelShaderAA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\D3D11VertexShader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\fontstash.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\nanovg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\nanovg_d3d9.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\nanovg_d3d11.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\nanovg\src\stb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="dllmain.cpp">
@@ -483,6 +522,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Twinkie\TwinkUi\TwinkUi.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Twinkie\TwinkNvg\TwinkNvg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Utils\Offsets.cpp">
@@ -842,6 +884,15 @@
     <ClCompile Include="Includes\Gecko\Exports\Text\ExportText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Includes\nanovg\src\nanovg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\nanovg\src\nanovg_d3d11.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\nanovg\src\nanovg_d3d9.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Includes\README.md" />
@@ -866,5 +917,14 @@
     <Image Include="..\Media\Banner\TwinkieXBanner1920x720.png">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Includes\nanovg\src\D3D9PixelShader.hlsl" />
+    <None Include="Includes\nanovg\src\D3D9PixelShaderAA.hlsl" />
+    <None Include="Includes\nanovg\src\D3D9VertexShader.hlsl" />
+    <None Include="Includes\nanovg\src\D3D11PixelShader.hlsl" />
+    <None Include="Includes\nanovg\src\D3D11PixelShaderAA.hlsl" />
+    <None Include="Includes\nanovg\src\D3D11PixelShaderNoAA.hlsl" />
+    <None Include="Includes\nanovg\src\D3D11VertexShader.hlsl" />
   </ItemGroup>
 </Project>

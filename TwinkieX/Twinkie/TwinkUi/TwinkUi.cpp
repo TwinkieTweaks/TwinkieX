@@ -18,6 +18,8 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 // Gecko, the angelscript scripting engine
 #include <Gecko/Gecko.h>
 
+#include <Twinkie/TwinkNvg/TwinkNvg.h>
+
 // Namespace
 
 namespace TwinkUiState
@@ -404,8 +406,10 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 					d3dpp.BackBufferHeight = TwinkUiState::WindowHeight;
 
 					ImGui_ImplDX9_InvalidateDeviceObjects();
+					TwinkNvg::Invalidate();
 					TwinkUiState::Device->Reset(&d3dpp);
 					ImGui_ImplDX9_CreateDeviceObjects();
+					TwinkNvg::Init();
 
 					unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
 					WindowStyle |= WS_SIZEBOX | WS_THICKFRAME;
@@ -484,6 +488,7 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 #endif
 
 		InitImGui(pDevice);
+		TwinkNvg::Init();
 		TwinkUiState::ImGuiInit = true;
 		MustUpdateFont = true;
 	}
@@ -503,12 +508,22 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		ImGui_ImplWin32_NewFrame();
 		ImGui::NewFrame();
 
+		IDirect3DSurface9* Target = nullptr;
+		if (SUCCEEDED(pDevice->GetRenderTarget(0, &Target)) and Target)
+		{
+			D3DSURFACE_DESC TargetDesc;
+			if (SUCCEEDED(Target->GetDesc(&TargetDesc))) TwinkNvg::BeginFrame((float)TargetDesc.Width, (float)TargetDesc.Height);
+			Target->Release();
+		}
+
 		if (MustUpdateFont and not TwinkUiState::UiMgr->FontPath.empty())
 		{
 			TwinkUiState::UiMgr->Font = TwinkUiState::UiMgr->AddFont((char*)TwinkUiState::UiMgr->FontPath.c_str());
 		}
 
 		TwinkUiState::UiMgr->Render();
+
+		TwinkNvg::EndFrame();
 
 		ImGui::EndFrame();
 		ImGui::Render();
@@ -534,8 +549,10 @@ static long __stdcall hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* 
 {
 	if (!TwinkUiState::ImGuiInit) return TwinkUiState::oReset(pDevice, pParams);
 	ImGui_ImplDX9_InvalidateDeviceObjects();
+	TwinkNvg::Invalidate();
 	const HRESULT result = TwinkUiState::oReset(pDevice, pParams);
 	ImGui_ImplDX9_CreateDeviceObjects();
+	TwinkNvg::Init();
 	return result;
 }
 #endif
@@ -611,6 +628,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 			// Initialize ImGui
 			InitImGui(TwinkUiState::Context, TwinkUiState::Device);
+			TwinkNvg::Init();
 		}
 
 		// If we couldn't get the device, then fallback to original behavior
@@ -625,6 +643,9 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
+	DXGI_SWAP_CHAIN_DESC SwapChainDesc;
+	if (SUCCEEDED(pSwapChain->GetDesc(&SwapChainDesc))) TwinkNvg::BeginFrame((float)SwapChainDesc.BufferDesc.Width, (float)SwapChainDesc.BufferDesc.Height);
+
 	if (not TwinkUiState::ImGuiInit)
 	{
 		if (not TwinkUiState::UiMgr->FontPath.empty())
@@ -635,6 +656,9 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 	}
 
 	TwinkUiState::UiMgr->Render();
+
+	if (not TwinkUiState::MainRenderTargetView) CreateMainRenderTargetView(pSwapChain);
+	TwinkNvg::EndFrame();
 
 	ImGui::Render();
 
