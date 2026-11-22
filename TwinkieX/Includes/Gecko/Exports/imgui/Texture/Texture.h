@@ -36,4 +36,6 @@ public:
 	bool From(const std::filesystem::path& Path);
 	ImTextureID Get() const;
 	ImVec2 GetSize() const;
+
+	static void ReleasePending();
 };

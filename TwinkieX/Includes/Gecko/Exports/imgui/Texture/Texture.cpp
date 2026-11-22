@@ -115,9 +115,17 @@ Texture::Texture() {}
 Texture::Texture(void* Memory, size_t Size) { From(Memory, Size); }
 Texture::Texture(const std::filesystem::path& Path) { From(Path); }
 
+static std::vector<TextureResource> s_PendingReleases;
+
 Texture::~Texture()
 {
-    InternalTexture->Release();
+    if (InternalTexture) s_PendingReleases.push_back(InternalTexture);
+}
+
+void Texture::ReleasePending()
+{
+    for (TextureResource Resource : s_PendingReleases) Resource->Release();
+    s_PendingReleases.clear();
 }
 
 bool Texture::From(void* Memory, size_t Size)

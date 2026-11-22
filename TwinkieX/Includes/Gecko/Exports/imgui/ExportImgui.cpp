@@ -1,5 +1,6 @@
 
 #include "pch.h"
+#include <unordered_map>
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include "ExportImgui.h"
 #include "Texture/Texture.h"
@@ -1471,22 +1472,39 @@ namespace Gecko::Exports::ImGui
 		}
 		UI_EXPORT("DrawList@ GetWindowDrawList()", GetWindowDrawListAs);
 
+		static int& DL_ClipRectPushes(ImDrawList* Self)
+		{
+			static std::unordered_map<ImDrawList*, int> Pushes;
+			static int Frame = -1;
+			if (Frame != GetFrameCount())
+			{
+				Pushes.clear();
+				Frame = GetFrameCount();
+			}
+			return Pushes[Self];
+		}
+
 		void DL_PushClipRect(const vec4& Rect, bool Intersect, ImDrawList* Self)
 		{
 			Gecko_Exports_ImGui_GuardNonRender();
 			Self->PushClipRect(Min(Rect), Max(Rect), Intersect);
+			DL_ClipRectPushes(Self)++;
 		}
 
 		void DL_PushClipRectFullScreen(ImDrawList* Self)
 		{
 			Gecko_Exports_ImGui_GuardNonRender();
 			Self->PushClipRectFullScreen();
+			DL_ClipRectPushes(Self)++;
 		}
 
 		void DL_PopClipRect(ImDrawList* Self)
 		{
 			Gecko_Exports_ImGui_GuardNonRender();
-			if (Self->_ClipRectStack.Size > 1) Self->PopClipRect();
+			int& Pushes = DL_ClipRectPushes(Self);
+			if (Pushes <= 0 || Self->_ClipRectStack.Size <= 1) return;
+			Self->PopClipRect();
+			Pushes--;
 		}
 
 		void DL_AddRect(const vec4& Rect, const vec4& Color, float Rounding, float Thickness, ImDrawList* Self)

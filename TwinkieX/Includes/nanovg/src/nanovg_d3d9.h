@@ -21,6 +21,9 @@
 
 #include <d3d9.h>
 
+#pragma warning(push)
+#pragma warning(disable : 4018 4100)
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1235,3 +1238,4 @@ void nvgDeleteD3D9(struct NVGcontext* ctx)
 }
 
 #endif /* NANOVG_D3D9_IMPLEMENTATION */
+#pragma warning(pop)

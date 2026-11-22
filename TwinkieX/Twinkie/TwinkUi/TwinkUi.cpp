@@ -19,6 +19,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 #include <Gecko/Gecko.h>
 
 #include <Twinkie/TwinkNvg/TwinkNvg.h>
+#include <Gecko/Exports/imgui/Texture/Texture.h>
 
 // Namespace
 
@@ -528,6 +529,7 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		ImGui::EndFrame();
 		ImGui::Render();
 		ImGui_ImplDX9_RenderDrawData(ImGui::GetDrawData());
+		Texture::ReleasePending();
 
 		if (TwinkUiState::UiMgr->DestroyCurrentFont and TwinkUiState::UiMgr->Font)
 		{
@@ -670,6 +672,7 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 
 		// Draw from the draw data
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+		Texture::ReleasePending();
 	}
 
 	if (TwinkUiState::UiMgr->DestroyCurrentFont and TwinkUiState::UiMgr->Font)
