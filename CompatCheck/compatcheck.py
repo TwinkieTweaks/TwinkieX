@@ -220,23 +220,23 @@ def do():
         for i, c in enumerate(core_contents["classes"]):
             class_name_to_idx[c["name"]] = i
 
-        for being in infos_by_being:
-            is_of_class = being in ["method", "behavior", "prop"]
-            being = being if being != "global" else "prop"
+        for being_key in infos_by_being:
+            is_of_class = being_key in ["method", "behavior", "prop"]
+            being = being_key if being_key != "global" else "prop"
 
             if not is_of_class:
                 key = pluralize(being)
                 contents = core_contents[key]
 
                 for thing in contents:
-                    for info in infos_by_being[being]:
+                    for info in infos_by_being[being_key]:
                         if thing["decl" if being not in ["enum", "prop"] else "name"] in info.wanted:
                             matches[info.decl] += 1
                             matches_being += 1
 
                             info.matched = True
             else:
-                for info in infos_by_being[being]:
+                for info in infos_by_being[being_key]:
                     if info.of == "" and is_of_class:
                         raise SyntaxError(f"{info}: {info.being} of what?")
                     

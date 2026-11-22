@@ -92,6 +92,22 @@ public:
 	template<typename ValueT>
 	bool ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Value, bool IsNodImpersistent = false);
 
+	static bool IsVirtualGet(const CMwMemberInfo* MemberInfo)
+	{
+#ifdef TMCN
+		if (MemberInfo->MemberFlags & CMwMemberInfo::VIRTUAL_GET) return true;
+#endif
+		return MemberInfo->MemberOffset == 0xFFFFFFFFU;
+	}
+
+	static bool IsVirtualSet(const CMwMemberInfo* MemberInfo)
+	{
+#ifdef TMCN
+		if (MemberInfo->MemberFlags & CMwMemberInfo::VIRTUAL_SET) return true;
+#endif
+		return MemberInfo->MemberOffset == 0xFFFFFFFFU;
+	}
+
 	// Pushes member to stack.
 	TWINKIEX_API void PushToStack(CMwStack* Stack, CMwMemberInfo* MemberInfo);
 
@@ -228,7 +244,7 @@ template<typename ReturnT>
 TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::ParamGet(CMwNod* Nod, CMwMemberInfo* MemberInfo, bool IsNodImpersistent)
 {
 	// TODO: Better virtual member detection here and elsewhere
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
+	if (IsVirtualGet(MemberInfo) and not IsNodImpersistent)
 	{
 		return VirtualParamGet<ReturnT>(Nod, MemberInfo);
 	}
@@ -271,7 +287,7 @@ TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::ParamGet(CMwNo
 		return nullptr;
 	}
 
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
+	if (IsVirtualGet(MemberInfo) and not IsNodImpersistent)
 	{
 		if constexpr (std::is_same_v<CMwNod*, ReturnT>)
 		{
@@ -295,7 +311,7 @@ TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::ParamGet(CMwNo
 template<typename ValueT>
 bool TwinkTrackmania::ParamSet(CMwNod* Nod, CMwMemberInfo* MemberInfo, ValueT* Value, bool IsNodImpersistent)
 {
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
+	if (IsVirtualSet(MemberInfo) and not IsNodImpersistent)
 	{
 		return VirtualParamSet(Nod, MemberInfo, Value);
 	}
@@ -327,11 +343,11 @@ bool TwinkTrackmania::ParamSet(CMwNod* Nod, const char* MemberName, ValueT* Valu
 		return false;
 	}
 
-	if (MemberInfo->MemberOffset == 0xFFFFFFFFU and not IsNodImpersistent)
+	if (IsVirtualSet(MemberInfo) and not IsNodImpersistent)
 	{
 		return VirtualParamSet(Nod, MemberInfo, Value);
 	}
-	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo, *Value);
+	WriteAddr(ValueT, (uintptr_t)Nod + MemberInfo->MemberOffset, *Value);
 	return true;
 }
 

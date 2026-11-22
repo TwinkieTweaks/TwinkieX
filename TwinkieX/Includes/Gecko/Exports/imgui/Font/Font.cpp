@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "Font.h"
 #include <Gecko/ScriptManager.h>
+#include <Gecko/ScriptFiles.h>
 #include <Twinkie/TwinkUi/TwinkUi.h>
-#include <ZipArchive/ZipArchive.h>
 #include <fstream>
 #include <map>
 
@@ -53,20 +53,6 @@ static bool ReadFile(const std::filesystem::path& Path, std::vector<uint8_t>& Ou
 	return true;
 }
 
-static Gecko::Script* CallingScript()
-{
-	asIScriptContext* Ctx = asGetActiveContext();
-	asIScriptFunction* Function = Ctx ? Ctx->GetFunction(0) : nullptr;
-	const char* ModuleName = Function ? Function->GetModuleName() : nullptr;
-	if (not ModuleName or not Gecko::TheScriptManager) return nullptr;
-
-	for (auto& Script : Gecko::TheScriptManager->Scripts)
-	{
-		if (Script.Name == (const char8_t*)ModuleName) return &Script;
-	}
-	return nullptr;
-}
-
 static bool ReadFromFontsFolder(const std::filesystem::path& Relative, std::vector<uint8_t>& Data, std::string& Key)
 {
 	if (not TwinkUiState::UiMgr) return false;
@@ -87,31 +73,7 @@ ScriptFont* ScriptFont::Load(const std::string& Filename, float Size, std::vecto
 	std::vector<uint8_t> Data;
 	std::string Key;
 
-	if (Gecko::Script* Script = CallingScript())
-	{
-		std::error_code Error;
-		if (std::filesystem::is_directory(Script->ScriptPath, Error))
-		{
-			std::filesystem::path Path = Script->ScriptPath / Relative;
-			if (ReadFile(Path, Data)) Key = (const char*)Path.u8string().c_str();
-		}
-		else if (std::filesystem::is_regular_file(Script->ScriptPath, Error))
-		{
-			std::u8string Wanted = Relative.generic_u8string();
-			ZipArchive Archive(Script->ScriptPath);
-			for (auto& File : Archive)
-			{
-				// Windows PowerShell's zips use '\\' between folders
-				std::u8string Name = File.Filename;
-				std::replace(Name.begin(), Name.end(), u8'\\', u8'/');
-				if (Name != Wanted) continue;
-
-				Data.assign((const uint8_t*)File.Data.data(), (const uint8_t*)File.Data.data() + File.Data.size());
-				Key = (const char*)(Script->ScriptPath.u8string() + u8"|" + Wanted).c_str();
-				break;
-			}
-		}
-	}
+	Gecko::ReadScriptFile(Relative, Data, &Key);
 
 	if (Key.empty()) ReadFromFontsFolder(Relative, Data, Key);
 

@@ -799,11 +799,14 @@ namespace Gecko::Exports::Global
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("string ReadToHex(uint64 size, bool upper = false)", asMETHOD(MemoryBuffer, ReadToHex), asCALL_THISCALL);
 
-	void Registrar(asIScriptEngine* Engine)
+	void RegisterBaseTypes(asIScriptEngine* Engine)
 	{
 		RegisterStdString(Engine);
 		RegisterScriptArray(Engine, true);
+	}
 
+	void Registrar(asIScriptEngine* Engine)
+	{
 		Engine->RegisterObjectType("MemoryBuffer", sizeof(MemoryBuffer), asOBJ_REF);
 
 		/*

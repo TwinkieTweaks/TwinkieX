@@ -58,6 +58,8 @@ std::string CMwMemberInfo::GetName() const
 		TheMemberName.replace(Pos, 1, "_");
 	for (size_t Pos; (Pos = TheMemberName.find('%')) != std::string::npos;)
 		TheMemberName.replace(Pos, 1, "_");
+	for (size_t Pos; (Pos = TheMemberName.find('-')) != std::string::npos;)
+		TheMemberName.replace(Pos, 1, "_");
 
 	if (TheMemberName.empty()) return std::format("__{:08X}", this->MemberID);
 	else return TheMemberName;

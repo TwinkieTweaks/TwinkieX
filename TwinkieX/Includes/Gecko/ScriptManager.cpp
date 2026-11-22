@@ -9,6 +9,9 @@
 #include "Exports/Global/Global.h"
 #include "Exports/Math/Math.h"
 #include "Exports/Text/ExportText.h"
+#include "Exports/String/ExportString.h"
+#include "Exports/Time/ExportTime.h"
+#include "Exports/IO/ExportIO.h"
 #include "Exports/Icons/Icons.h"
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
@@ -84,12 +87,18 @@ namespace Gecko
 	ScriptManager::ScriptManager()
 	{
 		Engine->SetEngineProperty(asEP_PROPERTY_ACCESSOR_MODE, 2);
+		Engine->SetEngineProperty(asEP_DISALLOW_EMPTY_LIST_ELEMENTS, true);
 		Engine->SetMessageCallback(asFUNCTION(MessageCallback), nullptr, asCALL_CDECL);
 
 		// The math types come first, since the game's classes have members of those types
 		Exports::Math::RegisterTypes(Engine);
+		Exports::Global::RegisterBaseTypes(Engine);
+		Exports::String::RegisterWString(Engine);
 		Exports::Trackmania::Registrar(Engine);
 		Exports::Global::Registrar(Engine);
+		Exports::String::Registrar(Engine);
+		Exports::Time::Registrar(Engine);
+		Exports::IO::Registrar(Engine);
 		Exports::Math::Registrar(Engine);
 		Exports::Text::Registrar(Engine);
 		Exports::Icons::Registrar(Engine);
@@ -122,19 +131,23 @@ namespace Gecko
 
 	void ScriptManager::BuildScriptByCallback(Script& Script, CallbackType CallbackType)
 	{
-		auto Module = Engine->GetModule((const char*)Script.Name.c_str());
-		auto CallbackFn = Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType]);
-		if (!CallbackFn) return;
-
-		auto Ctx = Engine->CreateContext();
-
-		if (Script.Ctxs[(size_t)CallbackType])
+		asIScriptContext*& Ctx = Script.Ctxs[(size_t)CallbackType];
+		if (Ctx)
 		{
-			Script.Ctxs[(size_t)CallbackType]->Release();
+			Ctx->Release();
+			Ctx = nullptr;
 		}
 
-		Script.Ctxs[(size_t)CallbackType] = Ctx;
-		Ctx->Prepare(CallbackFn);
+		auto Module = Engine->GetModule((const char*)Script.Name.c_str());
+		auto CallbackFn = Module ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType]) : nullptr;
+		if (!CallbackFn) return;
+
+		Ctx = Engine->CreateContext();
+		if (Ctx->Prepare(CallbackFn) < 0)
+		{
+			Ctx->Release();
+			Ctx = nullptr;
+		}
 	}
 
 	bool ScriptManager::IsExecutingRenderCallback()
@@ -190,6 +203,10 @@ namespace Gecko
 
 	void ScriptManager::RunAll(CallbackType CallbackType)
 	{
+		static bool Running = false;
+		if (Running) return;
+		Running = true;
+
 		ActiveScriptIdx = 0;
 		ActiveCallbackType = CallbackType;
 		for (auto& Script : Scripts)
@@ -244,14 +261,19 @@ namespace Gecko
 			else
 			{
 				auto Module = Engine->GetModule((const char*)Script.Name.c_str());
-				auto CallbackFn = Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType]);
-				CtxFromCallback->Prepare(CallbackFn);
+				auto CallbackFn = Module ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType]) : nullptr;
+				if (!CallbackFn || CtxFromCallback->Prepare(CallbackFn) < 0)
+				{
+					CtxFromCallback->Release();
+					CtxFromCallback = nullptr;
+				}
 			}
 		Continue:
 			ActiveScriptIdx++;
 		}
 		ActiveCallbackType = CallbackType::Main;
 		ActiveScriptIdx = -1;
+		Running = false;
 	}
 
 	Script* ScriptManager::GetScriptFromCtx(asIScriptContext* Ctx)

@@ -29,7 +29,7 @@ namespace Gecko::Exports::ImGui
 			return Fn(); \
 		} UI_EXPORT(#ReturnType " " #Fn "()", Fn##As)
 
-	// UITexture
+	// UI::Texture
 	namespace
 	{
 		/*
@@ -967,6 +967,708 @@ namespace Gecko::Exports::ImGui
 		UI_EXPORT("void Separator(int flags, float thickness = 1.0f)", SeparatorExAs);
 	}
 
+	namespace
+	{
+		using Math::vec2;
+		using Math::vec4;
+
+		void ScriptError(const char* Message)
+		{
+			if (auto Ctx = asGetActiveContext()) Ctx->SetException(Message);
+		}
+
+		ImVec2 ToIm(const vec2& V) { return { V.x, V.y }; }
+		ImVec4 ToIm(const vec4& V) { return { V.x, V.y, V.z, V.w }; }
+		vec2 FromIm(const ImVec2& V) { return { V.x, V.y }; }
+		vec4 FromIm(const ImVec4& V) { return { V.x, V.y, V.z, V.w }; }
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PushStyleColor(Col idx, const vec4&in col)
+		with    void PopStyleColor(int count = 1)
+		with    vec4 GetStyleColor(Col idx)
+		with    void PushStyleVar(StyleVar var, float value)
+		with    void PushStyleVar(StyleVar var, const vec2&in value)
+		with    void PopStyleVar(int count = 1)
+		with    float GetStyleVarFloat(StyleVar var)
+		with    vec2 GetStyleVarVec2(StyleVar var)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool ValidCol(int Idx) { return Idx >= 0 and Idx < ImGuiCol_COUNT; }
+
+		const ImGuiStyleVarInfo* StyleVarInfo(int Var, int Count)
+		{
+			if (Var < 0 or Var >= ImGuiStyleVar_COUNT) return nullptr;
+			const ImGuiStyleVarInfo* Info = GetStyleVarInfo(Var);
+			return Info->DataType == ImGuiDataType_Float and (int)Info->Count == Count ? Info : nullptr;
+		}
+
+		void PushStyleColorAs(int Idx, const vec4& Col)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (ValidCol(Idx)) PushStyleColor(Idx, ToIm(Col));
+		}
+		UI_EXPORT("void PushStyleColor(Col idx, const vec4&in col)", PushStyleColorAs);
+
+		void PopStyleColorAs(int Count)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Count = (std::min)(Count, GImGui->ColorStack.Size);
+			if (Count > 0) PopStyleColor(Count);
+		}
+		UI_EXPORT("void PopStyleColor(int count = 1)", PopStyleColorAs);
+
+		vec4 GetStyleColorAs(int Idx)
+		{
+			if (not ::ImGui::GetCurrentContext() or not ValidCol(Idx)) return {};
+			return FromIm(GetStyle().Colors[Idx]);
+		}
+		UI_EXPORT("vec4 GetStyleColor(Col idx)", GetStyleColorAs);
+
+		void PushStyleVarFloatAs(int Var, float Value)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (StyleVarInfo(Var, 1)) PushStyleVar(Var, Value);
+			else ScriptError("This style variable isn't a float");
+		}
+		UI_EXPORT("void PushStyleVar(StyleVar var, float value)", PushStyleVarFloatAs);
+
+		void PushStyleVarVec2As(int Var, const vec2& Value)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (StyleVarInfo(Var, 2)) PushStyleVar(Var, ToIm(Value));
+			else ScriptError("This style variable isn't a vec2");
+		}
+		UI_EXPORT("void PushStyleVar(StyleVar var, const vec2&in value)", PushStyleVarVec2As);
+
+		void PopStyleVarAs(int Count)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Count = (std::min)(Count, GImGui->StyleVarStack.Size);
+			if (Count > 0) PopStyleVar(Count);
+		}
+		UI_EXPORT("void PopStyleVar(int count = 1)", PopStyleVarAs);
+
+		float GetStyleVarFloatAs(int Var)
+		{
+			if (not ::ImGui::GetCurrentContext()) return 0.0f;
+			auto Info = StyleVarInfo(Var, 1);
+			return Info ? *(float*)Info->GetVarPtr(&GetStyle()) : 0.0f;
+		}
+		UI_EXPORT("float GetStyleVarFloat(StyleVar var)", GetStyleVarFloatAs);
+
+		vec2 GetStyleVarVec2As(int Var)
+		{
+			if (not ::ImGui::GetCurrentContext()) return {};
+			auto Info = StyleVarInfo(Var, 2);
+			return Info ? FromIm(*(ImVec2*)Info->GetVarPtr(&GetStyle())) : vec2{};
+		}
+		UI_EXPORT("vec2 GetStyleVarVec2(StyleVar var)", GetStyleVarVec2As);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void SetNextWindowSize(int w, int h, Cond cond = UI::Cond::Appearing)
+		with    void SetNextWindowPos(int x, int y, Cond cond = UI::Cond::Appearing, float pivotx = 0.0f, float pivoty = 0.0f)
+		with    void SetNextWindowContentSize(int w, int h = 0)
+		with    void SetNextWindowSizeConstraints(int min_width, int min_height, int max_width, int max_height)
+		with    void SetNextWindowCollapsed(bool collapsed, Cond cond = UI::Cond::None)
+		with    void SetNextWindowBgAlpha(float alpha)
+		with    bool IsWindowAppearing()
+		with    vec2 GetWindowPos()
+		with    void SetWindowPos(const vec2&in size, Cond cond = UI::Cond::None)
+		with    vec2 GetWindowSize()
+		with    void SetWindowSize(const vec2&in size, Cond cond = UI::Cond::None)
+		with    bool IsWindowFocused(int flags = UI::FocusedFlags::None)
+		with    vec2 GetContentRegionAvail()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void SetNextWindowSizeAs(int W, int H, int Cond)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetNextWindowSize(ImVec2((float)W, (float)H), Cond);
+		}
+		UI_EXPORT("void SetNextWindowSize(int w, int h, Cond cond = UI::Cond::Appearing)", SetNextWindowSizeAs);
+
+		void SetNextWindowPosAs(int X, int Y, int Cond, float PivotX, float PivotY)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetNextWindowPos(ImVec2((float)X, (float)Y), Cond, ImVec2(PivotX, PivotY));
+		}
+		UI_EXPORT("void SetNextWindowPos(int x, int y, Cond cond = UI::Cond::Appearing, float pivotx = 0.0f, float pivoty = 0.0f)", SetNextWindowPosAs);
+
+		void SetNextWindowContentSizeAs(int W, int H)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetNextWindowContentSize(ImVec2((float)W, (float)H));
+		}
+		UI_EXPORT("void SetNextWindowContentSize(int w, int h = 0)", SetNextWindowContentSizeAs);
+
+		void SetNextWindowSizeConstraintsAs(int MinW, int MinH, int MaxW, int MaxH)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetNextWindowSizeConstraints(ImVec2((float)MinW, (float)MinH), ImVec2((float)MaxW, (float)MaxH));
+		}
+		UI_EXPORT("void SetNextWindowSizeConstraints(int min_width, int min_height, int max_width, int max_height)", SetNextWindowSizeConstraintsAs);
+
+		void SetNextWindowCollapsedAs(bool Collapsed, int Cond)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetNextWindowCollapsed(Collapsed, Cond);
+		}
+		UI_EXPORT("void SetNextWindowCollapsed(bool collapsed, Cond cond = UI::Cond::None)", SetNextWindowCollapsedAs);
+
+		void SetNextWindowBgAlphaAs(float Alpha)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetNextWindowBgAlpha(Alpha);
+		}
+		UI_EXPORT("void SetNextWindowBgAlpha(float alpha)", SetNextWindowBgAlphaAs);
+
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsWindowAppearing, bool);
+
+		vec2 GetWindowPosAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(vec2{});
+			return FromIm(GetWindowPos());
+		}
+		UI_EXPORT("vec2 GetWindowPos()", GetWindowPosAs);
+
+		void SetWindowPosAs(const vec2& Pos, int Cond)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetWindowPos(ToIm(Pos), Cond);
+		}
+		UI_EXPORT("void SetWindowPos(const vec2&in size, Cond cond = UI::Cond::None)", SetWindowPosAs);
+
+		vec2 GetWindowSizeAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(vec2{});
+			return FromIm(GetWindowSize());
+		}
+		UI_EXPORT("vec2 GetWindowSize()", GetWindowSizeAs);
+
+		void SetWindowSizeAs(const vec2& Size, int Cond)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetWindowSize(ToIm(Size), Cond);
+		}
+		UI_EXPORT("void SetWindowSize(const vec2&in size, Cond cond = UI::Cond::None)", SetWindowSizeAs);
+
+		bool IsWindowFocusedAs(int Flags)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return IsWindowFocused(Flags);
+		}
+		UI_EXPORT("bool IsWindowFocused(int flags = UI::FocusedFlags::None)", IsWindowFocusedAs);
+
+		vec2 GetContentRegionAvailAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(vec2{});
+			return FromIm(GetContentRegionAvail());
+		}
+		UI_EXPORT("vec2 GetContentRegionAvail()", GetContentRegionAvailAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void Dummy(const vec2&in size)
+		with    void Dummy(const vec2&in size, float text_baseline_y)
+		with    void PushTextWrapPos(float wrap_local_pos_x = 0.0f)
+		with    void PopTextWrapPos()
+		with    vec2 GetCursorPos()
+		with    void SetCursorPos(const vec2&in pos)
+		with    void SetCursorPosX(float x)
+		with    void SetCursorPosY(float y)
+		with    vec2 GetCursorScreenPos()
+		with    void SetCursorScreenPos(const vec2&in pos)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		void DummyAs(const vec2& Size)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Dummy(ToIm(Size));
+		}
+		UI_EXPORT("void Dummy(const vec2&in size)", DummyAs);
+
+		void DummyBaselineAs(const vec2& Size, float TextBaselineY)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			ImGuiWindow* Window = GetCurrentWindow();
+			if (Window->SkipItems) return;
+
+			const ImRect Bb(Window->DC.CursorPos, Window->DC.CursorPos + ToIm(Size));
+			ItemSize(ToIm(Size), TextBaselineY);
+			ItemAdd(Bb, 0);
+		}
+		UI_EXPORT("void Dummy(const vec2&in size, float text_baseline_y)", DummyBaselineAs);
+
+		void PushTextWrapPosAs(float WrapLocalPosX)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			PushTextWrapPos(WrapLocalPosX);
+		}
+		UI_EXPORT("void PushTextWrapPos(float wrap_local_pos_x = 0.0f)", PushTextWrapPosAs);
+
+		void PopTextWrapPosAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (not GetCurrentWindow()->DC.TextWrapPosStack.empty()) PopTextWrapPos();
+		}
+		UI_EXPORT("void PopTextWrapPos()", PopTextWrapPosAs);
+
+		vec2 GetCursorPosAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(vec2{});
+			return FromIm(GetCursorPos());
+		}
+		UI_EXPORT("vec2 GetCursorPos()", GetCursorPosAs);
+
+		void SetCursorPosAs(const vec2& Pos)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetCursorPos(ToIm(Pos));
+		}
+		UI_EXPORT("void SetCursorPos(const vec2&in pos)", SetCursorPosAs);
+
+		void SetCursorPosXAs(float X)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetCursorPosX(X);
+		}
+		UI_EXPORT("void SetCursorPosX(float x)", SetCursorPosXAs);
+
+		void SetCursorPosYAs(float Y)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetCursorPosY(Y);
+		}
+		UI_EXPORT("void SetCursorPosY(float y)", SetCursorPosYAs);
+
+		vec2 GetCursorScreenPosAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(vec2{});
+			return FromIm(GetCursorScreenPos());
+		}
+		UI_EXPORT("vec2 GetCursorScreenPos()", GetCursorScreenPosAs);
+
+		void SetCursorScreenPosAs(const vec2& Pos)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			SetCursorScreenPos(ToIm(Pos));
+		}
+		UI_EXPORT("void SetCursorScreenPos(const vec2&in pos)", SetCursorScreenPosAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool BeginMenuBar()
+		with    void EndMenuBar()
+		with    bool BeginMenu(const string&in label, bool enabled = true)
+		with    void EndMenu()
+		with    bool MenuItem(const string&in label, const string&in shortcut = "", bool selected = false, bool enabled = true)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(BeginMenuBar, bool);
+		Gecko_Exports_ImGui_MakeEndFn(MenuBar);
+
+		bool BeginMenuAs(std::u8string& Label, bool Enabled)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return BeginMenu((const char*)Label.c_str(), Enabled);
+		}
+		UI_EXPORT("bool BeginMenu(const string&in label, bool enabled = true)", BeginMenuAs);
+
+		void EndMenuAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			::ImGui::EndMenu();
+		}
+		UI_EXPORT("void EndMenu()", EndMenuAs);
+
+		bool MenuItemAs(std::u8string& Label, std::u8string& Shortcut, bool Selected, bool Enabled)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return MenuItem((const char*)Label.c_str(), Shortcut.empty() ? nullptr : (const char*)Shortcut.c_str(), Selected, Enabled);
+		}
+		UI_EXPORT("bool MenuItem(const string&in label, const string&in shortcut = \"\", bool selected = false, bool enabled = true)", MenuItemAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void TableNextRow(int flags = UI::TableRowFlags::None, float min_height = 0.0f)
+		with    bool TableNextColumn()
+		with    bool TableSetColumnIndex(int index)
+		with    void TableSetupColumn(const string&in label, int flags = UI::TableColumnFlags::None, float init_width_or_weight = 0.0f, uint user_id = 0)
+		with    void TableSetupScrollFreeze(int cols, int rows)
+		with    void TableHeadersRow()
+		with    void TableHeader(const string&in label)
+		with    int TableGetColumnCount()
+		with    int TableGetColumnIndex()
+		with    int TableGetRowIndex()
+		with    void TableSetBgColor(TableBgTarget target, const vec4&in color, int column_n = -1)
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool InTable() { return GetCurrentTable() != nullptr; }
+
+		void TableNextRowAs(int Flags, float MinHeight)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (InTable()) TableNextRow(Flags, MinHeight);
+		}
+		UI_EXPORT("void TableNextRow(int flags = UI::TableRowFlags::None, float min_height = 0.0f)", TableNextRowAs);
+
+		bool TableNextColumnAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			return InTable() and TableNextColumn();
+		}
+		UI_EXPORT("bool TableNextColumn()", TableNextColumnAs);
+
+		bool TableSetColumnIndexAs(int Index)
+		{
+			Gecko_Exports_ImGui_GuardNonRender(false);
+			if (not InTable() or Index < 0 or Index >= TableGetColumnCount()) return false;
+			return TableSetColumnIndex(Index);
+		}
+		UI_EXPORT("bool TableSetColumnIndex(int index)", TableSetColumnIndexAs);
+
+		void TableSetupColumnAs(std::u8string& Label, int Flags, float InitWidthOrWeight, uint32_t UserId)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			ImGuiTable* Table = GetCurrentTable();
+
+			if (not Table or Table->DeclColumnsCount >= Table->ColumnsCount) return;
+			TableSetupColumn((const char*)Label.c_str(), Flags, InitWidthOrWeight, UserId);
+		}
+		UI_EXPORT("void TableSetupColumn(const string&in label, int flags = UI::TableColumnFlags::None, float init_width_or_weight = 0.0f, uint user_id = 0)", TableSetupColumnAs);
+
+		void TableSetupScrollFreezeAs(int Cols, int Rows)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (InTable()) TableSetupScrollFreeze(Cols, Rows);
+		}
+		UI_EXPORT("void TableSetupScrollFreeze(int cols, int rows)", TableSetupScrollFreezeAs);
+
+		void TableHeadersRowAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (InTable()) TableHeadersRow();
+		}
+		UI_EXPORT("void TableHeadersRow()", TableHeadersRowAs);
+
+		void TableHeaderAs(std::u8string& Label)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (InTable()) TableHeader((const char*)Label.c_str());
+		}
+		UI_EXPORT("void TableHeader(const string&in label)", TableHeaderAs);
+
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(TableGetColumnCount, int);
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(TableGetColumnIndex, int);
+		Gecko_Exports_ImGui_MakeTrivialReturnFn(TableGetRowIndex, int);
+
+		void TableSetBgColorAs(int Target, const vec4& Color, int Column)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (InTable()) TableSetBgColor(Target, ColorConvertFloat4ToU32(ToIm(Color)), Column);
+		}
+		UI_EXPORT("void TableSetBgColor(TableBgTarget target, const vec4&in color, int column_n = -1)", TableSetBgColorAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool IsOverlayShown()
+		with    void ShowOverlay()
+		with    void HideOverlay()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool IsOverlayShownAs() { return TwinkUiState::RenderUi; }
+		UI_EXPORT("bool IsOverlayShown()", IsOverlayShownAs);
+
+		void ShowOverlayAs() { TwinkUiState::RenderUi = true; }
+		UI_EXPORT("void ShowOverlay()", ShowOverlayAs);
+
+		void HideOverlayAs() { TwinkUiState::RenderUi = false; }
+		UI_EXPORT("void HideOverlay()", HideOverlayAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool IsGameUIVisible()
+		being   function
+		declare partial
+		reason  Always true for now
+		since   v0.1.1
+		!CompatMeta
+		*/
+		bool IsGameUIVisibleAs() { return true; }
+		UI_EXPORT("bool IsGameUIVisible()", IsGameUIVisibleAs);
+	}
+
+	// UI::DrawList
+	namespace
+	{
+		using Math::vec2;
+		using Math::vec4;
+
+#define DRAWLIST_METHOD(Decl_, Fn_) GECKO_EXPORT_METHOD(s_Exports, "UI", "DrawList", Decl_, asFUNCTION(Fn_), asCALL_CDECL_OBJLAST)
+
+		ImU32 Col(const vec4& C) { return ColorConvertFloat4ToU32(ImVec4(C.x, C.y, C.z, C.w)); }
+		ImVec2 Min(const vec4& Rect) { return { Rect.x, Rect.y }; }
+		ImVec2 Max(const vec4& Rect) { return { Rect.x + Rect.z, Rect.y + Rect.w }; }
+
+		ImU32 ColRgba(uint32_t C) { return IM_COL32((C >> 24) & 0xFF, (C >> 16) & 0xFF, (C >> 8) & 0xFF, C & 0xFF); }
+
+		/*
+		!CompatMeta
+		for     UI
+		with    DrawList@ GetBackgroundDrawList()
+		with    DrawList@ GetForegroundDrawList()
+		with    DrawList@ GetWindowDrawList()
+		being   function
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		ImDrawList* GetBackgroundDrawListAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(nullptr);
+			return GetBackgroundDrawList();
+		}
+		UI_EXPORT("DrawList@ GetBackgroundDrawList()", GetBackgroundDrawListAs);
+
+		ImDrawList* GetForegroundDrawListAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(nullptr);
+			return GetForegroundDrawList();
+		}
+		UI_EXPORT("DrawList@ GetForegroundDrawList()", GetForegroundDrawListAs);
+
+		ImDrawList* GetWindowDrawListAs()
+		{
+			Gecko_Exports_ImGui_GuardNonRender(nullptr);
+			return GetWindowDrawList();
+		}
+		UI_EXPORT("DrawList@ GetWindowDrawList()", GetWindowDrawListAs);
+
+		void DL_PushClipRect(const vec4& Rect, bool Intersect, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->PushClipRect(Min(Rect), Max(Rect), Intersect);
+		}
+
+		void DL_PushClipRectFullScreen(ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->PushClipRectFullScreen();
+		}
+
+		void DL_PopClipRect(ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (Self->_ClipRectStack.Size > 1) Self->PopClipRect();
+		}
+
+		void DL_AddRect(const vec4& Rect, const vec4& Color, float Rounding, float Thickness, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddRect(Min(Rect), Max(Rect), Col(Color), Rounding, 0, Thickness);
+		}
+
+		void DL_AddRectFilled(const vec4& Rect, const vec4& Color, float Rounding, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddRectFilled(Min(Rect), Max(Rect), Col(Color), Rounding);
+		}
+
+		void DL_AddRectFilledMultiColor(const vec4& Rect, const vec4& UL, const vec4& UR, const vec4& BL, const vec4& BR, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddRectFilledMultiColor(Min(Rect), Max(Rect), Col(UL), Col(UR), Col(BR), Col(BL));
+		}
+
+		void DL_AddQuad(const vec2& TL, const vec2& TR, const vec2& BR, const vec2& BL, const vec4& Color, float Thickness, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddQuad(ToIm(TL), ToIm(TR), ToIm(BR), ToIm(BL), Col(Color), Thickness);
+		}
+
+		void DL_AddQuadFilled(const vec2& TL, const vec2& TR, const vec2& BR, const vec2& BL, const vec4& Color, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddQuadFilled(ToIm(TL), ToIm(TR), ToIm(BR), ToIm(BL), Col(Color));
+		}
+
+		void DL_AddTriangle(const vec2& P1, const vec2& P2, const vec2& P3, const vec4& Color, float Thickness, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddTriangle(ToIm(P1), ToIm(P2), ToIm(P3), Col(Color), Thickness);
+		}
+
+		void DL_AddTriangleFilled(const vec2& P1, const vec2& P2, const vec2& P3, const vec4& Color, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddTriangleFilled(ToIm(P1), ToIm(P2), ToIm(P3), Col(Color));
+		}
+
+		void DL_AddCircle(const vec2& Pos, float Radius, const vec4& Color, int Segments, float Thickness, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddCircle(ToIm(Pos), Radius, Col(Color), Segments, Thickness);
+		}
+
+		void DL_AddCircleFilled(const vec2& Pos, float Radius, const vec4& Color, int Segments, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddCircleFilled(ToIm(Pos), Radius, Col(Color), Segments);
+		}
+
+		void DL_AddNgon(const vec2& Pos, float Radius, const vec4& Color, int Segments, float Thickness, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (Segments > 2) Self->AddNgon(ToIm(Pos), Radius, Col(Color), Segments, Thickness);
+		}
+
+		void DL_AddNgonFilled(const vec2& Pos, float Radius, const vec4& Color, int Segments, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (Segments > 2) Self->AddNgonFilled(ToIm(Pos), Radius, Col(Color), Segments);
+		}
+
+		void DL_AddLine(const vec2& A, const vec2& B, const vec4& Color, float Thickness, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddLine(ToIm(A), ToIm(B), Col(Color), Thickness);
+		}
+
+		void DL_AddBezierCubic(const vec2& P1, const vec2& P2, const vec2& P3, const vec2& P4, const vec4& Color, float Thickness, int Segments, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddBezierCubic(ToIm(P1), ToIm(P2), ToIm(P3), ToIm(P4), Col(Color), Thickness, Segments);
+		}
+
+		void DL_AddBezierQuadratic(const vec2& P1, const vec2& P2, const vec2& P3, const vec4& Color, float Thickness, int Segments, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			Self->AddBezierQuadratic(ToIm(P1), ToIm(P2), ToIm(P3), Col(Color), Thickness, Segments);
+		}
+
+		void DL_AddText(const vec2& Pos, const vec4& Color, std::u8string& Str, ScriptFont* Font, float Size, float WrapWidth, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+
+			ImFont* Using = Font ? Font->Get() : nullptr;
+			if (!Using) Using = GetFont();
+			if (Size <= 0.0f) Size = Font ? Font->Size : GetFontSize();
+
+			const char* Begin = (const char*)Str.c_str();
+			Self->AddText(Using, Size, ToIm(Pos), Col(Color), Begin, Begin + Str.size(), WrapWidth);
+		}
+
+		void DL_AddImageUv(Texture* Tex, const vec2& Pos, const vec2& Size, ImU32 Color, ImVec2 Uv0, ImVec2 Uv1, ImDrawList* Self)
+		{
+			Gecko_Exports_ImGui_GuardNonRender();
+			if (Tex) Self->AddImage(Tex->Get(), ToIm(Pos), ToIm(Pos) + ToIm(Size), Uv0, Uv1, Color);
+		}
+
+		void DL_AddImage(Texture* Tex, const vec2& Pos, ImDrawList* Self)
+		{
+			if (Tex) DL_AddImageUv(Tex, Pos, FromIm(Tex->GetSize()), IM_COL32_WHITE, { 0, 0 }, { 1, 1 }, Self);
+		}
+
+		void DL_AddImageSized(Texture* Tex, const vec2& Pos, const vec2& Size, ImDrawList* Self)
+		{
+			DL_AddImageUv(Tex, Pos, Size, IM_COL32_WHITE, { 0, 0 }, { 1, 1 }, Self);
+		}
+
+		void DL_AddImageColored(Texture* Tex, const vec2& Pos, const vec2& Size, uint32_t Color, ImDrawList* Self)
+		{
+			DL_AddImageUv(Tex, Pos, Size, ColRgba(Color), { 0, 0 }, { 1, 1 }, Self);
+		}
+
+		void DL_AddImagePart(Texture* Tex, const vec2& Pos, const vec2& Size, uint32_t Color, const vec4& Uv, ImDrawList* Self)
+		{
+			if (!Tex) return;
+			ImVec2 TexSize = Tex->GetSize();
+			if (TexSize.x <= 0 or TexSize.y <= 0) return;
+			DL_AddImageUv(Tex, Pos, Size, ColRgba(Color), Min(Uv) / TexSize, Max(Uv) / TexSize, Self);
+		}
+
+		/*
+		!CompatMeta
+		for     UI
+		with    void PushClipRect(const vec4&in rect, bool intersectWithCurrentClipRect = false)
+		with    void PushClipRectFullScreen()
+		with    void PopClipRect()
+		with    void AddRect(const vec4&in rect, const vec4&in color, float rounding = 0.0f, float thickness = 1.0f)
+		with    void AddRectFilled(const vec4&in rect, const vec4&in color, float rounding = 0.0f)
+		with    void AddRectFilledMultiColor(const vec4&in rect, const vec4&in colUL, const vec4&in colUR, const vec4&in colBL, const vec4&in colBR)
+		with    void AddQuad(const vec2&in topLeft, const vec2&in topRight, const vec2&in bottomRight, const vec2&in bottomLeft, const vec4&in color, float thickness = 1.0f)
+		with    void AddQuadFilled(const vec2&in topLeft, const vec2&in topRight, const vec2&in bottomRight, const vec2&in bottomLeft, const vec4&in color)
+		with    void AddTriangle(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec4&in color, float thickness = 1.0f)
+		with    void AddQuadFilled(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec4&in color)
+		with    void AddCircle(const vec2&in pos, float radius, const vec4&in color, int segments = 0, float thickness = 1.0f)
+		with    void AddCircleFilled(const vec2&in pos, float radius, const vec4&in color, int segments = 0)
+		with    void AddNgon(const vec2&in pos, float radius, const vec4&in color, int segments, float thickness = 1.0f)
+		with    void AddNgonFilled(const vec2&in pos, float radius, const vec4&in color, int segments)
+		with    void AddLine(const vec2&in a, const vec2&in b, const vec4&in color, float thickness = 1.0f)
+		with    void AddBezierCubic(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec2&in p4, const vec4&in color, float thickness = 1.0f, int segments = 0)
+		with    void AddBezierQuadratic(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec4&in color, float thickness = 1.0f, int segments = 0)
+		with    void AddText(const vec2&in pos, const vec4&in color, const string&in str, UI::Font@ font = null, float size = 0.0f, float wrapWidth = 0.0f)
+		with    void AddImage(UI::Texture@ texture, const vec2&in pos)
+		with    void AddImage(UI::Texture@ texture, const vec2&in pos, const vec2&in size)
+		with    void AddImage(UI::Texture@ texture, const vec2&in pos, const vec2&in size, uint color)
+		with    void AddImage(UI::Texture@ texture, const vec2&in pos, const vec2&in size, uint color, const vec4&in uv)
+		being   method
+		of      DrawList
+		declare full
+		since   v0.1.1
+		!CompatMeta
+		*/
+		DRAWLIST_METHOD("void PushClipRect(const vec4&in rect, bool intersectWithCurrentClipRect = false)", DL_PushClipRect);
+		DRAWLIST_METHOD("void PushClipRectFullScreen()", DL_PushClipRectFullScreen);
+		DRAWLIST_METHOD("void PopClipRect()", DL_PopClipRect);
+		DRAWLIST_METHOD("void AddRect(const vec4&in rect, const vec4&in color, float rounding = 0.0f, float thickness = 1.0f)", DL_AddRect);
+		DRAWLIST_METHOD("void AddRectFilled(const vec4&in rect, const vec4&in color, float rounding = 0.0f)", DL_AddRectFilled);
+		DRAWLIST_METHOD("void AddRectFilledMultiColor(const vec4&in rect, const vec4&in colUL, const vec4&in colUR, const vec4&in colBL, const vec4&in colBR)", DL_AddRectFilledMultiColor);
+		DRAWLIST_METHOD("void AddQuad(const vec2&in topLeft, const vec2&in topRight, const vec2&in bottomRight, const vec2&in bottomLeft, const vec4&in color, float thickness = 1.0f)", DL_AddQuad);
+		DRAWLIST_METHOD("void AddQuadFilled(const vec2&in topLeft, const vec2&in topRight, const vec2&in bottomRight, const vec2&in bottomLeft, const vec4&in color)", DL_AddQuadFilled);
+		DRAWLIST_METHOD("void AddTriangle(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec4&in color, float thickness = 1.0f)", DL_AddTriangle);
+		DRAWLIST_METHOD("void AddQuadFilled(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec4&in color)", DL_AddTriangleFilled);
+		DRAWLIST_METHOD("void AddCircle(const vec2&in pos, float radius, const vec4&in color, int segments = 0, float thickness = 1.0f)", DL_AddCircle);
+		DRAWLIST_METHOD("void AddCircleFilled(const vec2&in pos, float radius, const vec4&in color, int segments = 0)", DL_AddCircleFilled);
+		DRAWLIST_METHOD("void AddNgon(const vec2&in pos, float radius, const vec4&in color, int segments, float thickness = 1.0f)", DL_AddNgon);
+		DRAWLIST_METHOD("void AddNgonFilled(const vec2&in pos, float radius, const vec4&in color, int segments)", DL_AddNgonFilled);
+		DRAWLIST_METHOD("void AddLine(const vec2&in a, const vec2&in b, const vec4&in color, float thickness = 1.0f)", DL_AddLine);
+		DRAWLIST_METHOD("void AddBezierCubic(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec2&in p4, const vec4&in color, float thickness = 1.0f, int segments = 0)", DL_AddBezierCubic);
+		DRAWLIST_METHOD("void AddBezierQuadratic(const vec2&in p1, const vec2&in p2, const vec2&in p3, const vec4&in color, float thickness = 1.0f, int segments = 0)", DL_AddBezierQuadratic);
+		DRAWLIST_METHOD("void AddText(const vec2&in pos, const vec4&in color, const string&in str, Font@+ font = null, float size = 0.0f, float wrapWidth = 0.0f)", DL_AddText);
+		DRAWLIST_METHOD("void AddImage(Texture@+ texture, const vec2&in pos)", DL_AddImage);
+		DRAWLIST_METHOD("void AddImage(Texture@+ texture, const vec2&in pos, const vec2&in size)", DL_AddImageSized);
+		DRAWLIST_METHOD("void AddImage(Texture@+ texture, const vec2&in pos, const vec2&in size, uint color)", DL_AddImageColored);
+		DRAWLIST_METHOD("void AddImage(Texture@+ texture, const vec2&in pos, const vec2&in size, uint color, const vec4&in uv)", DL_AddImagePart);
+	}
+
 	void Registrar(asIScriptEngine* Engine)
 	{
 		// First, since some functions' default arguments use them
@@ -1004,6 +1706,8 @@ namespace Gecko::Exports::ImGui
 		Engine->RegisterObjectType("Font", 0, asOBJ_REF);
 		Engine->RegisterObjectBehaviour("Font", asBEHAVE_ADDREF, "void f()", asMETHOD(ScriptFont, AddRef), asCALL_THISCALL);
 		Engine->RegisterObjectBehaviour("Font", asBEHAVE_RELEASE, "void f()", asMETHOD(ScriptFont, RemoveRef), asCALL_THISCALL);
+
+		Engine->RegisterObjectType("DrawList", 0, asOBJ_REF | asOBJ_NOCOUNT);
 		Engine->SetDefaultNamespace("");
 
 		RegisterAll(Engine, s_Exports);

@@ -3,6 +3,8 @@
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include <cmath>
 #include <format>
+#include <limits>
+#include <random>
 #include <string>
 #include <type_traits>
 
@@ -1532,6 +1534,189 @@ namespace Gecko::Exports::Math
 	MATH_FN("mat4", "mat4 Inverse(const mat4&in)", Mat4Inverse);
 	MATH_FN("mat4", "mat4 LookAt(const vec3&in eye, const vec3&in center, const vec3&in up)", Mat4LookAt);
 	MATH_FN("mat4", "mat4 Transpose(const mat4&in)", (Transpose<mat4, 4>));
+
+	static std::mt19937_64& Rng()
+	{
+		static std::mt19937_64 Engine{ std::random_device{}() };
+		return Engine;
+	}
+
+	static int AbsInt(int I) { return I < 0 ? -I : I; }
+	static float AbsFloat(float F) { return std::fabs(F); }
+	static float SinF(float F) { return std::sin(F); }
+	static float AsinF(float F) { return std::asin(F); }
+	static float CosF(float F) { return std::cos(F); }
+	static float AcosF(float F) { return std::acos(F); }
+	static float TanF(float F) { return std::tan(F); }
+	static float AtanF(float F) { return std::atan(F); }
+	static float Atan2F(float Y, float X) { return std::atan2(Y, X); }
+	static float ExpF(float F) { return std::exp(F); }
+	static float PowF(float X, float Y) { return std::pow(X, Y); }
+	static float SqrtF(float F) { return std::sqrt(F); }
+	static float ToDeg(float Rad) { return Rad * (180.0f / 3.14159265358979f); }
+	static float ToRad(float Deg) { return Deg * (3.14159265358979f / 180.0f); }
+	static float LogF(float F) { return std::log(F); }
+	static float Log2F(float F) { return std::log2(F); }
+	static float Log10F(float F) { return std::log10(F); }
+	static float Log1pF(float F) { return std::log1p(F); }
+	static float LogbF(float F) { return std::logb(F); }
+	static float FloorF(float F) { return std::floor(F); }
+	static float CeilF(float F) { return std::ceil(F); }
+	static float RoundF(float F) { return std::round(F); }
+
+	static float RoundDecimals(float F, int Decimals)
+	{
+		double Scale = std::pow(10.0, Decimals);
+		return (float)(std::round(F * Scale) / Scale);
+	}
+
+	static float RandFloat(float Min, float Max)
+	{
+		if (not (Max > Min)) return Min;
+		return std::uniform_real_distribution<float>(Min, Max)(Rng());
+	}
+
+	static int RandInt(int Min, int Max)
+	{
+		if (Max <= Min) return Min;
+		return std::uniform_int_distribution<int>(Min, Max - 1)(Rng());
+	}
+
+	static float InvLerpFloat(const float& Min, const float& Max, const float& Value) { return Max == Min ? 0.0f : (Value - Min) / (Max - Min); }
+	static float InvLerpInt(const int& Min, const int& Max, const int& Value) { return Max == Min ? 0.0f : float(Value - Min) / float(Max - Min); }
+	static float LerpFloat(const float& Min, const float& Max, float X) { return Min + (Max - Min) * X; }
+	static int MinInt(int X, int Y) { return X < Y ? X : Y; }
+	static float MinFloat(float X, float Y) { return X < Y ? X : Y; }
+	static int MaxInt(int X, int Y) { return X > Y ? X : Y; }
+	static float MaxFloat(float X, float Y) { return X > Y ? X : Y; }
+	static int ClampInt(int X, int Min, int Max) { return X < Min ? Min : X > Max ? Max : X; }
+	static float ClampFloat(float X, float Min, float Max) { return X < Min ? Min : X > Max ? Max : X; }
+	static bool IsNaN(float F) { return std::isnan(F); }
+	static bool IsInf(float F) { return std::isinf(F); }
+	static uint16_t SwapBytes16(uint16_t V) { return _byteswap_ushort(V); }
+	static uint32_t SwapBytes32(uint32_t V) { return _byteswap_ulong(V); }
+	static uint64_t SwapBytes64(uint64_t V) { return _byteswap_uint64(V); }
+
+	static const float  s_PI      = 3.14159265358979323846f;
+	static const float  s_PI2     = 3.14159265358979323846f * 2.0f;
+	static const double s_PIl     = 3.14159265358979323846;
+	static const double s_PI2l    = 3.14159265358979323846 * 2.0;
+	static const float  s_PosInf  = std::numeric_limits<float>::infinity();
+	static const float  s_NegInf  = -std::numeric_limits<float>::infinity();
+	static const double s_PosInfl = std::numeric_limits<double>::infinity();
+	static const double s_NegInfl = -std::numeric_limits<double>::infinity();
+
+	/*
+	!CompatMeta
+	for     Math
+	with    int Abs(int i)
+	with    float Abs(float f)
+	with    float Sin(float f)
+	with    float Asin(float f)
+	with    float Cos(float f)
+	with    float Acos(float f)
+	with    float Tan(float f)
+	with    float Atan(float f)
+	with    float Atan2(float y, float x)
+	with    float Exp(float f)
+	with    float Pow(float x, float y)
+	with    float Sqrt(float f)
+	with    float ToDeg(float rad)
+	with    float ToRad(float deg)
+	with    float Rand(float min, float max)
+	with    int Rand(int min, int max)
+	with    float Log(float f)
+	with    float Log2(float f)
+	with    float Log10(float f)
+	with    float Log1p(float f)
+	with    float Logb(float f)
+	with    float Floor(float f)
+	with    float Ceil(float f)
+	with    float Round(float f)
+	with    float Round(float f, int decimals)
+	with    float InvLerp(const float&in min, const float&in max, const float&in value)
+	with    float InvLerp(const int&in min, const int&in max, const int&in value)
+	with    float Lerp(const float&in min, const float&in max, float x)
+	with    int Min(int x, int y)
+	with    float Min(float x, float y)
+	with    int Max(int x, int y)
+	with    float Max(float x, float y)
+	with    int Clamp(int x, int min, int max)
+	with    float Clamp(float x, float min, float max)
+	with    bool IsNaN(float)
+	with    bool IsInf(float)
+	with    uint16 SwapBytes(uint16)
+	with    uint SwapBytes(uint)
+	with    uint64 SwapBytes(uint64)
+	being   function
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	MATH_FN("Math", "int Abs(int i)", AbsInt);
+	MATH_FN("Math", "float Abs(float f)", AbsFloat);
+	MATH_FN("Math", "float Sin(float f)", SinF);
+	MATH_FN("Math", "float Asin(float f)", AsinF);
+	MATH_FN("Math", "float Cos(float f)", CosF);
+	MATH_FN("Math", "float Acos(float f)", AcosF);
+	MATH_FN("Math", "float Tan(float f)", TanF);
+	MATH_FN("Math", "float Atan(float f)", AtanF);
+	MATH_FN("Math", "float Atan2(float y, float x)", Atan2F);
+	MATH_FN("Math", "float Exp(float f)", ExpF);
+	MATH_FN("Math", "float Pow(float x, float y)", PowF);
+	MATH_FN("Math", "float Sqrt(float f)", SqrtF);
+	MATH_FN("Math", "float ToDeg(float rad)", ToDeg);
+	MATH_FN("Math", "float ToRad(float deg)", ToRad);
+	MATH_FN("Math", "float Rand(float min, float max)", RandFloat);
+	MATH_FN("Math", "int Rand(int min, int max)", RandInt);
+	MATH_FN("Math", "float Log(float f)", LogF);
+	MATH_FN("Math", "float Log2(float f)", Log2F);
+	MATH_FN("Math", "float Log10(float f)", Log10F);
+	MATH_FN("Math", "float Log1p(float f)", Log1pF);
+	MATH_FN("Math", "float Logb(float f)", LogbF);
+	MATH_FN("Math", "float Floor(float f)", FloorF);
+	MATH_FN("Math", "float Ceil(float f)", CeilF);
+	MATH_FN("Math", "float Round(float f)", RoundF);
+	MATH_FN("Math", "float Round(float f, int decimals)", RoundDecimals);
+	MATH_FN("Math", "float InvLerp(const float&in min, const float&in max, const float&in value)", InvLerpFloat);
+	MATH_FN("Math", "float InvLerp(const int&in min, const int&in max, const int&in value)", InvLerpInt);
+	MATH_FN("Math", "float Lerp(const float&in min, const float&in max, float x)", LerpFloat);
+	MATH_FN("Math", "int Min(int x, int y)", MinInt);
+	MATH_FN("Math", "float Min(float x, float y)", MinFloat);
+	MATH_FN("Math", "int Max(int x, int y)", MaxInt);
+	MATH_FN("Math", "float Max(float x, float y)", MaxFloat);
+	MATH_FN("Math", "int Clamp(int x, int min, int max)", ClampInt);
+	MATH_FN("Math", "float Clamp(float x, float min, float max)", ClampFloat);
+	MATH_FN("Math", "bool IsNaN(float)", IsNaN);
+	MATH_FN("Math", "bool IsInf(float)", IsInf);
+	MATH_FN("Math", "uint16 SwapBytes(uint16)", SwapBytes16);
+	MATH_FN("Math", "uint SwapBytes(uint)", SwapBytes32);
+	MATH_FN("Math", "uint64 SwapBytes(uint64)", SwapBytes64);
+
+	/*
+	!CompatMeta
+	for     Math
+	with    PI
+	with    PI2
+	with    PIl
+	with    PI2l
+	with    PosInf
+	with    NegInf
+	with    PosInfl
+	with    NegInfl
+	being   global
+	declare full
+	since   v0.1.1
+	!CompatMeta
+	*/
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const float PI", &s_PI);
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const float PI2", &s_PI2);
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const double PIl", &s_PIl);
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const double PI2l", &s_PI2l);
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const float PosInf", &s_PosInf);
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const float NegInf", &s_NegInf);
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const double PosInfl", &s_PosInfl);
+	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const double NegInfl", &s_NegInfl);
 
 	template<typename T>
 	static void RegisterType(asIScriptEngine* Engine, const char* Name, asDWORD AllFlag)

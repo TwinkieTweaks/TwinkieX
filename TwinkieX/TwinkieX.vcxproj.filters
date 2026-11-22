@@ -417,6 +417,18 @@
     <ClInclude Include="Includes\Gecko\Exports\imgui\Font\Font.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\Gecko\ScriptFiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Gecko\Exports\String\ExportString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Gecko\Exports\Time\ExportTime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\Gecko\Exports\IO\ExportIO.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Includes\stb\stb_image.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -789,6 +801,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\Exports\imgui\Font\Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\ScriptFiles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\String\ExportString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\String\WString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\Time\ExportTime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\IO\ExportIO.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Includes\Gecko\Exports\Global\MemoryBuffer\MemoryBuffer.cpp">

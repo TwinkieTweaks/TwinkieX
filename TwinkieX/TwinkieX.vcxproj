@@ -1116,6 +1116,10 @@
     <ClInclude Include="Includes\stb\stb_image.h" />
     <ClInclude Include="Includes\Gecko\Exports\imgui\Texture\Texture.h" />
     <ClInclude Include="Includes\Gecko\Exports\imgui\Font\Font.h" />
+    <ClInclude Include="Includes\Gecko\ScriptFiles.h" />
+    <ClInclude Include="Includes\Gecko\Exports\String\ExportString.h" />
+    <ClInclude Include="Includes\Gecko\Exports\Time\ExportTime.h" />
+    <ClInclude Include="Includes\Gecko\Exports\IO\ExportIO.h" />
     <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
     <ClInclude Include="Includes\TMText\TMText.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
@@ -1429,6 +1433,11 @@
     <ClCompile Include="Includes\Resources\ResourceLoader.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\imgui\Texture\Texture.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\imgui\Font\Font.cpp" />
+    <ClCompile Include="Includes\Gecko\ScriptFiles.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\String\ExportString.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\String\WString.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\Time\ExportTime.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\IO\ExportIO.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
     <ClCompile Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.cpp" />

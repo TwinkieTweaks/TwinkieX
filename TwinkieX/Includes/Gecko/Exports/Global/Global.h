@@ -10,6 +10,8 @@ namespace Gecko::Exports::Global
 	// void print(const string&in);
 	void print(std::u8string&);
 
+	void RegisterBaseTypes(asIScriptEngine*);
+
 	// Registers all globals with an engine.
 	void Registrar(asIScriptEngine*);
 }
