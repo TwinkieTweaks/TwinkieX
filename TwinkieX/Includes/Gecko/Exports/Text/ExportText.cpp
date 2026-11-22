@@ -95,7 +95,7 @@ namespace Gecko::Exports::Text
 	as      int ParseInt(const string&in str, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stot<int>, "int ParseInt(const string&in str, int base = 10)");
@@ -107,7 +107,7 @@ namespace Gecko::Exports::Text
 	as      int64 ParseInt64(const string&in str, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stot<int64_t>, "int64 ParseInt64(const string&in str, int base = 10)");
@@ -119,7 +119,7 @@ namespace Gecko::Exports::Text
 	as      uint ParseUInt(const string&in str, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stot<unsigned int>, "uint ParseUInt(const string&in str, int base = 10)");
@@ -131,7 +131,7 @@ namespace Gecko::Exports::Text
 	as      uint64 ParseUInt64(const string&in str, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stot<uint64_t>, "uint64 ParseUInt64(const string&in str, int base = 10)");
@@ -143,7 +143,7 @@ namespace Gecko::Exports::Text
 	as      float ParseFloat(const string&in str)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN_EX(asFUNCTIONPR(stot<float>, (const std::string&), float), "float ParseFloat(const string&in str)");
@@ -155,7 +155,7 @@ namespace Gecko::Exports::Text
 	as      double ParseDouble(const string&in str)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN_EX(asFUNCTIONPR(stot<double>, (const std::string&), double), "double ParseDouble(const string&in str)");
@@ -167,7 +167,7 @@ namespace Gecko::Exports::Text
 	as      bool TryParseInt(const string&in str, int&out, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stottry<int>, "bool TryParseInt(const string&in str, int&out, int base = 10)");
@@ -179,7 +179,7 @@ namespace Gecko::Exports::Text
 	as      bool TryParseInt64(const string&in str, int64&out, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stottry<int64_t>, "bool TryParseInt64(const string&in str, int64&out, int base = 10)");
@@ -191,7 +191,7 @@ namespace Gecko::Exports::Text
 	as      bool TryParseUInt(const string&in str, uint&out, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stottry<unsigned int>, "bool TryParseUInt(const string&in str, uint&out, int base = 10)");
@@ -203,7 +203,7 @@ namespace Gecko::Exports::Text
 	as      bool TryParseUInt64(const string&in str, uint64&out, int base = 10)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(stottry<uint64_t>, "bool TryParseUInt64(const string&in str, uint64&out, int base = 10)");
@@ -215,7 +215,7 @@ namespace Gecko::Exports::Text
 	as      bool TryParseFloat(const string&in str, float&out)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN_EX(asFUNCTIONPR(stottry<float>, (const std::string&, float&), bool), "bool TryParseFloat(const string&in str, float&out)");
@@ -227,7 +227,7 @@ namespace Gecko::Exports::Text
 	as      bool TryParseDouble(const string&in str, double&out)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN_EX(asFUNCTIONPR(stottry<double>, (const std::string&, double&), bool), "bool TryParseDouble(const string&in str, double&out)");
@@ -282,7 +282,7 @@ namespace Gecko::Exports::Text
 	as      vec4 ParseHexColor(const string&in str)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static Math::vec4 ParseHexColor(const std::string& Str)
@@ -300,7 +300,7 @@ namespace Gecko::Exports::Text
 	as      bool TryParseHexColor(const string&in str, vec4&out)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static bool TryParseHexColor(const std::string& Str, Math::vec4& Out)
@@ -433,7 +433,7 @@ namespace Gecko::Exports::Text
 	with    string Format(const string&in format, double)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TEXT_FN(Format<int8_t>, "string Format(const string&in format, int8)");
@@ -454,7 +454,7 @@ namespace Gecko::Exports::Text
 	as      string FormatPointer(uint64 ptr)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string FormatPointer(uint64_t Ptr)
@@ -482,7 +482,7 @@ namespace Gecko::Exports::Text
 	as      string FormatGameColor(const vec3&in rgb)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string FormatGameColor(const Math::vec3& Rgb)
@@ -498,7 +498,7 @@ namespace Gecko::Exports::Text
 	as      string FormatOpenplanetColor(const vec3&in rgb)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string FormatOpenplanetColor(const Math::vec3& Rgb)
@@ -579,7 +579,7 @@ namespace Gecko::Exports::Text
 	as      string StripFormatCodes(const string&in s)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string StripFormatCodes(const std::string& Str)
@@ -600,7 +600,7 @@ namespace Gecko::Exports::Text
 	as      string StripNonColorFormatCodes(const string&in s)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string StripNonColorFormatCodes(const std::string& Str)
@@ -629,7 +629,7 @@ namespace Gecko::Exports::Text
 	as      string OpenplanetFormatCodes(const string&in s)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string OpenplanetFormatCodes(const std::string& Str)
@@ -669,7 +669,7 @@ namespace Gecko::Exports::Text
 	as      string StripOpenplanetFormatCodes(const string&in s)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string StripOpenplanetFormatCodes(const std::string& Str)
@@ -692,7 +692,7 @@ namespace Gecko::Exports::Text
 	as      string EncodeHex(const string&in, bool upper = false)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string EncodeHex(const std::string& Str, bool Upper)
@@ -716,7 +716,7 @@ namespace Gecko::Exports::Text
 	as      string DecodeHex(const string&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	// Returns an empty string if the input isn't hex
@@ -749,7 +749,7 @@ namespace Gecko::Exports::Text
 	as      string EncodeBase64(const string&in, bool url = false)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string EncodeBase64(const std::string& Str, bool Url)
@@ -783,7 +783,7 @@ namespace Gecko::Exports::Text
 	as      string DecodeBase64(const string&in, bool url = false)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	// Padding is optional. Returns an empty string if the input isn't base64.
@@ -829,7 +829,7 @@ namespace Gecko::Exports::Text
 	as      string Join(const string[]&in arr, const string&in delimiter)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string Join(const CScriptArray& Arr, const std::string& Delimiter)
@@ -851,7 +851,7 @@ namespace Gecko::Exports::Text
 	as      string Repeat(const string&in str, int count)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string Repeat(const std::string& Str, int Count)

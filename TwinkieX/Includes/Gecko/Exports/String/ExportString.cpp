@@ -109,7 +109,7 @@ namespace Gecko::Exports::String
 	being   method
 	of      string
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	STRING_METHOD("bool StartsWith(const string&in) const", StartsWith);

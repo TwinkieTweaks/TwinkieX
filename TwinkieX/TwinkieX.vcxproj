@@ -1132,6 +1132,7 @@
     <ClInclude Include="Includes\Gecko\Exports\String\ExportString.h" />
     <ClInclude Include="Includes\Gecko\Exports\Time\ExportTime.h" />
     <ClInclude Include="Includes\Gecko\Exports\IO\ExportIO.h" />
+    <ClInclude Include="Includes\Gecko\Exports\Nvg\ExportNvg.h" />
     <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
     <ClInclude Include="Includes\TMText\TMText.h" />
     <ClInclude Include="Includes\Trackmania\TMTypes.h" />
@@ -1468,6 +1469,7 @@
     <ClCompile Include="Includes\Gecko\ScriptFiles.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\String\ExportString.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\String\WString.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\Nvg\ExportNvg.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Time\ExportTime.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\IO\ExportIO.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />

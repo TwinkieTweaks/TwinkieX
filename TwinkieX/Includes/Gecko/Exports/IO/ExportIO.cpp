@@ -73,7 +73,7 @@ namespace Gecko::Exports::IO
 	being   behavior
 	of      FileSource
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	FILESOURCE_BEHAVIOUR(asBEHAVE_CONSTRUCT, "void f(const string&in filename)", Construct);
@@ -93,7 +93,7 @@ namespace Gecko::Exports::IO
 	being   method
 	of      FileSource
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	FILESOURCE_METHOD("IO::FileSource& opAssign(const IO::FileSource&in)", Assign);

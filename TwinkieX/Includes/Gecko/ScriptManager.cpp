@@ -15,6 +15,7 @@
 #include "Exports/Icons/Icons.h"
 #include "Exports/Trackmania/Trackmania.h"
 #include "Exports/imgui/ExportImgui.h"
+#include "Exports/Nvg/ExportNvg.h"
 #include "Exports/Reflection/Reflection.h"
 #include "Exports/Net/Net.h"
 
@@ -103,6 +104,7 @@ namespace Gecko
 		Exports::Text::Registrar(Engine);
 		Exports::Icons::Registrar(Engine);
 		Exports::ImGui::Registrar(Engine);
+		Exports::Nvg::Registrar(Engine);
 		Exports::Net::Registrar(Engine);
 		Exports::Reflection::Registrar(Engine);
 	}

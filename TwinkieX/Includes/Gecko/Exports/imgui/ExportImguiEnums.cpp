@@ -26,7 +26,7 @@ namespace Gecko::Exports::ImGui
 		as      InputBlocking
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "InputBlocking", {
@@ -42,7 +42,7 @@ namespace Gecko::Exports::ImGui
 		being   enum
 		declare partial
 		reason  NoDocking is 0, since this Dear ImGui has no docking
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "WindowFlags", {
@@ -79,7 +79,7 @@ namespace Gecko::Exports::ImGui
 		as      ChildFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "ChildFlags", {
@@ -103,7 +103,7 @@ namespace Gecko::Exports::ImGui
 		as      ButtonFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "ButtonFlags", {
@@ -121,7 +121,7 @@ namespace Gecko::Exports::ImGui
 		being   enum
 		declare partial
 		reason  DockingPreview and DockingEmptyBg are left out, since this Dear ImGui has no docking, and so is DragDropTargetBg, which is newer than it
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "Col", {
@@ -196,7 +196,7 @@ namespace Gecko::Exports::ImGui
 		being   enum
 		declare partial
 		reason  DockingSeparatorSize is left out, since this Dear ImGui has no docking
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "StyleVar", {
@@ -242,7 +242,7 @@ namespace Gecko::Exports::ImGui
 		as      FocusedFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "FocusedFlags", {
@@ -260,7 +260,7 @@ namespace Gecko::Exports::ImGui
 		as      ComboFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "ComboFlags", {
@@ -281,7 +281,7 @@ namespace Gecko::Exports::ImGui
 		as      SelectableFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "SelectableFlags", {
@@ -300,7 +300,7 @@ namespace Gecko::Exports::ImGui
 		as      TreeNodeFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "TreeNodeFlags", {
@@ -332,7 +332,7 @@ namespace Gecko::Exports::ImGui
 		as      ItemFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "ItemFlags", {
@@ -351,7 +351,7 @@ namespace Gecko::Exports::ImGui
 		as      InputTextFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "InputTextFlags", {
@@ -388,7 +388,7 @@ namespace Gecko::Exports::ImGui
 		as      SliderFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "SliderFlags", {
@@ -407,7 +407,7 @@ namespace Gecko::Exports::ImGui
 		as      ColorEditFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "ColorEditFlags", {
@@ -445,7 +445,7 @@ namespace Gecko::Exports::ImGui
 		as      SeparatorFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "SeparatorFlags", {
@@ -462,7 +462,7 @@ namespace Gecko::Exports::ImGui
 		as      TableFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "TableFlags", {
@@ -510,7 +510,7 @@ namespace Gecko::Exports::ImGui
 		as      TableRowFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "TableRowFlags", {
@@ -525,7 +525,7 @@ namespace Gecko::Exports::ImGui
 		as      TableColumnFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "TableColumnFlags", {
@@ -559,7 +559,7 @@ namespace Gecko::Exports::ImGui
 		as      TableBgTarget
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "TableBgTarget", {
@@ -576,7 +576,7 @@ namespace Gecko::Exports::ImGui
 		as      TabBarFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "TabBarFlags", {
@@ -600,7 +600,7 @@ namespace Gecko::Exports::ImGui
 		as      TabItemFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "TabItemFlags", {
@@ -622,7 +622,7 @@ namespace Gecko::Exports::ImGui
 		as      SortDirection
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "SortDirection", {
@@ -638,7 +638,7 @@ namespace Gecko::Exports::ImGui
 		as      Cond
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "Cond", {
@@ -656,7 +656,7 @@ namespace Gecko::Exports::ImGui
 		as      Key
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "Key", {
@@ -801,7 +801,7 @@ namespace Gecko::Exports::ImGui
 		as      MouseButton
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "MouseButton", {
@@ -818,7 +818,7 @@ namespace Gecko::Exports::ImGui
 		being   enum
 		declare partial
 		reason  DockHierarchy is 0, since this Dear ImGui has no docking
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "HoveredFlags", {
@@ -852,7 +852,7 @@ namespace Gecko::Exports::ImGui
 		as      InputFlags
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "InputFlags", {
@@ -876,7 +876,7 @@ namespace Gecko::Exports::ImGui
 		as      MouseCursor
 		being   enum
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		RegisterEnum(Engine, "MouseCursor", {

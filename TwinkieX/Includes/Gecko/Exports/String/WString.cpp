@@ -65,7 +65,7 @@ namespace Gecko::Exports::String
 	being   behavior
 	of      wstring
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	WSTRING_BEHAVIOUR(asBEHAVE_CONSTRUCT, "void f()", Construct);
@@ -89,7 +89,7 @@ namespace Gecko::Exports::String
 	being   method
 	of      wstring
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	WSTRING_METHOD("int opCmp(const wstring&in) const", Compare);
@@ -110,7 +110,7 @@ namespace Gecko::Exports::String
 	being   behavior
 	of      string
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GECKO_EXPORT_BEHAVIOUR(s_Exports, "", "string", asBEHAVE_CONSTRUCT, "void f(const wstring&in)", asFUNCTION(StringFromWide), asCALL_CDECL_OBJLAST);
@@ -124,7 +124,7 @@ namespace Gecko::Exports::String
 	being   method
 	of      string
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	STRING_METHOD("string opAdd(const wstring&in) const", StringAddWide);

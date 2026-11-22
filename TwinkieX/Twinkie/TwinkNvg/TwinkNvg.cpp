@@ -11,6 +11,7 @@
 namespace TwinkNvg
 {
 	NVGcontext* Context = nullptr;
+	uint32_t Generation = 0;
 
 	static bool InFrame = false;
 	static float FrameWidth = 0.0f;
@@ -237,7 +238,13 @@ namespace TwinkNvg
 #else
 		Context = nvgCreateD3D9(TwinkUiState::Device, NVG_ANTIALIAS | NVG_STENCIL_STROKES);
 #endif
+		if (Context) Generation++;
 		return Context != nullptr;
+	}
+
+	bool IsInFrame()
+	{
+		return Context and InFrame;
 	}
 
 	void Invalidate()

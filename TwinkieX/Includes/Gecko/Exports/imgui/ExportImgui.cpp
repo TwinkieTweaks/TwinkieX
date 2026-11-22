@@ -39,7 +39,7 @@ namespace Gecko::Exports::ImGui
 		as      Texture@ LoadTexture(const string&in filename)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Texture* LoadTextureAs_File(std::u8string& FileName)
@@ -61,7 +61,7 @@ namespace Gecko::Exports::ImGui
 		as      Texture@ LoadTexture(MemoryBuffer&in buffer)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Texture* LoadTextureAs_Buffer(MemoryBuffer& Buffer)
@@ -116,7 +116,7 @@ namespace Gecko::Exports::ImGui
 		being   method
 		of      Font
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		float FontGetFontSize(const ScriptFont* Font)
@@ -134,7 +134,7 @@ namespace Gecko::Exports::ImGui
 		as      UI::Font@ get_Default() property
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		GECKO_EXPORT_FN(s_Exports, "UI::Font", "UI::Font@+ get_Default() property", ScriptFont::GetDefault);
@@ -148,7 +148,7 @@ namespace Gecko::Exports::ImGui
 		as      Font@ LoadFont(const string&in filename, float size = 16.0f)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		ScriptFont* LoadFontAs(std::u8string& Filename, float Size)
@@ -164,7 +164,7 @@ namespace Gecko::Exports::ImGui
 		as      Font@ LoadFont(const string&in filename, float size, const uint[]@ ranges, bool ba = false, bool bb = false, bool bc = false)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		ScriptFont* LoadFontAs_Ranges(std::u8string& Filename, float Size, CScriptArray* Ranges, bool, bool, bool)
@@ -180,7 +180,7 @@ namespace Gecko::Exports::ImGui
 		as      Font@ LoadFont(const string&in filename, float size, int minChars, int maxChars, bool = false, bool = false, bool = false)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		ScriptFont* LoadFontAs_MinMax(std::u8string& Filename, float Size, int MinChars, int MaxChars, bool, bool, bool)
@@ -197,7 +197,7 @@ namespace Gecko::Exports::ImGui
 		as      Font@ LoadSystemFont(const string&in filename)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		ScriptFont* LoadSystemFontAs(std::u8string& Filename)
@@ -213,7 +213,7 @@ namespace Gecko::Exports::ImGui
 		as      void PushFont(Font@ font)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void PushFontAs(ScriptFont* Font)
@@ -230,7 +230,7 @@ namespace Gecko::Exports::ImGui
 		as      void PushFont(Font@ font, float size)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void PushFontAs_Size(ScriptFont* Font, float Size)
@@ -247,7 +247,7 @@ namespace Gecko::Exports::ImGui
 		as      void PopFont()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialFn(PopFont);
@@ -259,7 +259,7 @@ namespace Gecko::Exports::ImGui
 		as      void PushFontSize(float size)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void PushFontSizeAs(float Size)
@@ -276,7 +276,7 @@ namespace Gecko::Exports::ImGui
 		as      void PopFontSize()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void PopFontSizeAs()
@@ -293,7 +293,7 @@ namespace Gecko::Exports::ImGui
 		as      float GetFontSize()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialReturnFn(GetFontSize, float);
@@ -305,7 +305,7 @@ namespace Gecko::Exports::ImGui
 		as      int CalcWordWrapPosition(float size, const string&in text, float wrap_width, int text_offset = 0, Font@ font = null)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		int CalcWordWrapPositionAs(float Size, std::u8string& Text, float WrapWidth, int TextOffset, ScriptFont* Font)
@@ -329,7 +329,7 @@ namespace Gecko::Exports::ImGui
 		as      vec2 MeasureString(const string&in str, Font@ font = null, float size = 0.0f, float wrapWidth = 0.0f)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Math::vec2 MeasureStringAs(std::u8string& Str, ScriptFont* Font, float Size, float WrapWidth)
@@ -358,7 +358,7 @@ namespace Gecko::Exports::ImGui
 		as      bool Begin(const string&in title, int flags = UI::GetDefaultWindowFlags())
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool BeginAs_NoOpen(std::u8string& title, int flags)
@@ -375,7 +375,7 @@ namespace Gecko::Exports::ImGui
 		as      bool Begin(const string&in title, bool&out open, int flags = UI::GetDefaultWindowFlags())
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool BeginAs_Open(std::u8string& title, bool* open, int flags)
@@ -392,7 +392,7 @@ namespace Gecko::Exports::ImGui
 		as      int GetDefaultWindowFlags()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		int GetDefaultWindowFlagsAs()
@@ -420,7 +420,7 @@ namespace Gecko::Exports::ImGui
 		as      bool BeginCombo(const string&in label, const string&in current, int flags = UI::ComboFlags::None)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool BeginComboAs(std::u8string& label, std::u8string& current, int flags)
@@ -437,7 +437,7 @@ namespace Gecko::Exports::ImGui
 		as      void EndCombo()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeEndFn(Combo);
@@ -449,7 +449,7 @@ namespace Gecko::Exports::ImGui
 		as      void BeginDisabled(bool disabled = true)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void BeginDisabledAs(bool disabled)
@@ -466,7 +466,7 @@ namespace Gecko::Exports::ImGui
 		as      void EndDisabled()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeEndFn(Disabled);
@@ -478,7 +478,7 @@ namespace Gecko::Exports::ImGui
 		as      void BeginTabBar(const string&in id, int flags = UI::TabBarFlags::None)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void BeginTabBarAs(std::u8string& id, int flags)
@@ -495,7 +495,7 @@ namespace Gecko::Exports::ImGui
 		as      void EndTabBar()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeEndFn(TabBar);
@@ -507,7 +507,7 @@ namespace Gecko::Exports::ImGui
 		as      bool BeginTabItem(const string&in label, int flags = UI::TabItemFlags::None)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool BeginTabItemAs_NoOpen(std::u8string& label, int flags)
@@ -524,7 +524,7 @@ namespace Gecko::Exports::ImGui
 		as      bool BeginTabItem(const string&in label, bool&out open, int flags = UI::TabItemFlags::None)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool BeginTabItemAs_Open(std::u8string& label, bool* open, int flags)
@@ -541,7 +541,7 @@ namespace Gecko::Exports::ImGui
 		as      void EndTabItem()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeEndFn(TabItem);
@@ -553,7 +553,7 @@ namespace Gecko::Exports::ImGui
 		as      bool BeginTable(const string&in id, int columns, int flags = UI::TableFlags::None, const vec2&in outer_size = vec2(), float inner_width = 0.0f)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool BeginTableAs(std::u8string& id, int columns, int flags, const Math::vec2& outer_size, float inner_width)
@@ -570,7 +570,7 @@ namespace Gecko::Exports::ImGui
 		as      void EndTable()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeEndFn(Table);
@@ -582,7 +582,7 @@ namespace Gecko::Exports::ImGui
 		as      void BeginTooltip()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialFn(BeginTooltip);
@@ -594,7 +594,7 @@ namespace Gecko::Exports::ImGui
 		as      bool BeginItemTooltip()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialReturnFn(BeginItemTooltip, bool);
@@ -606,7 +606,7 @@ namespace Gecko::Exports::ImGui
 		as      void EndTooltip()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeEndFn(Tooltip);
@@ -649,7 +649,7 @@ namespace Gecko::Exports::ImGui
 		as      void TextWrapped(const string&in text)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void TextWrappedAs(std::u8string& s)
@@ -667,7 +667,7 @@ namespace Gecko::Exports::ImGui
 		as      void TextDisabled(const string&in text)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void TextDisabledAs(std::u8string& s)
@@ -685,7 +685,7 @@ namespace Gecko::Exports::ImGui
 		as      bool TextLink(const string&in label)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool TextLinkAs(std::u8string& s)
@@ -703,7 +703,7 @@ namespace Gecko::Exports::ImGui
 		as      void TextLinkOpenURL(const string&in label, const string&in url)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void TextLinkOpenURLAs(std::u8string& l, std::u8string& t)
@@ -721,7 +721,7 @@ namespace Gecko::Exports::ImGui
 		as      void LabelText(const string&in label, const string&in text)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void LabelTextAs(std::u8string& l, std::u8string& t)
@@ -739,7 +739,7 @@ namespace Gecko::Exports::ImGui
 		as      bool Button(const string&in label, const vec2&in size = vec2())
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool ButtonAs(std::u8string& s, const Math::vec2& size)
@@ -756,7 +756,7 @@ namespace Gecko::Exports::ImGui
 		as      bool Checkbox(const string&in label, bool value)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool CheckboxAs(std::u8string& s, bool value)
@@ -775,7 +775,7 @@ namespace Gecko::Exports::ImGui
 		as      void Image(Texture@ texture)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void ImageAs(Texture* Tex)
@@ -793,7 +793,7 @@ namespace Gecko::Exports::ImGui
 		as      void Image(Texture@ texture, const vec2&in size, const vec2&in uv0 = vec2(0, 0), const vec2&in uv1 = vec2(1, 1))
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void ImageSizedAs(Texture* Tex, const Math::vec2& size, const Math::vec2& uv0, const Math::vec2& uv1)
@@ -812,7 +812,7 @@ namespace Gecko::Exports::ImGui
 		being   method
 		of      Texture
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Math::vec2 TextureGetSize(Texture* Tex)
@@ -833,7 +833,7 @@ namespace Gecko::Exports::ImGui
 		as      bool IsItemHovered(int flags = UI::HoveredFlags::None)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool IsItemHoveredAs(int flags)
@@ -850,7 +850,7 @@ namespace Gecko::Exports::ImGui
 		as      bool IsItemActive()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemActive, bool);
@@ -862,7 +862,7 @@ namespace Gecko::Exports::ImGui
 		as      bool IsItemFocused()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialReturnFn(IsItemFocused, bool);
@@ -874,7 +874,7 @@ namespace Gecko::Exports::ImGui
 		as      void PushID(const string&in id)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void PushIDAs(std::u8string& id)
@@ -891,7 +891,7 @@ namespace Gecko::Exports::ImGui
 		as      void PopID()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialFn(PopID);
@@ -903,7 +903,7 @@ namespace Gecko::Exports::ImGui
 		as      void PushItemWidth(float item_width)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void PushItemWidthAs(float w)
@@ -920,7 +920,7 @@ namespace Gecko::Exports::ImGui
 		as      void PopItemWidth()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialFn(PopItemWidth);
@@ -932,7 +932,7 @@ namespace Gecko::Exports::ImGui
 		as      void SameLine(float offset_from_start_x = 0.0f, float spacing = -1.0f)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void SameLineAs(float ox, float sp)
@@ -951,7 +951,7 @@ namespace Gecko::Exports::ImGui
 		as      void Separator(int flags, float thickness = 1.0f)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialFn(Separator);
@@ -995,7 +995,7 @@ namespace Gecko::Exports::ImGui
 		with    vec2 GetStyleVarVec2(StyleVar var)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool ValidCol(int Idx) { return Idx >= 0 and Idx < ImGuiCol_COUNT; }
@@ -1087,7 +1087,7 @@ namespace Gecko::Exports::ImGui
 		with    vec2 GetContentRegionAvail()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void SetNextWindowSizeAs(int W, int H, int Cond)
@@ -1191,7 +1191,7 @@ namespace Gecko::Exports::ImGui
 		with    void SetCursorScreenPos(const vec2&in pos)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		void DummyAs(const vec2& Size)
@@ -1279,7 +1279,7 @@ namespace Gecko::Exports::ImGui
 		with    bool MenuItem(const string&in label, const string&in shortcut = "", bool selected = false, bool enabled = true)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Gecko_Exports_ImGui_MakeTrivialReturnFn(BeginMenuBar, bool);
@@ -1322,7 +1322,7 @@ namespace Gecko::Exports::ImGui
 		with    void TableSetBgColor(TableBgTarget target, const vec4&in color, int column_n = -1)
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool InTable() { return GetCurrentTable() != nullptr; }
@@ -1399,7 +1399,7 @@ namespace Gecko::Exports::ImGui
 		with    void HideOverlay()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool IsOverlayShownAs() { return TwinkUiState::RenderUi; }
@@ -1418,7 +1418,7 @@ namespace Gecko::Exports::ImGui
 		being   function
 		declare partial
 		reason  Always true for now
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		bool IsGameUIVisibleAs() { return true; }
@@ -1447,7 +1447,7 @@ namespace Gecko::Exports::ImGui
 		with    DrawList@ GetWindowDrawList()
 		being   function
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		ImDrawList* GetBackgroundDrawListAs()
@@ -1642,7 +1642,7 @@ namespace Gecko::Exports::ImGui
 		being   method
 		of      DrawList
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		DRAWLIST_METHOD("void PushClipRect(const vec4&in rect, bool intersectWithCurrentClipRect = false)", DL_PushClipRect);
@@ -1685,7 +1685,7 @@ namespace Gecko::Exports::ImGui
 		being   behavior
 		of      Texture
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Engine->RegisterObjectBehaviour("Texture", asBEHAVE_ADDREF, "void f()", asMETHOD(Texture, AddRef), asCALL_THISCALL);
@@ -1698,7 +1698,7 @@ namespace Gecko::Exports::ImGui
 		being   behavior
 		of      Texture
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Engine->RegisterObjectBehaviour("Texture", asBEHAVE_RELEASE, "void f()", asMETHOD(Texture, RemoveRef), asCALL_THISCALL);

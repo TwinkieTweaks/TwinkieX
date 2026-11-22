@@ -629,7 +629,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      vec2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -641,7 +641,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      vec3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -654,7 +654,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      vec4
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -665,7 +665,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      int2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -677,7 +677,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      int3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -688,7 +688,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      nat2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -700,7 +700,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      nat3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -713,7 +713,7 @@ namespace Gecko::Exports::Math
 	being   prop
 	of      quat
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_PROP("vec2", "float x", asOFFSET(vec2, x));
@@ -751,7 +751,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      vec2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -786,7 +786,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      vec2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(vec2, float);
@@ -805,7 +805,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      vec3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -842,7 +842,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      vec3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(vec3, float);
@@ -865,7 +865,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      vec4
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -905,7 +905,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      vec4
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(vec4, float);
@@ -930,7 +930,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      int2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -962,7 +962,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      int2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(int2, int);
@@ -980,7 +980,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      int3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1013,7 +1013,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      int3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(int3, int);
@@ -1032,7 +1032,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      nat2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1064,7 +1064,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      nat2
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(nat2, uint);
@@ -1081,7 +1081,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      nat3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1114,7 +1114,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      nat3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1126,7 +1126,7 @@ namespace Gecko::Exports::Math
 	of      nat3
 	declare partial
 	reason  Takes a nat2 for xy, since a nat3 there looks like a mistake
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_VECTOR(nat3, uint);
@@ -1144,7 +1144,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      iso3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1161,7 +1161,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      iso3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_CONSTRUCT("iso3", "void f()", Iso3ConstructIdentity);
@@ -1188,7 +1188,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      mat3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1213,7 +1213,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      mat3
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_CONSTRUCT("mat3", "void f()", Mat3ConstructIdentity);
@@ -1248,7 +1248,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      iso4
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1271,7 +1271,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      iso4
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_CONSTRUCT("iso4", "void f()", Iso4ConstructIdentity);
@@ -1304,7 +1304,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      mat4
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1336,7 +1336,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      mat4
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_CONSTRUCT("mat4", "void f()", Mat4ConstructIdentity);
@@ -1382,7 +1382,7 @@ namespace Gecko::Exports::Math
 	being   behavior
 	of      quat
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1405,7 +1405,7 @@ namespace Gecko::Exports::Math
 	being   method
 	of      quat
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_CONSTRUCT("quat", "void f()", QuatConstructIdentity);
@@ -1448,7 +1448,7 @@ namespace Gecko::Exports::Math
 	with    quat Slerp(const quat&in a, const quat&in b, float x)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_FN("Math", "vec2 Lerp(const vec2&in min, const vec2&in max, float x)", Lerp<vec2>);
@@ -1477,7 +1477,7 @@ namespace Gecko::Exports::Math
 	with    mat3 Transpose(const mat3&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_FN("mat3", "mat3 Identity()", Mat3Identity);
@@ -1500,7 +1500,7 @@ namespace Gecko::Exports::Math
 	with    mat4 Transpose(const mat4&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1511,7 +1511,7 @@ namespace Gecko::Exports::Math
 	being   function
 	declare partial
 	reason  Uses glm's right-handed convention with depth from -1 to 1, which may differ from Openplanet's
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	/*
@@ -1522,7 +1522,7 @@ namespace Gecko::Exports::Math
 	being   function
 	declare partial
 	reason  Uses glm's right-handed convention, which may differ from Openplanet's
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_FN("mat4", "mat4 Identity()", Mat4Identity);
@@ -1650,7 +1650,7 @@ namespace Gecko::Exports::Math
 	with    uint64 SwapBytes(uint64)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	MATH_FN("Math", "int Abs(int i)", AbsInt);
@@ -1706,7 +1706,7 @@ namespace Gecko::Exports::Math
 	with    NegInfl
 	being   global
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GECKO_EXPORT_GLOBAL(s_Exports, "Math", "const float PI", &s_PI);

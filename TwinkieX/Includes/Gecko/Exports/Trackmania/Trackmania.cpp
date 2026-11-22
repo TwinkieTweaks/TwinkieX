@@ -311,8 +311,11 @@ namespace Gecko::Exports::Trackmania
 		CMwNod* App = ReadAddr(CMwNod*, (uintptr_t)GetModuleHandleA(NULL) + O_APP);
 		return App;
 	}
+#ifdef TMCN
 	GECKO_EXPORT_FN_EX(s_Exports, "", "CGameCtnApp@ GetApp()", asFUNCTION(GetApp), asCALL_STDCALL);
-
+#else
+	GECKO_EXPORT_FN_EX(s_Exports, "", "CGameApp@ GetApp()", asFUNCTION(GetApp), asCALL_STDCALL);
+#endif
 	void Caster(asIScriptGeneric* Script)
 	{
 		CMwNod* FromNod = (CMwNod*)Script->GetObject();
@@ -594,6 +597,7 @@ namespace Gecko::Exports::Trackmania
 		{
 #ifndef TM1
 			if (Member->MemberType == CMwMemberInfo::STRINGINT) Register<CFastStringInt>(Engine, Class, Member);
+			else
 #endif
 			Register<CFastString>(Engine, Class, Member);
 		}
@@ -930,6 +934,9 @@ namespace Gecko::Exports::Trackmania
 									break;
 								}
 							}
+							std::string MemberName = Member->GetName();
+							if (TypeInfo->GetMethodByName(("get_" + MemberName).c_str()) || TypeInfo->GetMethodByName(("set_" + MemberName).c_str()))
+								SkipMember = true;
 							if (SkipMember) continue;
 						}
 

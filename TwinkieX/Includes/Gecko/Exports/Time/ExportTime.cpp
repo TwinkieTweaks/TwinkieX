@@ -198,7 +198,7 @@ namespace Gecko::Exports::Time
 	with    Info ParseUTC(int64 stamp = -1)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TIME_FN("uint64 get_Now() property", Now);
@@ -221,7 +221,7 @@ namespace Gecko::Exports::Time
 	being   function
 	declare partial
 	reason  short is ignored
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	TIME_FN("string Format(uint64 time, bool fractions = true, bool forceMinutes = true, bool forceHours = false, bool short = false)", FormatUnsigned);
@@ -239,7 +239,7 @@ namespace Gecko::Exports::Time
 	being   prop
 	of      Info
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GECKO_EXPORT_PROP(s_Exports, "Time", "Info", "int Year", offsetof(Info, Year));

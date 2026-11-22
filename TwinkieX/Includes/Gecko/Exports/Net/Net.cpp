@@ -59,7 +59,7 @@ namespace Gecko::Exports::Net
 	as      HttpMethod
 	being   enum
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	NET_HTTPMETHOD_ENUM({"Get" C "Post" C "Head" C "Put" C "Delete" C "Patch"}, {0, 1, 2, 3, 4, 5});
@@ -72,7 +72,7 @@ namespace Gecko::Exports::Net
 	of      HttpRequest
 	being   prop
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	NET_HTTPREQUEST_PROP("string Url", asOFFSET(HttpRequest, Url));
@@ -85,7 +85,7 @@ namespace Gecko::Exports::Net
 	being   prop
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	NET_HTTPREQUEST_PROP("bool Redirect", asOFFSET(HttpRequest, Redirect));
@@ -98,7 +98,7 @@ namespace Gecko::Exports::Net
 	being   prop
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static int HttpRequest_get_Method(HttpRequest* Req)
@@ -126,7 +126,7 @@ namespace Gecko::Exports::Net
 	being   prop
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string HttpRequest_get_Body(HttpRequest* Req)
@@ -149,7 +149,7 @@ namespace Gecko::Exports::Net
 	being   behavior
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpRequest_Factory()
@@ -166,7 +166,7 @@ namespace Gecko::Exports::Net
 	being   behavior
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpRequest_FactoryUrl(const std::string& Url)
@@ -183,7 +183,7 @@ namespace Gecko::Exports::Net
 	being   behavior
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpRequest_FactoryUrlBody(const std::string& Url, const std::string& Body)
@@ -203,7 +203,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare partial
-	since   v0.1.1
+	since   v0.2.0
 	reason  awaitable is not implemented. Returns whether the request could be started.
 	!CompatMeta
 	*/
@@ -221,7 +221,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare partial
-	since   v0.1.1
+	since   v0.2.0
 	reason  awaitable is not implemented. Returns whether the request could be started.
 	!CompatMeta
 	*/
@@ -239,7 +239,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	NET_HTTPREQUEST_METHOD("bool Finished()", asMETHOD(HttpRequest, Finished), asCALL_THISCALL);
@@ -252,7 +252,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static int64_t HttpRequest_ProgressDownload(HttpRequest* Req)
@@ -269,7 +269,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static int64_t HttpRequest_ProgressDownloadTotal(HttpRequest* Req)
@@ -286,7 +286,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static int64_t HttpRequest_ProgressUpload(HttpRequest* Req)
@@ -303,7 +303,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static int64_t HttpRequest_ProgressUploadTotal(HttpRequest* Req)
@@ -320,7 +320,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare partial
-	since   v0.1.1
+	since   v0.2.0
 	reason  Does not throw an exception when the request has not been started.
 	!CompatMeta
 	*/
@@ -334,7 +334,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string HttpRequest_ResponseHeader(const std::string& Key, HttpRequest* Req)
@@ -361,7 +361,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string HttpRequest_String(HttpRequest* Req)
@@ -379,7 +379,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static void HttpRequest_SaveToFile(const std::string& Path, HttpRequest* Req)
@@ -409,7 +409,7 @@ namespace Gecko::Exports::Net
 	being   method
 	of      HttpRequest
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static MemoryBuffer* HttpRequest_Buffer(HttpRequest* Req)
@@ -425,7 +425,7 @@ namespace Gecko::Exports::Net
 	as      HttpRequest@ HttpGet(const string&in url)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpGet(const std::string& Url)
@@ -441,7 +441,7 @@ namespace Gecko::Exports::Net
 	as      HttpRequest@ HttpPost(const string&in url, const string&in data = "", const string&in contentType = "application/x-www-form-urlencoded")
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpPost(const std::string& Url, const std::string& Data, const std::string& ContentType)
@@ -457,7 +457,7 @@ namespace Gecko::Exports::Net
 	as      HttpRequest@ HttpHead(const string&in url)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpHead(const std::string& Url)
@@ -473,7 +473,7 @@ namespace Gecko::Exports::Net
 	as      HttpRequest@ HttpPut(const string&in url, const string&in data = "", const string&in contentType = "application/x-www-form-urlencoded")
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpPut(const std::string& Url, const std::string& Data, const std::string& ContentType)
@@ -489,7 +489,7 @@ namespace Gecko::Exports::Net
 	as      HttpRequest@ HttpDelete(const string&in url)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpDelete(const std::string& Url)
@@ -505,7 +505,7 @@ namespace Gecko::Exports::Net
 	as      HttpRequest@ HttpPatch(const string&in url, const string&in data = "", const string&in contentType = "application/x-www-form-urlencoded")
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static HttpRequest* HttpPatch(const std::string& Url, const std::string& Data, const std::string& ContentType)
@@ -521,7 +521,7 @@ namespace Gecko::Exports::Net
 	as      string UrlEncode(const string&in str)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static std::string UrlEncode(const std::string& Str)
@@ -561,7 +561,7 @@ namespace Gecko::Exports::Net
 	as      string UrlDecode(const string&in str)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static int HexDigitValue(char Char)
@@ -608,7 +608,7 @@ namespace Gecko::Exports::Net
 		being   behavior
 		of      HttpRequest
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Engine->RegisterObjectBehaviour("HttpRequest", asBEHAVE_ADDREF, "void f()", asMETHOD(HttpRequest, AddRef), asCALL_THISCALL);
@@ -621,7 +621,7 @@ namespace Gecko::Exports::Net
 		being   behavior
 		of      HttpRequest
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Engine->RegisterObjectBehaviour("HttpRequest", asBEHAVE_RELEASE, "void f()", asMETHOD(HttpRequest, RemoveRef), asCALL_THISCALL);

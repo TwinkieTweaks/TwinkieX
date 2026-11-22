@@ -183,7 +183,7 @@ namespace Gecko::Exports::Global
 	as      string tostring(const ?&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static void tostring(asIScriptGeneric* Gen)
@@ -200,7 +200,7 @@ namespace Gecko::Exports::Global
 	as      void trace(?&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static void traceAny(asIScriptGeneric* Gen)
@@ -218,7 +218,7 @@ namespace Gecko::Exports::Global
 	as      void print(?&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static void printAny(asIScriptGeneric* Gen)
@@ -236,7 +236,7 @@ namespace Gecko::Exports::Global
 	as      void warn(?&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static void warnAny(asIScriptGeneric* Gen)
@@ -254,7 +254,7 @@ namespace Gecko::Exports::Global
 	as      void error(?&in)
 	being   function
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static void errorAny(asIScriptGeneric* Gen)
@@ -282,7 +282,7 @@ namespace Gecko::Exports::Global
 	being   behavior
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static MemoryBuffer* MemoryBuffer_Factory()
@@ -299,7 +299,7 @@ namespace Gecko::Exports::Global
 	being   behavior
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static MemoryBuffer* MemoryBuffer_FactoryCopy(const MemoryBuffer& Other)
@@ -318,7 +318,7 @@ namespace Gecko::Exports::Global
 	being   behavior
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static MemoryBuffer* MemoryBuffer_FactorySize(uint64_t Size)
@@ -335,7 +335,7 @@ namespace Gecko::Exports::Global
 	being   behavior
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static MemoryBuffer* MemoryBuffer_FactorySizeInit(uint64_t Size, uint8_t Init)
@@ -352,7 +352,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static MemoryBuffer& MemoryBuffer_opAssign(const MemoryBuffer& Other, MemoryBuffer* Buf)
@@ -370,7 +370,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Resize(uint64 size)", asMETHOD(MemoryBuffer, Resize), asCALL_THISCALL);
@@ -383,7 +383,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("uint64 GetSize()", asMETHOD(MemoryBuffer, GetSize), asCALL_THISCALL);
@@ -396,7 +396,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("uint64 GetPosition()", asMETHOD(MemoryBuffer, GetPosition), asCALL_THISCALL);
@@ -409,7 +409,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static void MemoryBuffer_Seek(uint64_t Pos, int Dir, MemoryBuffer* Buf)
@@ -426,7 +426,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("bool AtEnd()", asMETHOD(MemoryBuffer, AtEnd), asCALL_THISCALL);
@@ -439,7 +439,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const uint8&in i)", asMETHODPR(MemoryBuffer, Write, (const uint8_t&), void), asCALL_THISCALL);
@@ -452,7 +452,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const uint16&in i)", asMETHODPR(MemoryBuffer, Write, (const uint16_t&), void), asCALL_THISCALL);
@@ -465,7 +465,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const uint&in i)", asMETHODPR(MemoryBuffer, Write, (const uint32_t&), void), asCALL_THISCALL);
@@ -478,7 +478,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const uint64&in i)", asMETHODPR(MemoryBuffer, Write, (const uint64_t&), void), asCALL_THISCALL);
@@ -491,7 +491,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const int8&in i)", asMETHODPR(MemoryBuffer, Write, (const int8_t&), void), asCALL_THISCALL);
@@ -504,7 +504,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const int16&in i)", asMETHODPR(MemoryBuffer, Write, (const int16_t&), void), asCALL_THISCALL);
@@ -517,7 +517,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const int&in i)", asMETHODPR(MemoryBuffer, Write, (const int32_t&), void), asCALL_THISCALL);
@@ -530,7 +530,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const int64&in i)", asMETHODPR(MemoryBuffer, Write, (const int64_t&), void), asCALL_THISCALL);
@@ -543,7 +543,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const float&in i)", asMETHODPR(MemoryBuffer, Write, (const float&), void), asCALL_THISCALL);
@@ -556,7 +556,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const double&in i)", asMETHODPR(MemoryBuffer, Write, (const double&), void), asCALL_THISCALL);
@@ -569,7 +569,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void Write(const string&in str)", asMETHODPR(MemoryBuffer, Write, (const std::u8string&), void), asCALL_THISCALL);
@@ -582,7 +582,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void WriteFromBuffer(const MemoryBuffer&in buf, uint64 size)", asMETHODPR(MemoryBuffer, Write, (const MemoryBuffer&, uint64_t), void), asCALL_THISCALL);
@@ -595,7 +595,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("uint8 ReadUInt8()", asMETHOD(MemoryBuffer, ReadUInt8), asCALL_THISCALL);
@@ -608,7 +608,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("uint16 ReadUInt16()", asMETHOD(MemoryBuffer, ReadUInt16), asCALL_THISCALL);
@@ -621,7 +621,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("uint ReadUInt32()", asMETHOD(MemoryBuffer, ReadUInt32), asCALL_THISCALL);
@@ -634,7 +634,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("uint64 ReadUInt64()", asMETHOD(MemoryBuffer, ReadUInt64), asCALL_THISCALL);
@@ -647,7 +647,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("int8 ReadInt8()", asMETHOD(MemoryBuffer, ReadInt8), asCALL_THISCALL);
@@ -660,7 +660,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("int16 ReadInt16()", asMETHOD(MemoryBuffer, ReadInt16), asCALL_THISCALL);
@@ -673,7 +673,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("int ReadInt32()", asMETHOD(MemoryBuffer, ReadInt32), asCALL_THISCALL);
@@ -686,7 +686,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("int64 ReadInt64()", asMETHOD(MemoryBuffer, ReadInt64), asCALL_THISCALL);
@@ -699,7 +699,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("float ReadFloat()", asMETHOD(MemoryBuffer, ReadFloat), asCALL_THISCALL);
@@ -712,7 +712,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("double ReadDouble()", asMETHOD(MemoryBuffer, ReadDouble), asCALL_THISCALL);
@@ -725,7 +725,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("string ReadString(uint64 size)", asMETHOD(MemoryBuffer, ReadString), asCALL_THISCALL);
@@ -738,7 +738,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	static MemoryBuffer* MemoryBuffer_ReadBuffer(uint64_t Size, MemoryBuffer* Buf)
@@ -755,7 +755,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void WriteFromBase64(const string&in, bool url = false)", asMETHOD(MemoryBuffer, WriteFromBase64), asCALL_THISCALL);
@@ -768,7 +768,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("string ReadToBase64(uint64 size, bool url = false)", asMETHOD(MemoryBuffer, ReadToBase64), asCALL_THISCALL);
@@ -781,7 +781,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("void WriteFromHex(const string&in)", asMETHOD(MemoryBuffer, WriteFromHex), asCALL_THISCALL);
@@ -794,7 +794,7 @@ namespace Gecko::Exports::Global
 	being   method
 	of      MemoryBuffer
 	declare full
-	since   v0.1.1
+	since   v0.2.0
 	!CompatMeta
 	*/
 	GLOBAL_MEMORYBUFFER_METHOD("string ReadToHex(uint64 size, bool upper = false)", asMETHOD(MemoryBuffer, ReadToHex), asCALL_THISCALL);
@@ -817,7 +817,7 @@ namespace Gecko::Exports::Global
 		being   behavior
 		of      MemoryBuffer
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Engine->RegisterObjectBehaviour("MemoryBuffer", asBEHAVE_ADDREF, "void f()", asMETHOD(MemoryBuffer, AddRef), asCALL_THISCALL);
@@ -830,7 +830,7 @@ namespace Gecko::Exports::Global
 		being   behavior
 		of      MemoryBuffer
 		declare full
-		since   v0.1.1
+		since   v0.2.0
 		!CompatMeta
 		*/
 		Engine->RegisterObjectBehaviour("MemoryBuffer", asBEHAVE_RELEASE, "void f()", asMETHOD(MemoryBuffer, RemoveRef), asCALL_THISCALL);

@@ -4,6 +4,9 @@
 namespace TwinkNvg
 {
 	extern NVGcontext* Context;
+	extern uint32_t Generation;
+
+	bool IsInFrame();
 
 	bool Init();
 	void Invalidate();
