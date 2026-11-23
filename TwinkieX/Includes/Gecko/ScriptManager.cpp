@@ -132,10 +132,11 @@ namespace Gecko
 
 	ScriptManager::~ScriptManager()
 	{
-		for (auto& Script : Scripts)
+		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
 		{
-			StopCoroutines(Script);
-			Script.Ctxs.ReleaseAll();
+			RunCallback(Idx, CallbackType::OnDestroyed);
+			StopCoroutines(Scripts[Idx]);
+			Scripts[Idx].Ctxs.ReleaseAll();
 		}
 
 		Engine->ShutDownAndRelease();
@@ -248,6 +249,11 @@ namespace Gecko
 	{
 		LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)Script.Name.c_str())));
 
+		if (&Script >= Scripts.data() && &Script < Scripts.data() + Scripts.size())
+		{
+			RunCallback((size_t)(&Script - Scripts.data()), CallbackType::OnDestroyed);
+		}
+
 		StopCoroutines(Script);
 
 		if (Engine->GetModule((const char*)Script.Name.c_str()))
@@ -281,52 +287,93 @@ namespace Gecko
 		}
 	}
 
-	void ScriptManager::RunAll(CallbackType CallbackType)
+	static bool ReturnsInputBlocking(CallbackType CallbackType)
 	{
-		static bool Running = false;
-		if (Running) return;
-		Running = true;
+		return CallbackType == CallbackType::OnKeyPress_InputBlockingReturn
+			|| CallbackType == CallbackType::OnMouseButton_InputBlockingReturn
+			|| CallbackType == CallbackType::OnMouseWheel_InputBlockingReturn;
+	}
 
-		ActiveScriptIdx = 0;
-		ActiveCallbackType = CallbackType;
-		for (auto& Script : Scripts)
+	bool ScriptManager::RunAll(CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs)
+	{
+		bool Blocked = false;
+		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
 		{
-			if (!Script.Enabled)
-			{
-				ActiveScriptIdx++;
-				continue;
-			}
+			if (RunCallback(Idx, CallbackType, SetArgs)) Blocked = true;
+		}
+		return Blocked;
+	}
 
-			if (CallbackType == CallbackType::Main)
-			{
-				RunMainTick(Script);
-				ActiveScriptIdx++;
-				continue;
-			}
+	bool ScriptManager::RunCallback(size_t ScriptIdx, CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs)
+	{
+		if (Running || ScriptIdx >= Scripts.size()) return false;
 
-			asIScriptContext*& CtxFromCallback = Script.Ctxs[(size_t)CallbackType];
-			if (!CtxFromCallback)
-			{
-				ActiveScriptIdx++;
-				continue;
-			}
+		Script& Script = Scripts[ScriptIdx];
+		if (!Script.Enabled) return false;
+		if (CallbackType != CallbackType::Main && !Script.Ctxs[(size_t)CallbackType]) return false;
 
-			if (ExecuteContext(Script, CtxFromCallback, TimeoutDurationMs) != asEXECUTION_SUSPENDED)
+		Running = true;
+		ActiveScriptIdx = (intmax_t)ScriptIdx;
+		ActiveCallbackType = CallbackType;
+
+		bool Blocked = false;
+		if (CallbackType == CallbackType::Main)
+		{
+			RunMainTick(Script);
+		}
+		else
+		{
+			asIScriptContext*& Ctx = Script.Ctxs[(size_t)CallbackType];
+			if (SetArgs && Ctx->GetState() == asEXECUTION_PREPARED) SetArgs(Ctx);
+
+			int r = ExecuteContext(Script, Ctx, TimeoutDurationMs);
+			if (r != asEXECUTION_SUSPENDED)
 			{
+				if (r == asEXECUTION_FINISHED && ReturnsInputBlocking(CallbackType)) Blocked = Ctx->GetReturnDWord() == 1;
+
 				auto Module = Engine->GetModule((const char*)Script.Name.c_str());
 				auto CallbackFn = Module ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType]) : nullptr;
-				if (!CallbackFn || CtxFromCallback->Prepare(CallbackFn) < 0)
+				if (!CallbackFn || Ctx->Prepare(CallbackFn) < 0)
 				{
-					CtxFromCallback->Release();
-					CtxFromCallback = nullptr;
+					Ctx->Release();
+					Ctx = nullptr;
 				}
 			}
-
-			ActiveScriptIdx++;
 		}
+
 		ActiveCallbackType = CallbackType::Main;
 		ActiveScriptIdx = -1;
 		Running = false;
+		return Blocked;
+	}
+
+	void ScriptManager::SetEnabled(size_t ScriptIdx, bool Enabled)
+	{
+		if (ScriptIdx >= Scripts.size() || Scripts[ScriptIdx].Enabled == Enabled) return;
+
+		if (Enabled)
+		{
+			Scripts[ScriptIdx].Enabled = true;
+			RunCallback(ScriptIdx, CallbackType::OnEnabled);
+		}
+		else
+		{
+			RunCallback(ScriptIdx, CallbackType::OnDisabled);
+			Scripts[ScriptIdx].Enabled = false;
+		}
+	}
+
+	void ScriptManager::RenderSettings()
+	{
+		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
+		{
+			Script& Current = Scripts[Idx];
+			if (!Current.Enabled || !Current.Ctxs[(size_t)CallbackType::RenderSettings]) continue;
+
+			ImGui::PushID((int)Idx);
+			if (ImGui::CollapsingHeader((const char*)Current.Id.c_str())) RunCallback(Idx, CallbackType::RenderSettings);
+			ImGui::PopID();
+		}
 	}
 
 	Script* ScriptManager::GetScriptFromCtx(asIScriptContext* Ctx)
@@ -471,6 +518,18 @@ namespace Gecko
 					{
 						ReloadScript(Module);
 						BuildScript(Module);
+					}
+				}
+
+				ImGui::EndMenu();
+			}
+			if (BeginMenu("Enabled modules"))
+			{
+				for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
+				{
+					if (MenuItem((const char*)Scripts[Idx].Id.c_str(), nullptr, Scripts[Idx].Enabled))
+					{
+						SetEnabled(Idx, !Scripts[Idx].Enabled);
 					}
 				}
 

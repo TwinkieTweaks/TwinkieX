@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "Script.h"
+#include <functional>
 
 #include <ZipArchive/ZipArchive.h>
 #include <Twinkie/TwinkLogs/AngelscriptLoggert/AngelscriptLoggert.h>
@@ -74,6 +75,7 @@ namespace Gecko
 		intmax_t ActiveScriptIdx = -1;
 		CallbackType ActiveCallbackType = CallbackType::Main;
 		std::chrono::milliseconds TimeoutDurationMs = 1000ms;
+		bool Running = false;
 
 		ScriptManager();
 		~ScriptManager();
@@ -87,10 +89,13 @@ namespace Gecko
 		void RunMainTick(Script&);
 
 		void RenderDevMenu();
+		void RenderSettings();
+		void SetEnabled(size_t ScriptIdx, bool Enabled);
 		void BuildAll();
 		void BuildScript(Script&);
 		void BuildScriptByCallback(Script&, CallbackType);
-		void RunAll(CallbackType CallbackType);
+		bool RunAll(CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs = {});
+		bool RunCallback(size_t ScriptIdx, CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs = {});
 		// Adds a script from an .op archive, or from a folder whose .as files (subfolders included) are built as one script
 		void AddFromFile(const std::filesystem::path&, const std::u8string&);
 		void ReloadScript(Script&);

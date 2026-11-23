@@ -121,6 +121,10 @@ void TwinkUi::Render()
 	using namespace ImGui;
 
 	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Main);
+	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Update, [](asIScriptContext* Ctx)
+	{
+		Ctx->SetArgFloat(0, GetIO().DeltaTime * 1000.0f);
+	});
 
 	IoMgr.Sync();
 
@@ -147,6 +151,8 @@ void TwinkUi::Render()
 		}
 		ModuleQueue = {};
 	}
+
+	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::RenderEarly);
 
 	if (TwinkUiState::RenderUi)
 	{
@@ -200,6 +206,8 @@ void TwinkUi::Render()
 					Module->RenderMenu();
 				}
 
+				Gecko::TheScriptManager->RunAll(Gecko::CallbackType::RenderMenu);
+
 				ImGui::EndMenu();
 			}
 
@@ -209,6 +217,8 @@ void TwinkUi::Render()
 
 				Module->RenderMenuMain();
 			}
+
+			Gecko::TheScriptManager->RunAll(Gecko::CallbackType::RenderMenuMain);
 
 			Logger.Render();
 
@@ -223,6 +233,7 @@ void TwinkUi::Render()
 		if (Begin("Settings##Twinkie", &ShowSettings, TwinkUiState::DefaultWindowFlags()))
 		{
 			Veridian::RenderAll("Twinkie");
+			Gecko::TheScriptManager->RenderSettings();
 		}
 		End();
 	}
@@ -236,6 +247,7 @@ void TwinkUi::Render()
 	}
 
 	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Render);
+	if (TwinkUiState::RenderUi) Gecko::TheScriptManager->RunAll(Gecko::CallbackType::RenderInterface);
 
 	if (Font) PopFont();
 
@@ -374,6 +386,100 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 #endif
 }
 
+static bool RunInputCallbacks(UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	using Gecko::CallbackType;
+
+	Gecko::ScriptManager* Manager = Gecko::TheScriptManager;
+	if (!Manager) return false;
+
+	int X = (int)(short)LOWORD(lParam);
+	int Y = (int)(short)HIWORD(lParam);
+
+	auto Run = [&](CallbackType Void, CallbackType Blocking, const std::function<void(asIScriptContext*)>& SetArgs)
+	{
+		bool Blocked = Manager->RunAll(Void, SetArgs);
+		return Manager->RunAll(Blocking, SetArgs) || Blocked;
+	};
+
+	auto Button = [&](bool Down, int Index)
+	{
+		return Run(CallbackType::OnMouseButton_VoidReturn, CallbackType::OnMouseButton_InputBlockingReturn, [&](asIScriptContext* Ctx)
+		{
+			Ctx->SetArgByte(0, Down);
+			Ctx->SetArgDWord(1, (asDWORD)Index);
+			Ctx->SetArgDWord(2, (asDWORD)X);
+			Ctx->SetArgDWord(3, (asDWORD)Y);
+		});
+	};
+
+	auto Wheel = [&](int& Remainder, bool Horizontal)
+	{
+		Remainder += GET_WHEEL_DELTA_WPARAM(wParam);
+		int Notches = Remainder / WHEEL_DELTA;
+		if (!Notches) return false;
+		Remainder -= Notches * WHEEL_DELTA;
+
+		return Run(CallbackType::OnMouseWheel_VoidReturn, CallbackType::OnMouseWheel_InputBlockingReturn, [&](asIScriptContext* Ctx)
+		{
+			Ctx->SetArgDWord(0, (asDWORD)(Horizontal ? Notches : 0));
+			Ctx->SetArgDWord(1, (asDWORD)(Horizontal ? 0 : Notches));
+		});
+	};
+
+	static int VerticalRemainder = 0;
+	static int HorizontalRemainder = 0;
+
+	switch (uMsg)
+	{
+	case WM_KEYDOWN:
+	case WM_SYSKEYDOWN:
+	case WM_KEYUP:
+	case WM_SYSKEYUP:
+	{
+		bool Down = uMsg == WM_KEYDOWN || uMsg == WM_SYSKEYDOWN;
+		return Run(CallbackType::OnKeyPress_VoidReturn, CallbackType::OnKeyPress_InputBlockingReturn, [&](asIScriptContext* Ctx)
+		{
+			Ctx->SetArgByte(0, Down);
+			Ctx->SetArgDWord(1, (asDWORD)wParam);
+		});
+	}
+	case WM_LBUTTONDOWN:
+	case WM_LBUTTONDBLCLK:
+		return Button(true, 0);
+	case WM_LBUTTONUP:
+		return Button(false, 0);
+	case WM_RBUTTONDOWN:
+	case WM_RBUTTONDBLCLK:
+		return Button(true, 1);
+	case WM_RBUTTONUP:
+		return Button(false, 1);
+	case WM_MBUTTONDOWN:
+	case WM_MBUTTONDBLCLK:
+		return Button(true, 2);
+	case WM_MBUTTONUP:
+		return Button(false, 2);
+	case WM_XBUTTONDOWN:
+	case WM_XBUTTONDBLCLK:
+		return Button(true, GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? 3 : 4);
+	case WM_XBUTTONUP:
+		return Button(false, GET_XBUTTON_WPARAM(wParam) == XBUTTON1 ? 3 : 4);
+	case WM_MOUSEMOVE:
+		Manager->RunAll(CallbackType::OnMouseMove, [&](asIScriptContext* Ctx)
+		{
+			Ctx->SetArgDWord(0, (asDWORD)X);
+			Ctx->SetArgDWord(1, (asDWORD)Y);
+		});
+		return false;
+	case WM_MOUSEWHEEL:
+		return Wheel(VerticalRemainder, false);
+	case WM_MOUSEHWHEEL:
+		return Wheel(HorizontalRemainder, true);
+	default:
+		return false;
+	}
+}
+
 static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	if (!TwinkUiState::ImGuiInit)
@@ -439,6 +545,9 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 		if (io.WantCaptureMouse && (uMsg >= WM_MOUSEFIRST && uMsg <= WM_MOUSELAST))
 			return TRUE;
 	}
+
+	if (RunInputCallbacks(uMsg, wParam, lParam))
+		return TRUE;
 
 	return CallWindowProc(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);
 }
