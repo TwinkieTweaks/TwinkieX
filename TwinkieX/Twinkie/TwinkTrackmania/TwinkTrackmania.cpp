@@ -272,6 +272,7 @@ CMwStack::ItemType TwinkTrackmania::GetProcParamItemType(const CMwMemberInfoProc
 		case CMwMemberInfo::INT3:      return CMwStack::ITEM_INT3;
 		case CMwMemberInfo::NAT3:      return CMwStack::ITEM_UINT3;
 		case CMwMemberInfo::STRINGINT: return CMwStack::ITEM_WSTRING;
+		case CMwMemberInfo::ID:        return CMwStack::ITEM_ID;
 #endif
 		default:                       return CMwStack::ITEM_MEMBER;
 		}
@@ -355,3 +356,199 @@ __declspec(noinline) EGame TwinkTrackmania::GetGame()
 }
 
 // END Getters
+
+namespace
+{
+#ifdef TMCN
+	struct MwIdNameChunk
+	{
+		const uint32_t* Offsets;
+		uint32_t Count;
+	};
+
+	struct MwIdNameTable
+	{
+		const char* const* Pool = nullptr;
+		const uint32_t* PoolSize = nullptr;
+		const MwIdNameChunk* Chunks = nullptr;
+		const uint32_t* ChunkCount = nullptr;
+	};
+
+	struct MwIdNameView
+	{
+		const char* Ptr;
+		uint32_t Length;
+	};
+
+	constexpr uint32_t MaxMwIdNameChunks = 32;
+#elif defined(TM1)
+	struct MwIdNameTable
+	{
+		uint32_t Count;
+		const CFastString* Names;
+		uint32_t Capacity;
+	};
+#else
+	constexpr uint32_t MaxMwIdNameChunks = 32;
+
+	struct MwIdNameChunk
+	{
+		uint32_t Unknown;
+		uint32_t Count;
+		const uint32_t* Offsets;
+	};
+
+	struct MwIdNameTable
+	{
+		uint32_t PoolSize;
+		const char* Pool;
+		uint32_t PoolCapacity;
+		MwIdNameChunk Chunks[MaxMwIdNameChunks];
+		uint32_t ChunkCount;
+	};
+	static_assert(offsetof(MwIdNameTable, ChunkCount) == 0x18C);
+#endif
+
+	bool IsNamedMwId(uint32_t Id)
+	{
+		uint32_t Top = Id & 0xC0000000;
+#ifdef TMCN
+		return Top == 0x40000000;
+#else
+		return Top == 0x40000000 or Top == 0x80000000;
+#endif
+	}
+}
+
+const char* TwinkTrackmania::LookupMwIdName(uint32_t Id)
+{
+#ifdef TMCN
+	static MwIdNameTable Table = [this]
+	{
+		MwIdNameTable Found{};
+		auto Lookup = (const uint8_t*)SigScan("8B 11 8B C2 25 00 00 00 C0 3D 00 00 00 40 75 ?? 81 E2 FF FF FF 3F 4C 8D 05 ?? ?? ?? ?? 8B C2 0F B7 CA 48 C1 E8 10 48 03 C0 49 8B 04 C0 8B 04 88 48 03 05");
+		if (!Lookup) return Found;
+
+		const uint8_t* Chunks = Lookup + 0x1D + *(const int32_t*)(Lookup + 0x19);
+		const uint8_t* Pool = Lookup + 0x37 + *(const int32_t*)(Lookup + 0x33);
+		Found.Pool = (const char* const*)Pool;
+		Found.PoolSize = (const uint32_t*)(Pool + sizeof(void*));
+		Found.Chunks = (const MwIdNameChunk*)Chunks;
+		Found.ChunkCount = (const uint32_t*)(Chunks + MaxMwIdNameChunks * sizeof(MwIdNameChunk));
+		return Found;
+	}();
+
+	if (!Table.Chunks or !IsNamedMwId(Id)) return nullptr;
+
+	uint32_t Index = Id & 0x3FFFFFFF;
+	uint32_t ChunkIdx = Index >> 16;
+	uint32_t Slot = Index & 0xFFFF;
+	if (ChunkIdx >= MaxMwIdNameChunks or ChunkIdx >= *Table.ChunkCount) return nullptr;
+
+	const MwIdNameChunk& Chunk = Table.Chunks[ChunkIdx];
+	if (!Chunk.Offsets or Slot >= Chunk.Count) return nullptr;
+
+	uint32_t Offset = Chunk.Offsets[Slot];
+	const char* Pool = *Table.Pool;
+	if (Offset == 0xFFFFFFFF or !Pool or Offset >= *Table.PoolSize) return nullptr;
+	return Pool + Offset;
+#elif defined(TM1)
+	static auto TablePtr = [this]() -> MwIdNameTable* const*
+	{
+		auto Lookup = (const uint8_t*)SigScan("8B 01 8B C8 81 E1 00 00 00 C0 81 F9 00 00 00 40 74 03 33 C0 C3 25 FF FF FF 3F 8D 14 40 A1");
+		return Lookup ? *(MwIdNameTable* const**)(Lookup + 0x1E) : nullptr;
+	}();
+
+	if (!TablePtr or !*TablePtr or !IsNamedMwId(Id)) return nullptr;
+
+	const MwIdNameTable* Table = *TablePtr;
+	uint32_t Index = Id & 0x3FFFFFFF;
+	if (!Table->Names or Index >= Table->Count) return nullptr;
+	return Table->Names[Index].CStr;
+#else
+	static auto TablePtr = [this]() -> MwIdNameTable* const*
+	{
+		auto Lookup = (const uint8_t*)SigScan("8B 01 8B C8 81 E1 00 00 00 C0 81 F9 00 00 00 40 74 0B 81 F9 00 00 00 80 74 03 33 C0 C3 25 FF FF FF 3F");
+		if (!Lookup) return nullptr;
+
+		for (uint32_t Offset = 0x22; Offset < 0x40; Offset++)
+		{
+			if (Lookup[Offset] == 0x8B and (Lookup[Offset + 1] == 0x0D or Lookup[Offset + 1] == 0x35))
+				return *(MwIdNameTable* const**)(Lookup + Offset + 2);
+		}
+		return nullptr;
+	}();
+
+	if (!TablePtr or !*TablePtr or !IsNamedMwId(Id)) return nullptr;
+
+	const MwIdNameTable* Table = *TablePtr;
+	uint32_t Index = Id & 0x3FFFFFFF;
+	uint32_t ChunkIdx = Index >> 16;
+	uint32_t Slot = Index & 0xFFFF;
+	if (ChunkIdx >= MaxMwIdNameChunks or ChunkIdx >= Table->ChunkCount) return nullptr;
+
+	const MwIdNameChunk& Chunk = Table->Chunks[ChunkIdx];
+	if (!Chunk.Offsets or Slot >= Chunk.Count) return nullptr;
+
+	uint32_t Offset = Chunk.Offsets[Slot];
+	if (Offset == 0xFFFFFFFF or !Table->Pool or Offset >= Table->PoolSize) return nullptr;
+	return Table->Pool + Offset;
+#endif
+}
+
+std::string TwinkTrackmania::GetMwIdName(uint32_t Id)
+{
+	if (IsNamedMwId(Id))
+	{
+		const char* Name = LookupMwIdName(Id);
+		return Name ? Name : "";
+	}
+
+	switch (Id & 0xC0000000)
+	{
+	case 0x00000000:
+#ifdef TMCN
+		return std::format("#{}", Id);
+#else
+		return std::format("Id{}", Id);
+#endif
+	case 0x80000000:
+		return "Internal Error";
+	default:
+		return "Unassigned";
+	}
+}
+
+bool TwinkTrackmania::IsMwIdValid(uint32_t Id)
+{
+	if (IsNamedMwId(Id)) return LookupMwIdName(Id) != nullptr;
+	return (Id & 0xC0000000) != 0x80000000;
+}
+
+void TwinkTrackmania::SetMwIdName(uint32_t& Id, const std::string& Name)
+{
+#ifdef TMCN
+	using SetNameFn = void (*)(uint32_t*, const MwIdNameView*);
+	static auto Set = (SetNameFn)SigScan("48 89 5C 24 08 57 48 83 EC 30 0F 28 02 48 8B D9 48 8D 4C 24 20 66 0F 7F 44 24 20 48 8B FA E8 ?? ?? ?? ?? 85 C0 74 ?? C7 03 FF FF FF FF");
+	if (!Set) return;
+
+	alignas(16) MwIdNameView View{ Name.c_str(), (uint32_t)Name.size() };
+	Set(&Id, &View);
+#else
+	using NameToIndexFn = uint32_t(__cdecl*)(const char*);
+	static auto NameToIndex = [this]() -> NameToIndexFn
+	{
+		auto Call = (const uint8_t*)SigScan("B9 0B 00 00 00 33 D2 F3 A6 5F 5E 74 ?? 50 E8");
+		if (!Call) return nullptr;
+		return (NameToIndexFn)(Call + 0x13 + *(const int32_t*)(Call + 0x0F));
+	}();
+	if (!NameToIndex) return;
+
+	if (Name.c_str()[0] == '\0' or std::strcmp(Name.c_str(), "Unassigned") == 0)
+	{
+		Id = 0xFFFFFFFF;
+		return;
+	}
+	Id = NameToIndex(Name.c_str()) | 0x40000000;
+#endif
+}

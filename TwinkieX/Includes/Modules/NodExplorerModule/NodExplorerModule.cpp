@@ -79,6 +79,33 @@ void NodExplorerModule::SetClassInfoPopup(CMwClassInfo* ClassInfo, const std::st
 	HasSetWindowPositionForPopup = false;
 }
 
+#ifndef TM1
+static std::string WideToUtf8(const wchar_t* Str, uint32_t Count)
+{
+	if (!Str || !Count) return "";
+	int Size = WideCharToMultiByte(CP_UTF8, 0, Str, (int)Count, nullptr, 0, nullptr, nullptr);
+	if (Size <= 0) return "";
+	std::string Utf8((size_t)Size, '\0');
+	WideCharToMultiByte(CP_UTF8, 0, Str, (int)Count, Utf8.data(), Size, nullptr, nullptr);
+	return Utf8;
+}
+#endif
+
+static std::string ReadGameString(const CFastString& String)
+{
+	if (!String.CStr) return "";
+#ifdef TM1
+	return std::string(String.CStr, strnlen(String.CStr, String.Count));
+#else
+	return std::string(String.CStr, String.Count);
+#endif
+}
+
+static void RenderStringValue(const char* Label, std::string Shown)
+{
+	InputText(Label, Shown.data(), Shown.size() + 1, ImGuiInputTextFlags_ReadOnly);
+}
+
 std::string NodExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 {
 	std::string MemberNameFallback = MemberInfo->MemberName;
@@ -451,6 +478,40 @@ void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					break;
 				}
 
+				case CMwMemberInfo::STRING:
+				{
+					CFastString* String = Twinkie->ParamGet<CFastString>(Nod, MemberInfo, IsNodImpersistent);
+					if (!String) goto RerenderMember;
+					RenderStringValue(FancyMemberName.c_str(), ReadGameString(*String));
+					break;
+				}
+
+#ifndef TM1
+				case CMwMemberInfo::STRINGINT:
+				{
+					CFastStringInt* String = Twinkie->ParamGet<CFastStringInt>(Nod, MemberInfo, IsNodImpersistent);
+					if (!String) goto RerenderMember;
+					RenderStringValue(FancyMemberName.c_str(), WideToUtf8(String->CStr, String->Count));
+					break;
+				}
+#endif
+
+#if defined(TMCN) || defined(TMU)
+				case CMwMemberInfo::ID:
+				{
+					uint32_t* Id = Twinkie->ParamGet<uint32_t>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Id) goto RerenderMember;
+					uint32_t IdV = *Id;
+					if (InputScalar(FancyMemberName.c_str(), ImGuiDataType_U32, &IdV, nullptr, nullptr, "0x%08X"))
+					{
+						Twinkie->ParamSet(Nod, MemberInfo, &IdV);
+					}
+					SameLine();
+					TextDisabled("%s", Twinkie->GetMwIdName(IdV).c_str());
+					break;
+				}
+#endif
+
 				case CMwMemberInfo::BOOL:
 				{
 					bool* Bool = Twinkie->ParamGet<bool>(Nod, MemberInfo, IsNodImpersistent);
@@ -504,16 +565,6 @@ void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 }
 
 #ifdef TMCN
-static std::string WideToUtf8(const wchar_t* Str, uint32_t Count)
-{
-	if (!Str || !Count) return "";
-	int Size = WideCharToMultiByte(CP_UTF8, 0, Str, (int)Count, nullptr, 0, nullptr, nullptr);
-	if (Size <= 0) return "";
-	std::string Utf8((size_t)Size, '\0');
-	WideCharToMultiByte(CP_UTF8, 0, Str, (int)Count, Utf8.data(), Size, nullptr, nullptr);
-	return Utf8;
-}
-
 static std::wstring Utf8ToWide(const char* Str)
 {
 	int Size = MultiByteToWideChar(CP_UTF8, 0, Str, -1, nullptr, 0);
@@ -525,7 +576,7 @@ static std::wstring Utf8ToWide(const char* Str)
 }
 #endif
 
-static void RenderProcValue(CMwStack::ItemType ItemType, const char* Label, ProcCallState::ParamValue& Value, bool ReadOnly)
+static void RenderProcValue(TwinkTrackmania* Twinkie, CMwStack::ItemType ItemType, const char* Label, ProcCallState::ParamValue& Value, bool ReadOnly)
 {
 	void* Storage = Value.Storage;
 
@@ -563,6 +614,11 @@ static void RenderProcValue(CMwStack::ItemType ItemType, const char* Label, Proc
 		break;
 	case CMwStack::ITEM_UINT3:
 		InputScalarN(Label, ImGuiDataType_U32, Storage, 3);
+		break;
+	case CMwStack::ITEM_ID:
+		InputScalar(Label, ImGuiDataType_U32, Storage, nullptr, nullptr, "0x%08X");
+		SameLine();
+		TextDisabled("%s", Twinkie->GetMwIdName(*(uint32_t*)Storage).c_str());
 		break;
 #endif
 	case CMwStack::ITEM_ISO4:
@@ -645,7 +701,7 @@ void NodExplorerModule::RenderProcCall(CMwNod* Nod, CMwMemberInfoProc* Proc, con
 		}
 		else if (IsInput)
 		{
-			RenderProcValue(ItemType, Label.c_str(), Value, false);
+			RenderProcValue(Twinkie, ItemType, Label.c_str(), Value, false);
 		}
 		else if (!State.HasResult)
 		{
@@ -659,7 +715,7 @@ void NodExplorerModule::RenderProcCall(CMwNod* Nod, CMwMemberInfoProc* Proc, con
 		}
 		else
 		{
-			RenderProcValue(ItemType, Label.c_str(), Value, true);
+			RenderProcValue(Twinkie, ItemType, Label.c_str(), Value, true);
 		}
 		PopID();
 	}

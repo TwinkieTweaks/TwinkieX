@@ -358,6 +358,47 @@ namespace Gecko::Exports::Trackmania
 		Script->SetReturnAddress(nullptr);
 	}
 
+	static size_t VirtualValueSize(const CMwMemberInfo* Member)
+	{
+		using enum CMwMemberInfo::EType;
+
+		switch (Member->MemberType)
+		{
+		case BOOL:
+		case INT:
+		case INTRANGE:
+		case NATURAL:
+		case NATURALRANGE:
+		case REAL:
+		case REALRANGE:
+#if defined(TMCN) || defined(TMU)
+		case ID:
+#endif
+			return sizeof(uint32_t);
+		case VEC2:
+			return sizeof(float) * 2;
+		case COLOR:
+		case VEC3:
+			return sizeof(float) * 3;
+		case VEC4:
+			return sizeof(float) * 4;
+		case ISO3:
+			return sizeof(float) * 6;
+		case ISO4:
+			return sizeof(float) * 12;
+#ifdef TMCN
+		case INT2:
+		case NAT2:
+			return sizeof(uint32_t) * 2;
+		case INT3:
+		case NAT3:
+			return sizeof(uint32_t) * 3;
+#endif
+		default:
+			return 0;
+		}
+	}
+
 	void VirtualGetAs(asIScriptGeneric* Script)
 	{
 		using enum CMwMemberInfo::EType;
@@ -365,25 +406,34 @@ namespace Gecko::Exports::Trackmania
 		CMwNod* Nod = (CMwNod*)Script->GetObject();
 		CMwMemberInfo* Member = (CMwMemberInfo*)Script->GetAuxiliary();
 
-		// TODO: Add other types.
-		switch (Member->MemberType)
+		if (Member->MemberType == CLASS)
 		{
-		case CLASS:
 			Script->SetReturnAddress(gTwinkie.TrackmaniaMgr.ParamGet<CMwNod*>(Nod, Member));
-			break;
-		case NATURAL:
-			{
-				auto pV = gTwinkie.TrackmaniaMgr.ParamGet<uint32_t>(Nod, Member);
-				Script->SetReturnDWord(pV ? 0 : *pV);
-				break;
-			}
-		default:
-			break;
+			return;
 		}
 
-		if (Member->MemberType == CMwMemberInfo::CLASS)
+		alignas(16) uint8_t Value[64] = {};
+		size_t Size = VirtualValueSize(Member);
+		if (const uint8_t* Source = gTwinkie.TrackmaniaMgr.ParamGet<uint8_t>(Nod, Member)) memcpy(Value, Source, Size);
+
+		switch (Member->MemberType)
 		{
-			Script->SetReturnAddress(gTwinkie.TrackmaniaMgr.ParamGet<CMwNod*>(Nod, Member));
+		case BOOL:
+			Script->SetReturnByte(*(const uint32_t*)Value != 0);
+			break;
+		case REAL:
+		case REALRANGE:
+			Script->SetReturnFloat(*(const float*)Value);
+			break;
+		case INT:
+		case INTRANGE:
+		case NATURAL:
+		case NATURALRANGE:
+			Script->SetReturnDWord(*(const uint32_t*)Value);
+			break;
+		default:
+			if (Size) memcpy(Script->GetAddressOfReturnLocation(), Value, Size);
+			break;
 		}
 	}
 
@@ -440,6 +490,9 @@ namespace Gecko::Exports::Trackmania
 		case INT3: return "int3";
 		case NAT2: return "nat2";
 		case NAT3: return "nat3";
+#endif
+#if defined(TMCN) || defined(TMU)
+		case ID: return "MwId";
 #endif
 		default: return {};
 		}
@@ -678,6 +731,416 @@ namespace Gecko::Exports::Trackmania
 		}
 	}
 
+	namespace MwIds
+	{
+		static void Construct(uint32_t* Self) { *Self = 0xFFFFFFFF; }
+		static void ConstructValue(uint32_t Value, uint32_t* Self) { *Self = Value; }
+		static void ConstructCopy(const uint32_t& Other, uint32_t* Self) { *Self = Other; }
+		static bool Equals(const uint32_t& Other, const uint32_t* Self) { return *Self == Other; }
+
+		static std::string GetName(const uint32_t* Self)
+		{
+			return gTwinkie.TrackmaniaMgr.GetMwIdName(*Self);
+		}
+
+		static void SetName(const std::string& Name, uint32_t* Self)
+		{
+			gTwinkie.TrackmaniaMgr.SetMwIdName(*Self, Name);
+		}
+
+		static bool IsValid(const uint32_t* Self)
+		{
+			return gTwinkie.TrackmaniaMgr.IsMwIdValid(*Self);
+		}
+
+		static void Register(asIScriptEngine* Engine)
+		{
+			/*
+			!CompatMeta
+			for     Global
+			with    ~MwId()
+			with    MwId()
+			with    MwId(const MwId&in)
+			with    MwId(uint)
+			being   behavior
+			of      MwId
+			declare full
+			since   v0.2.0
+			!CompatMeta
+			*/
+			Engine->RegisterObjectType("MwId", sizeof(uint32_t), asOBJ_VALUE | asOBJ_POD | asOBJ_APP_PRIMITIVE);
+			Engine->RegisterObjectBehaviour("MwId", asBEHAVE_CONSTRUCT, "void f()", asFUNCTION(Construct), asCALL_CDECL_OBJLAST);
+			Engine->RegisterObjectBehaviour("MwId", asBEHAVE_CONSTRUCT, "void f(const MwId&in)", asFUNCTION(ConstructCopy), asCALL_CDECL_OBJLAST);
+			Engine->RegisterObjectBehaviour("MwId", asBEHAVE_CONSTRUCT, "void f(uint)", asFUNCTION(ConstructValue), asCALL_CDECL_OBJLAST);
+
+			/*
+			!CompatMeta
+			for     Global
+			with    uint Value
+			being   prop
+			of      MwId
+			declare full
+			since   v0.2.0
+			!CompatMeta
+			*/
+			Engine->RegisterObjectProperty("MwId", "uint Value", 0);
+
+			/*
+			!CompatMeta
+			for     Global
+			with    bool opEquals(const MwId&in)
+			as      bool opEquals(const MwId&in) const
+			being   method
+			of      MwId
+			declare full
+			since   v0.2.0
+			!CompatMeta
+			*/
+			Engine->RegisterObjectMethod("MwId", "bool opEquals(const MwId&in) const", asFUNCTION(Equals), asCALL_CDECL_OBJLAST);
+
+			/*
+			!CompatMeta
+			for     Global
+			with    string GetName() const
+			with    void SetName(const string&in)
+			being   method
+			of      MwId
+			declare full
+			since   v0.2.0
+			!CompatMeta
+			*/
+			Engine->RegisterObjectMethod("MwId", "string GetName() const", asFUNCTION(GetName), asCALL_CDECL_OBJLAST);
+			Engine->RegisterObjectMethod("MwId", "void SetName(const string&in)", asFUNCTION(SetName), asCALL_CDECL_OBJLAST);
+			/*
+			!CompatMeta
+			for     Global
+			with    bool IsValid() const
+			being   method
+			of      MwId
+			declare added
+			reason  Checks whether a named ID resolves to a name in the game's name table, or whether any other ID isn't an internal error
+			since   v0.2.0
+			!CompatMeta
+			*/
+			Engine->RegisterObjectMethod("MwId", "bool IsValid() const", asFUNCTION(IsValid), asCALL_CDECL_OBJLAST);
+		}
+	}
+
+	namespace Procs
+	{
+		struct ParamBinding
+		{
+			CMwStack::ItemType Type;
+			bool In;
+			bool Out;
+			int ArgIdx;
+		};
+
+		struct Binding
+		{
+			CMwMemberInfo* Proc;
+			std::vector<ParamBinding> Params;
+			int ReturnIdx = -1;
+		};
+
+		static std::vector<std::unique_ptr<Binding>> s_Bindings;
+
+		static const char* ValueTypeName(CMwStack::ItemType Type)
+		{
+			switch (Type)
+			{
+			case CMwStack::ITEM_BOOL: return "bool";
+			case CMwStack::ITEM_ENUM:
+			case CMwStack::ITEM_UINT: return "uint";
+			case CMwStack::ITEM_INT: return "int";
+			case CMwStack::ITEM_FLOAT: return "float";
+			case CMwStack::ITEM_VEC2: return "vec2";
+			case CMwStack::ITEM_VEC3: return "vec3";
+			case CMwStack::ITEM_ISO4: return "iso4";
+			case CMwStack::ITEM_STRING: return "string";
+#ifdef TMCN
+			case CMwStack::ITEM_INT2: return "int2";
+			case CMwStack::ITEM_INT3: return "int3";
+			case CMwStack::ITEM_UINT3: return "nat3";
+			case CMwStack::ITEM_WSTRING: return "wstring";
+			case CMwStack::ITEM_ID: return "MwId";
+#endif
+			default: return nullptr;
+			}
+		}
+
+		static size_t PodSize(CMwStack::ItemType Type)
+		{
+			switch (Type)
+			{
+			case CMwStack::ITEM_VEC2: return sizeof(float) * 2;
+			case CMwStack::ITEM_VEC3: return sizeof(float) * 3;
+			case CMwStack::ITEM_ISO4: return sizeof(float) * 12;
+#ifdef TMCN
+			case CMwStack::ITEM_INT2: return sizeof(int32_t) * 2;
+			case CMwStack::ITEM_INT3:
+			case CMwStack::ITEM_UINT3: return sizeof(int32_t) * 3;
+			case CMwStack::ITEM_ID: return sizeof(uint32_t);
+#endif
+			default: return 0;
+			}
+		}
+
+		static bool IsDWord(CMwStack::ItemType Type)
+		{
+			return Type == CMwStack::ITEM_ENUM || Type == CMwStack::ITEM_INT || Type == CMwStack::ITEM_UINT;
+		}
+
+		static bool IsPrimitive(CMwStack::ItemType Type)
+		{
+			return Type == CMwStack::ITEM_BOOL || Type == CMwStack::ITEM_FLOAT || IsDWord(Type);
+		}
+
+		static std::string TypeName(const CMwMemberInfoProc::Param& Param, CMwStack::ItemType Type)
+		{
+			if (Type != CMwStack::ITEM_OBJECT) return ValueTypeName(Type) ? ValueTypeName(Type) : "";
+
+			auto Class = ClassIDToInfo.find(Param.Type.AdditionalInfo);
+			return (Class != ClassIDToInfo.end() ? Class->second->GetName() : std::string("CMwNod")) + "@";
+		}
+
+		struct Storage
+		{
+			alignas(16) uint8_t Bytes[64] = {};
+			std::string Narrow;
+#ifndef TM1
+			std::wstring Wide;
+#endif
+		};
+
+		static void ReadArg(asIScriptGeneric* Gen, const ParamBinding& Param, Storage& Value)
+		{
+			void* Bytes = Value.Bytes;
+			if (IsDWord(Param.Type))
+			{
+				*(uint32_t*)Bytes = Gen->GetArgDWord(Param.ArgIdx);
+				return;
+			}
+
+			switch (Param.Type)
+			{
+			case CMwStack::ITEM_BOOL:
+				*(uint32_t*)Bytes = Gen->GetArgByte(Param.ArgIdx) ? 1U : 0U;
+				break;
+			case CMwStack::ITEM_FLOAT:
+				*(float*)Bytes = Gen->GetArgFloat(Param.ArgIdx);
+				break;
+			case CMwStack::ITEM_OBJECT:
+				*(void**)Bytes = Gen->GetArgAddress(Param.ArgIdx);
+				break;
+			case CMwStack::ITEM_STRING:
+			{
+				Value.Narrow = *(const std::string*)Gen->GetArgAddress(Param.ArgIdx);
+				auto String = (CFastString*)Bytes;
+				String->CStr = Value.Narrow.data();
+#ifdef TM1
+				String->Count = (uint32_t)Value.Narrow.size() + 1;
+#else
+				String->Count = (uint32_t)Value.Narrow.size();
+#endif
+				break;
+			}
+#ifdef TMCN
+			case CMwStack::ITEM_WSTRING:
+			{
+				Value.Wide = *(const std::wstring*)Gen->GetArgAddress(Param.ArgIdx);
+				auto String = (CFastStringInt*)Bytes;
+				String->CStr = Value.Wide.data();
+				String->Count = (uint32_t)Value.Wide.size();
+				break;
+			}
+#endif
+			default:
+				memcpy(Bytes, Gen->GetArgAddress(Param.ArgIdx), PodSize(Param.Type));
+				break;
+			}
+		}
+
+		static void WriteOut(const ParamBinding& Param, const Storage& Value, void* Target)
+		{
+			const void* Bytes = Value.Bytes;
+			if (IsDWord(Param.Type))
+			{
+				*(uint32_t*)Target = *(const uint32_t*)Bytes;
+				return;
+			}
+
+			switch (Param.Type)
+			{
+			case CMwStack::ITEM_BOOL:
+				*(bool*)Target = *(const uint32_t*)Bytes != 0;
+				break;
+			case CMwStack::ITEM_FLOAT:
+				*(float*)Target = *(const float*)Bytes;
+				break;
+			case CMwStack::ITEM_OBJECT:
+				*(void**)Target = *(void* const*)Bytes;
+				break;
+			case CMwStack::ITEM_STRING:
+				*(std::string*)Target = GameStrings::Read(*(const CFastString*)Bytes);
+				break;
+#ifdef TMCN
+			case CMwStack::ITEM_WSTRING:
+				*(std::wstring*)Target = GameStrings::Read(*(const CFastStringInt*)Bytes);
+				break;
+#endif
+			default:
+				memcpy(Target, Bytes, PodSize(Param.Type));
+				break;
+			}
+		}
+
+		static void WriteReturn(asIScriptGeneric* Gen, const ParamBinding& Param, const Storage& Value)
+		{
+			const void* Bytes = Value.Bytes;
+			if (IsDWord(Param.Type))
+			{
+				Gen->SetReturnDWord(*(const uint32_t*)Bytes);
+				return;
+			}
+
+			switch (Param.Type)
+			{
+			case CMwStack::ITEM_BOOL:
+				Gen->SetReturnByte(*(const uint32_t*)Bytes != 0);
+				break;
+			case CMwStack::ITEM_FLOAT:
+				Gen->SetReturnFloat(*(const float*)Bytes);
+				break;
+			case CMwStack::ITEM_OBJECT:
+				Gen->SetReturnAddress(*(void* const*)Bytes);
+				break;
+			case CMwStack::ITEM_STRING:
+				new (Gen->GetAddressOfReturnLocation()) std::string(GameStrings::Read(*(const CFastString*)Bytes));
+				break;
+#ifdef TMCN
+			case CMwStack::ITEM_WSTRING:
+				new (Gen->GetAddressOfReturnLocation()) std::wstring(GameStrings::Read(*(const CFastStringInt*)Bytes));
+				break;
+#endif
+			default:
+				memcpy(Gen->GetAddressOfReturnLocation(), Bytes, PodSize(Param.Type));
+				break;
+			}
+		}
+
+		static void Call(asIScriptGeneric* Gen)
+		{
+			auto Nod = (CMwNod*)Gen->GetObject();
+			auto Bound = (Binding*)Gen->GetAuxiliary();
+
+			std::vector<Storage> Values(Bound->Params.size());
+			std::vector<CMwStack::Item> Args;
+			Args.reserve(Bound->Params.size());
+
+			for (size_t ParamIdx = 0; ParamIdx < Bound->Params.size(); ParamIdx++)
+			{
+				const ParamBinding& Param = Bound->Params[ParamIdx];
+				if (Param.In) ReadArg(Gen, Param, Values[ParamIdx]);
+				Args.push_back(CMwStack::Item{ Values[ParamIdx].Bytes, Param.Type });
+			}
+
+			gTwinkie.TrackmaniaMgr.CallProc(Nod, Bound->Proc, Args);
+
+			for (size_t ParamIdx = 0; ParamIdx < Bound->Params.size(); ParamIdx++)
+			{
+				const ParamBinding& Param = Bound->Params[ParamIdx];
+				if (!Param.Out) continue;
+				if ((int)ParamIdx == Bound->ReturnIdx) WriteReturn(Gen, Param, Values[ParamIdx]);
+				else WriteOut(Param, Values[ParamIdx], Gen->GetArgAddress(Param.ArgIdx));
+			}
+		}
+
+		static void Register(asIScriptEngine* Engine, CMwClassInfo* Class, CMwMemberInfo* Member)
+		{
+			auto Proc = (CMwMemberInfoProc*)Member;
+			auto Bound = std::make_unique<Binding>();
+			Bound->Proc = Member;
+
+			std::string ReturnType = "void";
+			std::vector<std::string> ArgDecls;
+
+			for (const CMwMemberInfoProc::Param& Param : Proc->GetParams())
+			{
+				CMwStack::ItemType Type = TwinkTrackmania::GetProcParamItemType(Param.Type);
+				std::string Name = TypeName(Param, Type);
+				bool In = Param.Flags & CMwMemberInfoProc::PARAM_IN;
+				bool Out = !In;
+				if (Name.empty() || (In && (Param.Flags & CMwMemberInfoProc::PARAM_OUT))) return;
+
+				ParamBinding Binding{ Type, In, Out, -1 };
+				if (Out && Bound->ReturnIdx < 0)
+				{
+					Bound->ReturnIdx = (int)Bound->Params.size();
+					ReturnType = Name;
+				}
+				else
+				{
+					Binding.ArgIdx = (int)ArgDecls.size();
+					if (Out) ArgDecls.push_back(Name + " &out");
+					else if (IsPrimitive(Type) || Type == CMwStack::ITEM_OBJECT) ArgDecls.push_back(Name);
+					else ArgDecls.push_back("const " + Name + "&in");
+				}
+				Bound->Params.push_back(Binding);
+			}
+
+			std::string Args;
+			for (size_t ArgIdx = 0; ArgIdx < ArgDecls.size(); ArgIdx++) Args += (ArgIdx ? ", " : "") + ArgDecls[ArgIdx];
+			std::string Decl = std::format("{} {}({})", ReturnType, Member->GetName(), Args);
+
+			auto Type = Engine->GetTypeInfoByName(Class->GetName().c_str());
+			if (!Type || Type->GetMethodByDecl(Decl.c_str())) return;
+
+			if (Engine->RegisterObjectMethod(Class->GetName().c_str(), Decl.c_str(), asFUNCTION(Call), asCALL_GENERIC, Bound.get()) >= 0)
+			{
+				s_Bindings.push_back(std::move(Bound));
+			}
+		}
+	}
+
+	namespace Actions
+	{
+		static void Call(asIScriptGeneric* Gen)
+		{
+			auto Nod = (CMwNod*)Gen->GetObject();
+			auto Member = (CMwMemberInfoAction*)Gen->GetAuxiliary();
+			if (!Nod) return;
+
+			if (Member->Action)
+			{
+				Member->Action(Nod);
+				return;
+			}
+
+			CMwStack Stack{};
+			gTwinkie.TrackmaniaMgr.PushToStack(&Stack, Member);
+			Nod->VirtualParam_Set(&Stack, nullptr);
+		}
+
+		static void Register(asIScriptEngine* Engine, CMwClassInfo* Class, CMwMemberInfo* Member)
+		{
+			auto Type = Engine->GetTypeInfoByName(Class->GetName().c_str());
+			std::string Decl = std::format("void {}()", Member->GetName());
+			if (!Type || Type->GetMethodByDecl(Decl.c_str())) return;
+
+			Engine->RegisterObjectMethod(Class->GetName().c_str(), Decl.c_str(), asFUNCTION(Call), asCALL_GENERIC, Member);
+		}
+	}
+
+	static bool HasMethodNamed(asITypeInfo* Type, const std::string& Name)
+	{
+		for (asUINT MethodIdx = 0; MethodIdx < Type->GetMethodCount(); MethodIdx++)
+		{
+			if (Name == Type->GetMethodByIndex(MethodIdx)->GetName()) return true;
+		}
+		return false;
+	}
+
 	static inline void RegisterClass(asIScriptEngine* Engine, CMwClassInfo* Class)
 	{
 		if (Engine->GetTypeInfoByName(Class->GetName().c_str())) return;
@@ -746,18 +1209,6 @@ namespace Gecko::Exports::Trackmania
 				Member
 			);
 			break;
-		case NATURAL:
-			Engine->RegisterObjectMethod(
-				Class->GetName().c_str(),
-				std::format(
-					"uint get_{}() property",
-					Member->GetName()
-				).c_str(),
-				asFUNCTION(VirtualGetAs),
-				asCALL_GENERIC,
-				Member
-			);
-			break;
 		case STRING:
 #ifndef TM1
 		case STRINGINT:
@@ -765,7 +1216,19 @@ namespace Gecko::Exports::Trackmania
 			GameStrings::Register(Engine, Class, Member);
 			break;
 		default:
+		{
+			std::string Type = VirtualSetType(Member);
+			if (Type.empty()) break;
+
+			Engine->RegisterObjectMethod(
+				Class->GetName().c_str(),
+				std::format("{} get_{}() property", Type, Member->GetName()).c_str(),
+				asFUNCTION(VirtualGetAs),
+				asCALL_GENERIC,
+				Member
+			);
 			break;
+		}
 		}
 	}
 
@@ -871,6 +1334,13 @@ namespace Gecko::Exports::Trackmania
 			Engine->RegisterObjectProperty(Class->GetName().c_str(), std::format("int {}", Member->GetName()).c_str(), Member->MemberOffset);
 			break;
 		}
+#if defined(TMCN) || defined(TMU)
+		case ID:
+		{
+			Engine->RegisterObjectProperty(Class->GetName().c_str(), std::format("MwId {}", Member->GetName()).c_str(), Member->MemberOffset);
+			break;
+		}
+#endif
 		case CLASSBUFFER:
 		{
 			Engine->RegisterObjectProperty(
@@ -960,7 +1430,21 @@ namespace Gecko::Exports::Trackmania
 							std::string MemberName = Member->GetName();
 							if (TypeInfo->GetMethodByName(("get_" + MemberName).c_str()) || TypeInfo->GetMethodByName(("set_" + MemberName).c_str()))
 								SkipMember = true;
+							if (Member->MemberType != CMwMemberInfo::PROC && Member->MemberType != CMwMemberInfo::ACTION && HasMethodNamed(TypeInfo, MemberName))
+								SkipMember = true;
 							if (SkipMember) continue;
+						}
+
+						if (Member->MemberType == CMwMemberInfo::PROC)
+						{
+							Procs::Register(Engine, Class, Member);
+							continue;
+						}
+
+						if (Member->MemberType == CMwMemberInfo::ACTION)
+						{
+							Actions::Register(Engine, Class, Member);
+							continue;
 						}
 
 						// Non-virtual
@@ -1050,6 +1534,7 @@ namespace Gecko::Exports::Trackmania
 	void Registrar(asIScriptEngine* Engine)
 	{
 		BaseTypes::RegistrarBaseTypes(Engine);
+		MwIds::Register(Engine);
 
 		AllowStringSubtypes = true;
 		GameStrings::RegisterArrays<CFastString>(Engine);
@@ -1065,5 +1550,6 @@ namespace Gecko::Exports::Trackmania
 
 	void Cleanup()
 	{
+		Procs::s_Bindings.clear();
 	}
 }

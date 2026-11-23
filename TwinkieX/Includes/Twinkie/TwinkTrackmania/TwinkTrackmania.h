@@ -24,6 +24,14 @@ public:
 	template <typename ReturnT>
 	using GetterReturnT = std::conditional_t<std::is_same_v<ReturnT, CMwNod*>, CMwNod*, ReturnT*>;
 
+	// Where the game puts a virtual member's value. It stays valid until the next virtual get of the same type on this thread
+	template<typename ReturnT>
+	struct VirtualGetResult
+	{
+		GetterReturnT<ReturnT> pReturnValue = nullptr;
+		uint8_t Storage[sizeof(ReturnT) < 64 ? 64 : sizeof(ReturnT)] = {};
+	};
+
 	uintptr_t ExeBaseAddr = 0;
 
 	// Behaviors
@@ -124,6 +132,18 @@ public:
 	template<typename ReturnT = void, typename... TArgs>
 	ReturnT CallProc(CMwNod* Nod, const char* Name, TArgs&&... Args);
 
+	// Gets the name of a named MwId from the game's name table, or null if it isn't a valid named ID.
+	TWINKIEX_API const char* LookupMwIdName(uint32_t Id);
+
+	// Gets an MwId's name like the game does: the table name, "#<number>" ("Id<number>" on GameBox), "Unassigned" or "Internal Error".
+	TWINKIEX_API std::string GetMwIdName(uint32_t Id);
+
+	// Whether a named MwId resolves to a name, or whether any other MwId isn't an internal error.
+	TWINKIEX_API bool IsMwIdValid(uint32_t Id);
+
+	// Sets an MwId from a name, adding the name to the game's table if needed.
+	TWINKIEX_API void SetMwIdName(uint32_t& Id, const std::string& Name);
+
 	// Gets the game type.
 	TWINKIEX_API __declspec(noinline) EGame GetGame();
 
@@ -139,11 +159,8 @@ TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGe
 	// This variable is used only to not let the compiler optimize the type of Stack->Items for GAMEBOX to a single pointer.
 	static CMwStack* PreviousUsedStack = nullptr;
 
-	struct
-	{
-		GetterReturnT<ReturnT> pReturnValue = nullptr;
-		uint8_t Storage[sizeof(ReturnT)] = {};
-	} Result;
+	static thread_local VirtualGetResult<ReturnT> Result;
+	Result = {};
 
 	CMwStack Stack = CMwStack();
 
@@ -183,13 +200,8 @@ TwinkTrackmania::GetterReturnT<typename ReturnT> TwinkTrackmania::VirtualParamGe
 		return nullptr;
 	}
 
-	using ReturnTypeT = std::conditional_t<std::is_same_v<ReturnT, CMwNod*>, CMwNod*, ReturnT*>;
-
-	struct
-	{
-		ReturnTypeT pReturnValue{};
-		ReturnT Storage{};
-	} Result;
+	static thread_local VirtualGetResult<ReturnT> Result;
+	Result = {};
 
 	CMwStack Stack = CMwStack();
 	PushToStack(&Stack, MemberInfo);

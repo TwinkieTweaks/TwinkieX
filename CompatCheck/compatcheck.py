@@ -30,6 +30,7 @@ class BeingInfo(Enum):
 class DeclInfo(Enum):
     Full = "full"
     Partial = "partial"
+    Added = "added"
     Deleted = "deleted"
     NoImpl = "noimpl"
     Undefined = "undefined"
@@ -267,7 +268,7 @@ def do():
 
     for being in infos_by_being:
         for info in infos_by_being[being]:
-            if not info.matched:
+            if not info.matched and info.decl != DeclInfo.Added:
                 print(f"unmatched info: {info}")
                 has_unmatched_info = True
 
