@@ -731,6 +731,16 @@ namespace Gecko::Exports::Trackmania
 		}
 	}
 
+	std::string ReadGameString(const CFastString& Str)
+	{
+		return GameStrings::Read(Str);
+	}
+
+	bool AssignGameString(CFastString* Str, const std::string& Value)
+	{
+		return GameStrings::Assign(Str, Value);
+	}
+
 	namespace MwIds
 	{
 		static void Construct(uint32_t* Self) { *Self = 0xFFFFFFFF; }

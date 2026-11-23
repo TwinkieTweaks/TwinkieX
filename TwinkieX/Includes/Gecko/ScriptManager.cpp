@@ -18,6 +18,7 @@
 #include "Exports/Nvg/ExportNvg.h"
 #include "Exports/Reflection/Reflection.h"
 #include "Exports/Net/Net.h"
+#include "Exports/Dev/Dev.h"
 
 namespace Gecko
 {
@@ -128,6 +129,7 @@ namespace Gecko
 		Exports::Nvg::Registrar(Engine);
 		Exports::Net::Registrar(Engine);
 		Exports::Reflection::Registrar(Engine);
+		Exports::Dev::Registrar(Engine);
 	}
 
 	ScriptManager::~ScriptManager()
