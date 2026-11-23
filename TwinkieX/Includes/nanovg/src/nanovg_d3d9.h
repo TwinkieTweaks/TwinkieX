@@ -1176,9 +1176,15 @@ static void D3D9nvg__renderDelete(void* uptr)
 		}
 	}
 
-	IDirect3DVertexBuffer9_Release(D3D->VertexBuffer.pBuffer);
+	if (D3D->VertexBuffer.pBuffer != NULL)
+	{
+		IDirect3DVertexBuffer9_Release(D3D->VertexBuffer.pBuffer);
+	}
 
-	IDirect3DVertexDeclaration9_Release(D3D->pLayoutRenderTriangles);
+	if (D3D->pLayoutRenderTriangles != NULL)
+	{
+		IDirect3DVertexDeclaration9_Release(D3D->pLayoutRenderTriangles);
+	}
 	
 	free(D3D->textures);
 

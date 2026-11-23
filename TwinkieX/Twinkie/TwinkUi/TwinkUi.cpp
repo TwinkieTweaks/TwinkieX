@@ -29,7 +29,7 @@ namespace TwinkUiState
 	// The original present function definition for the device.
 	PresentFn oPresent = 0;
 
-#ifdef TMU
+#ifdef O_V_RESET
 	ResetFn oReset = 0;
 #endif
 
@@ -377,7 +377,7 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 	// Hook Present
 	TwinkUiState::oPresent = reinterpret_cast<PresentFn>(VirtualWrite(O_V_PRESENT, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkPresent));
 
-#ifdef TMU
+#ifdef O_V_RESET
 	Unprotect(VirtualPtr(O_V_RESET, (uintptr_t)TwinkUiState::Device), sizeof(uintptr_t));
 
 	// Hook Reset
@@ -385,6 +385,25 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 #endif
 #endif
 }
+
+#if defined(GAMEBOX) && !defined(TMU)
+static bool GetPresentParameters(IDirect3DDevice9* Device, D3DPRESENT_PARAMETERS& Params)
+{
+	IDirect3DSwapChain9* SwapChain = nullptr;
+	if (!Device or FAILED(Device->GetSwapChain(0, &SwapChain)) or !SwapChain) return false;
+
+	bool Got = SUCCEEDED(SwapChain->GetPresentParameters(&Params));
+	SwapChain->Release();
+	return Got;
+}
+
+static void MakeWindowResizable()
+{
+	LONG_PTR WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
+	if ((WindowStyle & WS_OVERLAPPEDWINDOW) == WS_OVERLAPPEDWINDOW) return;
+	SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle | WS_OVERLAPPEDWINDOW);
+}
+#endif
 
 static bool RunInputCallbacks(UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -503,28 +522,22 @@ static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 	case WM_PAINT:
 		if (TwinkUiState::ImGuiInit)
 		{
-			IDirect3DSwapChain9* pSwapChain = nullptr;
-			if (SUCCEEDED(TwinkUiState::Device->GetSwapChain(0, &pSwapChain)))
+			D3DPRESENT_PARAMETERS d3dpp = {};
+			if (GetPresentParameters(TwinkUiState::Device, d3dpp) and d3dpp.Windowed)
 			{
-				D3DPRESENT_PARAMETERS d3dpp = {};
-				if (SUCCEEDED(pSwapChain->GetPresentParameters(&d3dpp)))
+				MakeWindowResizable();
+
+				if (TwinkUiState::WindowWidth and TwinkUiState::WindowHeight
+					and (d3dpp.BackBufferWidth != (UINT)TwinkUiState::WindowWidth or d3dpp.BackBufferHeight != (UINT)TwinkUiState::WindowHeight))
 				{
 					d3dpp.BackBufferWidth = TwinkUiState::WindowWidth;
 					d3dpp.BackBufferHeight = TwinkUiState::WindowHeight;
 
-					ImGui_ImplDX9_InvalidateDeviceObjects();
-					TwinkNvg::Invalidate();
 					TwinkUiState::Device->Reset(&d3dpp);
-					ImGui_ImplDX9_CreateDeviceObjects();
-					TwinkNvg::Init();
-
-					unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
-					WindowStyle |= WS_SIZEBOX | WS_THICKFRAME;
-					SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
 
 					VirtualWrite(O_V_PRESENT, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkPresent);
+					VirtualWrite(O_V_RESET, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkReset);
 				}
-				pSwapChain->Release();
 			}
 		}
 		break;
@@ -573,7 +586,7 @@ void InitImGui(DirectXDevice* Device)
 
 static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, HWND C, LPVOID D)
 {
-	bool MustUpdateFont = false;
+	static bool MustUpdateFont = false;
 
 	if (!TwinkUiState::ImGuiInit)
 	{
@@ -592,9 +605,8 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
 		// TMU already resizes the window by itself
 #ifndef TMU
-		unsigned int WindowStyle = GetWindowLongPtr(TwinkUiState::Window, GWL_STYLE);
-		WindowStyle |= WS_OVERLAPPEDWINDOW;
-		SetWindowLongPtr(TwinkUiState::Window, GWL_STYLE, WindowStyle);
+		D3DPRESENT_PARAMETERS PresentParams = {};
+		if (GetPresentParameters(pDevice, PresentParams) and PresentParams.Windowed) MakeWindowResizable();
 #endif
 
 		InitImGui(pDevice);
@@ -602,6 +614,9 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		TwinkUiState::ImGuiInit = true;
 		MustUpdateFont = true;
 	}
+
+	if (pDevice->TestCooperativeLevel() != D3D_OK) return TwinkUiState::oPresent(pDevice, A, B, C, D);
+	TwinkNvg::Init();
 
 	IDirect3DStateBlock9* pStateBlock = NULL;
 	if (pDevice->CreateStateBlock(D3DSBT_ALL, &pStateBlock) == D3D_OK)
@@ -630,6 +645,7 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		{
 			TwinkUiState::UiMgr->Font = TwinkUiState::UiMgr->AddFont((char*)TwinkUiState::UiMgr->FontPath.c_str());
 		}
+		MustUpdateFont = false;
 
 		TwinkUiState::UiMgr->Render();
 
@@ -655,15 +671,25 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 	return TwinkUiState::oPresent(pDevice, A, B, C, D);
 }
 
-#ifdef TMU
+#ifdef O_V_RESET
 static long __stdcall hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pParams)
 {
 	if (!TwinkUiState::ImGuiInit) return TwinkUiState::oReset(pDevice, pParams);
+#ifndef TMU
+	if (pParams and pParams->Windowed and TwinkUiState::WindowWidth and TwinkUiState::WindowHeight)
+	{
+		pParams->BackBufferWidth = TwinkUiState::WindowWidth;
+		pParams->BackBufferHeight = TwinkUiState::WindowHeight;
+	}
+#endif
 	ImGui_ImplDX9_InvalidateDeviceObjects();
 	TwinkNvg::Invalidate();
 	const HRESULT result = TwinkUiState::oReset(pDevice, pParams);
-	ImGui_ImplDX9_CreateDeviceObjects();
-	TwinkNvg::Init();
+	if (SUCCEEDED(result))
+	{
+		ImGui_ImplDX9_CreateDeviceObjects();
+		TwinkNvg::Init();
+	}
 	return result;
 }
 #endif

@@ -28,7 +28,7 @@ using PresentFn = long(__stdcall*)(LPDIRECT3DDEVICE9 pDevice, LPVOID, LPVOID, HW
 using ResetFn = long(__stdcall*)(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pParams);
 
 static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, HWND C, LPVOID D);
-#ifdef TMU
+#ifdef O_V_RESET
 static long __stdcall hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* pParams);
 #endif
 
@@ -41,9 +41,8 @@ namespace TwinkUiState
 	// The original present function definition for the device.
 	extern PresentFn oPresent;
 
-#ifdef TMU
+#ifdef O_V_RESET
 	// The original reset function definition for the device.
-	// Only for TMU, the rest don't use reset.
 	extern ResetFn oReset;
 #endif
 

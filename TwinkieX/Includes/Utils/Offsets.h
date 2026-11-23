@@ -110,6 +110,7 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0 
 
 // Vtable indices
+#define O_V_RESET 16
 #define O_V_PRESENT 17
 
 #elif defined(TMS)
@@ -149,6 +150,7 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
 // Vtable indices
+#define O_V_RESET 16
 #define O_V_PRESENT 17
 
 #elif defined(TMO)
@@ -169,6 +171,7 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
 // Vtable indices
+#define O_V_RESET 16
 #define O_V_PRESENT 17
 
 #elif defined(ESWC)
@@ -189,6 +192,7 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
 // Vtable indices
+#define O_V_RESET 16
 #define O_V_PRESENT 17
 
 #elif defined(TMU)
