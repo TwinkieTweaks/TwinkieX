@@ -308,8 +308,7 @@ namespace Gecko::Exports::Trackmania
 	// CGameApp@ GetApp()
 	static CMwNod* __stdcall GetApp()
 	{
-		CMwNod* App = ReadAddr(CMwNod*, (uintptr_t)GetModuleHandleA(NULL) + O_APP);
-		return App;
+		return gTwinkie.TrackmaniaMgr.GetApp();
 	}
 	/*
 	!CompatMeta

@@ -3,6 +3,9 @@
 #include <Modules/ModuleAutoExport.h>
 #include <Twinkie/TwinkUi/TwinkUi.h>
 #include <format>
+#include <array>
+#include <functional>
+#include <unordered_set>
 
 #define HasRightClickedOnItem() IsMouseClicked(ImGuiMouseButton_Right) and IsItemHovered(ImGuiHoveredFlags_AllowWhenDisabled)
 
@@ -106,6 +109,334 @@ static void RenderStringValue(const char* Label, std::string Shown)
 	InputText(Label, Shown.data(), Shown.size() + 1, ImGuiInputTextFlags_ReadOnly);
 }
 
+namespace
+{
+	enum class ArrayKind
+	{
+		None,
+		FastArray,
+		FastBuffer,
+		FastBufferCat,
+		SArray,
+		ArrayMaxDyn,
+		StridedArray,
+		ArrayInPlace,
+		ArrayInPlaceDyn,
+		RefBuffer,
+		NodPool,
+	};
+
+	struct ArrayType
+	{
+		ArrayKind Kind = ArrayKind::None;
+		CMwMemberInfo::EType Element = CMwMemberInfo::ACTION;
+	};
+
+	struct ArrayView
+	{
+		uint8_t* Ptr = nullptr;
+		uint32_t Count = 0;
+		uint32_t Stride = 0;
+	};
+
+	ArrayType GetArrayType(CMwMemberInfo::EType Type)
+	{
+		using enum CMwMemberInfo::EType;
+#ifdef TMCN
+		static constexpr CMwMemberInfo::EType Groups[] = {
+			BOOL, CLASS, COLOR, ENUM, INT, ISO4, ISO3, ID, NATURAL, REAL, STRING, STRINGINT, VEC2, VEC3, VEC4, INT2, INT3, NAT2, NAT3, QUAT,
+			CLASSNOTPERSISTENT, AGGREG, NAT8, NAT16, INT8, INT16, NODREF, ENUM8, ENUM16, RGBACOLOR
+		};
+		constexpr int GroupSize = 9;
+
+		if (Type == FASTNODPOOL) return { ArrayKind::NodPool, CLASS };
+#else
+		static constexpr CMwMemberInfo::EType Groups[] = {
+			BOOL, CLASS, COLOR, INT, ISO4, ISO3,
+#ifdef TMU
+			ID,
+#endif
+			NATURAL, REAL, STRING,
+#ifndef TM1
+			STRINGINT,
+#endif
+			VEC2, VEC3, VEC4, QUAT
+		};
+		constexpr int GroupSize = 4;
+
+#ifdef TMU
+		if (Type == REFBUFFER) return { ArrayKind::RefBuffer, CLASS };
+#endif
+#endif
+
+		for (CMwMemberInfo::EType Group : Groups)
+		{
+			int Index = (int)Type - (int)Group;
+			if (Index > 0 and Index < GroupSize) return { (ArrayKind)Index, Group };
+		}
+		return {};
+	}
+
+	const char* GetArrayKindName(ArrayKind Kind)
+	{
+		switch (Kind)
+		{
+		case ArrayKind::FastArray: return "CFastArray";
+		case ArrayKind::FastBuffer: return "CFastBuffer";
+		case ArrayKind::FastBufferCat: return "CFastBufferCat";
+		case ArrayKind::SArray: return "CMwSArray";
+		case ArrayKind::ArrayMaxDyn: return "CMwArrayMaxDyn";
+		case ArrayKind::StridedArray: return "CMwStridedArray";
+		case ArrayKind::ArrayInPlace: return "CMwArrayInPlace";
+		case ArrayKind::ArrayInPlaceDyn: return "CMwArrayInPlaceDyn";
+		case ArrayKind::RefBuffer: return "CMwRefBuffer";
+		case ArrayKind::NodPool: return "CFastNodPool";
+		default: return "?";
+		}
+	}
+
+	bool ReadArray(ArrayKind Kind, uint8_t* Array, uint32_t ElementSize, ArrayView& View)
+	{
+		switch (Kind)
+		{
+		case ArrayKind::FastArray:
+#ifdef TMCN
+		case ArrayKind::SArray:
+#endif
+		{
+			auto FastArray = (CFastArrayGen*)Array;
+			View = { (uint8_t*)FastArray->Ptr, FastArray->Size, ElementSize };
+			return true;
+		}
+		case ArrayKind::FastBuffer:
+		{
+			auto FastBuffer = (CFastBufferGen*)Array;
+			View = { (uint8_t*)FastBuffer->Ptr, FastBuffer->Size, ElementSize };
+			return true;
+		}
+		case ArrayKind::FastBufferCat:
+		{
+#ifdef TMCN
+			auto FastBuffer = (CFastBufferGen*)(Array + 0x10);
+#else
+			auto FastBuffer = (CFastBufferGen*)(Array + 0xC);
+#endif
+			View = { (uint8_t*)FastBuffer->Ptr, FastBuffer->Size, ElementSize };
+			return true;
+		}
+#ifdef TMCN
+		case ArrayKind::StridedArray:
+		{
+			View = { *(uint8_t**)Array, *(uint32_t*)(Array + 0xC), *(uint32_t*)(Array + 0x8) };
+			return true;
+		}
+		case ArrayKind::NodPool:
+		{
+			auto Pool = (CFastNodPool*)Array;
+			View = { (uint8_t*)Pool->Nods.Ptr, (std::min)(Pool->Count, Pool->Nods.Size), (uint32_t)sizeof(CMwNod*) };
+			return true;
+		}
+#endif
+#ifdef TMU
+		case ArrayKind::RefBuffer:
+		{
+			uint8_t* RefBuffer = *(uint8_t**)Array;
+			if (!RefBuffer)
+			{
+				View = {};
+				return true;
+			}
+			auto FastBuffer = (CFastBufferGen*)(RefBuffer + 0x14);
+			View = { (uint8_t*)FastBuffer->Ptr, FastBuffer->Size, (uint32_t)sizeof(CMwNod*) };
+			return true;
+		}
+#endif
+		default:
+			return false;
+		}
+	}
+
+	bool IsKnownClassInfo(const CMwClassInfo* Info)
+	{
+		static std::unordered_set<const CMwClassInfo*> Known;
+		static size_t KnownCount = 0;
+
+		if (!Info) return false;
+		if (KnownCount != ClassIDToInfo.size())
+		{
+			Known.clear();
+			for (const auto& [Id, Class] : ClassIDToInfo) Known.insert(Class);
+			KnownCount = ClassIDToInfo.size();
+		}
+		return Known.contains(Info);
+	}
+
+	template<typename T>
+	bool EditMember(TwinkTrackmania* Twinkie, CMwNod* Nod, CMwMemberInfo* Member, bool IsNodImpersistent, const std::string& Label, ImGuiDataType DataType, int Components, const char* Format = nullptr)
+	{
+		T* Value = Twinkie->ParamGet<T>(Nod, Member, IsNodImpersistent);
+		if (!Value) return false;
+
+		T ValueV = *Value;
+		if (InputScalarN(Label.c_str(), DataType, &ValueV, Components, nullptr, nullptr, Format))
+		{
+			Twinkie->ParamSet(Nod, Member, &ValueV, IsNodImpersistent);
+		}
+		return true;
+	}
+
+	template<int Rows, int Columns>
+	bool EditMatrix(TwinkTrackmania* Twinkie, CMwNod* Nod, CMwMemberInfo* Member, bool IsNodImpersistent, const std::string& Label, const std::function<void()>& OnRightClick)
+	{
+		using Storage = std::array<float, Rows * Columns>;
+		static constexpr const char* RowNames[] = { "x", "y", "z" };
+
+		Storage* Value = Twinkie->ParamGet<Storage>(Nod, Member, IsNodImpersistent);
+		if (!Value) return false;
+
+		bool TreeNodeIsOpen = TreeNodeEx(Label.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+		if (HasRightClickedOnItem()) OnRightClick();
+
+		if (TreeNodeIsOpen)
+		{
+			Storage ValueV = *Value;
+			bool Changed = false;
+			for (int Row = 0; Row < Rows; Row++)
+			{
+				const char* RowName = Row == Rows - 1 ? "t" : RowNames[Row];
+				Changed |= InputScalarN(RowName, ImGuiDataType_Float, ValueV.data() + Row * Columns, Columns, nullptr, nullptr, "%.3f");
+			}
+			if (Changed) Twinkie->ParamSet(Nod, Member, &ValueV, IsNodImpersistent);
+			TreePop();
+		}
+		return true;
+	}
+
+#ifdef TMCN
+	template<typename T>
+	bool EditEnum(TwinkTrackmania* Twinkie, CMwNod* Nod, CMwMemberInfo* Member, bool IsNodImpersistent, const std::string& Label)
+	{
+		T* Value = Twinkie->ParamGet<T>(Nod, Member, IsNodImpersistent);
+		if (!Value) return false;
+
+		auto MemberAsEnum = (CMwMemberInfoEnum*)Member;
+		std::string FullLabel = MemberAsEnum->EnumTypeName ? std::format("{} {}", MemberAsEnum->EnumTypeName, Label) : Label;
+		int CurrentItem = (int)*Value;
+
+		bool Changed = MemberAsEnum->EnumValueNames
+			? Combo(FullLabel.c_str(), &CurrentItem, MemberAsEnum->EnumValueNames, MemberAsEnum->EnumValueNamesLength)
+			: InputInt(FullLabel.c_str(), &CurrentItem);
+
+		if (Changed)
+		{
+			T NewValue = (T)CurrentItem;
+			Twinkie->ParamSet(Nod, Member, &NewValue, IsNodImpersistent);
+		}
+		return true;
+	}
+#endif
+}
+
+bool NodExplorerModule::RenderArrayMember(CMwNod* Nod, CMwMemberInfo* MemberInfo, const std::string& FancyMemberName, const std::string& NodName, CMwClassInfo* ClassInfo, bool IsNodImpersistent, bool& IgnoreRightClicks)
+{
+	ArrayType Type = GetArrayType(MemberInfo->MemberType);
+	if (Type.Kind == ArrayKind::None) return false;
+
+	bool ElementIsNod = Type.Element == CMwMemberInfo::CLASS;
+	bool ElementIsInline = false;
+	bool ElementNeedsClass = false;
+#ifdef TMCN
+	ElementIsNod |= Type.Element == CMwMemberInfo::NODREF;
+	ElementIsInline = Type.Element == CMwMemberInfo::AGGREG;
+	ElementNeedsClass = ElementIsInline or Type.Element == CMwMemberInfo::CLASSNOTPERSISTENT;
+#endif
+
+	CMwClassInfo* ElementClass = nullptr;
+	if (ElementIsNod or ElementNeedsClass)
+	{
+		CMwClassInfo* Candidate = ((CMwMemberInfoClassArray*)MemberInfo)->ArrayClassInfo;
+		if (IsKnownClassInfo(Candidate)) ElementClass = Candidate;
+	}
+
+	std::string ElementTypeName;
+	if (ElementIsNod or ElementNeedsClass)
+	{
+		ElementTypeName = std::string(ElementClass ? ElementClass->ClassName : "CMwNod") + (ElementIsInline ? "" : "*");
+	}
+	else
+	{
+		ElementTypeName = g_MemberTypeSignatures[Type.Element];
+	}
+
+	std::string ArrayLabel = std::format("{}<{}> {}", GetArrayKindName(Type.Kind), ElementTypeName, FancyMemberName);
+
+	uint8_t* Array = Twinkie->ParamGet<uint8_t>(Nod, MemberInfo, IsNodImpersistent);
+	if (!Array)
+	{
+		BeginDisabled();
+		Text("%s", ArrayLabel.c_str());
+		EndDisabled();
+		return true;
+	}
+
+	uint32_t ElementSize = (uint32_t)sizeof(CMwNod*);
+#ifdef TMCN
+	if (ElementIsInline and ElementClass) ElementSize = ElementClass->Size;
+#endif
+
+	ArrayView View;
+	if (!ReadArray(Type.Kind, Array, ElementSize, View))
+	{
+		Text("%s [?]", ArrayLabel.c_str());
+		return true;
+	}
+
+	std::string CountedLabel = std::format("{} [{}]", ArrayLabel, View.Count);
+
+	if (not (ElementIsNod or ElementNeedsClass) or (ElementNeedsClass and not ElementClass))
+	{
+		Text("%s", CountedLabel.c_str());
+		return true;
+	}
+
+	IgnoreRightClicks = true;
+	PushID((void*)MemberInfo);
+
+	bool ArrayTreeNodeOpened = TreeNodeEx(CountedLabel.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+	if (HasRightClickedOnItem())
+	{
+		SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo, IsNodImpersistent);
+	}
+
+	if (ArrayTreeNodeOpened)
+	{
+		std::string ElementName = MemberInfo->MemberName ? MemberInfo->MemberName : "";
+#ifndef TMU
+		bool HasClassArrayInfo = ElementClass and Type.Kind != ArrayKind::RefBuffer and Type.Kind != ArrayKind::NodPool;
+		if (HasClassArrayInfo and ((CMwMemberInfoClassArray*)MemberInfo)->ElementNameSingular)
+		{
+			ElementName = ((CMwMemberInfoClassArray*)MemberInfo)->ElementNameSingular;
+		}
+#endif
+
+		for (uint32_t Idx = 0; View.Ptr and Idx < View.Count; Idx++)
+		{
+			uint8_t* Element = View.Ptr + (size_t)Idx * View.Stride;
+			std::string ElementLabel = std::format("{}[{}]", ElementName, Idx);
+
+			PushID((int)Idx);
+			if (ElementIsInline) RenderNod((CMwNod*)Element, ElementLabel, nullptr, ElementClass);
+			else if (ElementNeedsClass) RenderNod(*(CMwNod**)Element, ElementLabel, nullptr, ElementClass);
+			else RenderNod(*(CMwNod**)Element, ElementLabel, nullptr);
+			PopID();
+		}
+		TreePop();
+	}
+
+	PopID();
+	return true;
+}
+
 std::string NodExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 {
 	std::string MemberNameFallback = MemberInfo->MemberName;
@@ -123,14 +454,14 @@ std::string NodExplorerModule::GetFancyMemberName(CMwMemberInfo* MemberInfo)
 	return FancyMemberName;
 }
 
-void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMemberInfo* NodMemberInfo = nullptr)
+void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMemberInfo* NodMemberInfo, CMwClassInfo* StaticClassInfo)
 {
 	bool IsNodVirtual = false;
 	if (NodMemberInfo) IsNodVirtual = NodMemberInfo->MemberOffset == 0xFFFFFFFFU;
 
-	bool IsNodImpersistent = false;
+	bool IsNodImpersistent = StaticClassInfo != nullptr;
 #ifdef TMCN
-	if (NodMemberInfo) IsNodImpersistent = NodMemberInfo->MemberType == CMwMemberInfo::CLASSNOTPERSISTENT;
+	if (NodMemberInfo and NodMemberInfo->MemberType == CMwMemberInfo::CLASSNOTPERSISTENT) IsNodImpersistent = true;
 #endif
 
 	CMwMemberInfoClass* MemberInfoAsClass = (CMwMemberInfoClass*)NodMemberInfo;
@@ -149,7 +480,7 @@ void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 		return;
 	}
 
-	CMwClassInfo* ClassInfo = IsNodImpersistent ? MemberInfoAsClass->ClassInfo : Nod->MwGetClassInfo();
+	CMwClassInfo* ClassInfo = StaticClassInfo ? StaticClassInfo : IsNodImpersistent ? MemberInfoAsClass->ClassInfo : Nod->MwGetClassInfo();
 
 	std::string NodAddressStr = std::format("{:p}", (void*)Nod);
 	std::string ClassTypeName = std::format("{}*{}",
@@ -290,102 +621,170 @@ void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 					break;
 				}
 
-				case CMwMemberInfo::CLASSBUFFER:
+#ifdef TMCN
+				case CMwMemberInfo::AGGREG:
 				{
-					CFastBuffer<CMwNod*>* Array = Twinkie->ParamGet<CFastBuffer<CMwNod*>>(Nod, MemberInfo, IsNodImpersistent);
-					if (Array)
-					{
-						PushID((void*)Array);
+					CMwClassInfo* AggregClass = ((CMwMemberInfoClass*)MemberInfo)->ClassInfo;
+					uint8_t* Aggreg = Twinkie->ParamGet<uint8_t>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Aggreg or !IsKnownClassInfo(AggregClass)) goto RerenderMember;
 
-						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
+					PushID((void*)MemberInfo);
+					RenderNod((CMwNod*)Aggreg, FancyMemberName, nullptr, AggregClass);
+					PopID();
+					break;
+				}
 
-						std::string ElementNameSingular =
-#ifndef TMU
-							MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
+				case CMwMemberInfo::DATAREF:
+				{
+					uint8_t* DataRef = Twinkie->ParamGet<uint8_t>(Nod, MemberInfo, IsNodImpersistent);
+					if (!DataRef) goto RerenderMember;
+
+					PushID((void*)MemberInfo);
+					RenderNod(*(CMwNod**)DataRef, std::format("DataRef {}", FancyMemberName), nullptr);
+					PopID();
+					break;
+				}
+
+				case CMwMemberInfo::INT2:
+				{
+					if (!EditMember<std::array<int32_t, 2>>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_S32, 2)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::INT3:
+				{
+					if (!EditMember<std::array<int32_t, 3>>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_S32, 3)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::NAT2:
+				{
+					if (!EditMember<std::array<uint32_t, 2>>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_U32, 2)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::NAT3:
+				{
+					if (!EditMember<std::array<uint32_t, 3>>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_U32, 3)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::NAT8:
+				{
+					if (!EditMember<uint8_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_U8, 1)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::NAT16:
+				{
+					if (!EditMember<uint16_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_U16, 1)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::INT8:
+				{
+					if (!EditMember<int8_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_S8, 1)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::INT16:
+				{
+					if (!EditMember<int16_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_S16, 1)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::RGBACOLOR:
+				{
+					if (!EditMember<uint32_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_U32, 1, "0x%08X")) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::ENUM8:
+				{
+					if (!EditEnum<uint8_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::ENUM16:
+				{
+					if (!EditEnum<uint16_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName)) goto RerenderMember;
+					break;
+				}
 #endif
-							MemberInfoArray->MemberName;
-						std::string ArrayName = std::format("CFastBuffer<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
 
-						bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
+#ifdef GAMEBOX
+				case CMwMemberInfo::INTRANGE:
+				{
+					if (!EditMember<int32_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_S32, 1)) goto RerenderMember;
+					break;
+				}
+#endif
 
-						if (HasRightClickedOnItem())
-						{
-							SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
-						}
+#if defined(GAMEBOX) && !defined(TMU)
+				case CMwMemberInfo::REFBUFFER:
+				{
+					CMwNod* RefBuffer = Twinkie->ParamGet<CMwNod*>(Nod, MemberInfo, IsNodImpersistent);
 
-						if (ArrayTreeNodeOpened)
-						{
-							for (auto& ArrayNod : *Array)
-							{
-								RenderNod(ArrayNod, ElementNameSingular);
-							}
-							TreePop();
-						}
-						PopID();
-					}
-					else
+					PushID((void*)MemberInfo);
+					RenderNod(RefBuffer, FancyMemberName, nullptr);
+					PopID();
+					break;
+				}
+#endif
+
+				case CMwMemberInfo::NATURALRANGE:
+				{
+					if (!EditMember<uint32_t>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_U32, 1)) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::VEC2:
+				{
+					if (!EditMember<std::array<float, 2>>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_Float, 2, "%.3f")) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::VEC3:
+				{
+					if (!EditMember<std::array<float, 3>>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_Float, 3, "%.3f")) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::VEC4:
+				case CMwMemberInfo::QUAT:
+				{
+					if (!EditMember<std::array<float, 4>>(Twinkie, Nod, MemberInfo, IsNodImpersistent, FancyMemberName, ImGuiDataType_Float, 4, "%.3f")) goto RerenderMember;
+					break;
+				}
+
+				case CMwMemberInfo::COLOR:
+				{
+					auto* Color = Twinkie->ParamGet<std::array<float, 3>>(Nod, MemberInfo, IsNodImpersistent);
+					if (!Color) goto RerenderMember;
+					std::array<float, 3> ColorV = *Color;
+					if (ColorEdit3(FancyMemberName.c_str(), ColorV.data(), ImGuiColorEditFlags_Float))
 					{
-						BeginDisabled();
-
-						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-						std::string ArrayName = std::format("CFastBuffer<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
-
-						Text(ArrayName.c_str());
-
-						EndDisabled();
+						Twinkie->ParamSet(Nod, MemberInfo, &ColorV, IsNodImpersistent);
 					}
 					break;
 				}
-				case CMwMemberInfo::CLASSARRAY:
+
+				case CMwMemberInfo::ISO3:
 				{
-					CFastArray<CMwNod*>* Array = Twinkie->ParamGet<CFastArray<CMwNod*>>(Nod, MemberInfo, IsNodImpersistent);
-					if (Array)
-					{
-						PushID((void*)Array);
-
-						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-
-						std::string ElementNameSingular =
-#ifndef TMU
-							MemberInfoArray->ElementNameSingular ? MemberInfoArray->ElementNameSingular :
-#endif
-							MemberInfoArray->MemberName;
-						std::string ArrayName = std::format("CFastArray<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
-
-						bool ArrayTreeNodeOpened = TreeNodeEx(ArrayName.c_str(), ImGuiTreeNodeFlags_DrawLinesFull);
-
-						if (HasRightClickedOnItem())
-						{
-							SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo);
-						}
-
-						if (ArrayTreeNodeOpened)
-						{
-							for (auto& ArrayNod : *Array)
-							{
-								RenderNod(ArrayNod, ElementNameSingular);
-							}
-							TreePop();
-						}
-						PopID();
-					}
-					else
-					{
-						BeginDisabled();
-
-						CMwMemberInfoClassArray* MemberInfoArray = (CMwMemberInfoClassArray*)MemberInfo;
-						CMwClassInfo* ArrayClassType = MemberInfoArray->ArrayClassInfo;
-						std::string ArrayName = std::format("CFastArray<{}*> {}", ArrayClassType->ClassName, FancyMemberName);
-
-						Text(ArrayName.c_str());
-
-						EndDisabled();
-					}
+					std::string Label = "iso3 " + FancyMemberName;
+					if (!EditMatrix<3, 2>(Twinkie, Nod, MemberInfo, IsNodImpersistent, Label, [&] { SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo, IsNodImpersistent); })) goto RerenderMember;
+					IgnoreRightClicks = true;
 					break;
 				}
+
+				case CMwMemberInfo::ISO4:
+				{
+					std::string Label = "iso4 " + FancyMemberName;
+					if (!EditMatrix<4, 3>(Twinkie, Nod, MemberInfo, IsNodImpersistent, Label, [&] { SetMemberInfoPopup(MemberInfo, NodName, Nod, ClassInfo, IsNodImpersistent); })) goto RerenderMember;
+					IgnoreRightClicks = true;
+					break;
+				}
+
 #ifndef TMCN
 				case CMwMemberInfo::REALRANGE:
 #endif
@@ -526,6 +925,7 @@ void NodExplorerModule::RenderNod(CMwNod* Nod, const std::string NodName, CMwMem
 
 				default:
 				{
+					if (RenderArrayMember(Nod, MemberInfo, FancyMemberName, NodName, ClassInfo, IsNodImpersistent, IgnoreRightClicks)) break;
 				RerenderMember:
 					Text("%s (%s %d)", FancyMemberName.c_str(), g_MemberTypeNames[MemberInfo->MemberType], MemberInfo->MemberType);
 					break;

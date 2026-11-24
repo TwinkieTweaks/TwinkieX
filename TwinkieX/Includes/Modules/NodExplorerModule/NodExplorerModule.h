@@ -106,7 +106,8 @@ public:
 	virtual void RenderInterface() override;
 	virtual void RenderMenu() override;
 
-	void RenderNod(CMwNod* Nod, const std::string Name, CMwMemberInfo* NodMemberInfo);
+	void RenderNod(CMwNod* Nod, const std::string Name, CMwMemberInfo* NodMemberInfo = nullptr, CMwClassInfo* StaticClassInfo = nullptr);
+	bool RenderArrayMember(CMwNod* Nod, CMwMemberInfo* MemberInfo, const std::string& FancyMemberName, const std::string& NodName, CMwClassInfo* ClassInfo, bool IsNodImpersistent, bool& IgnoreRightClicks);
 	void RenderNodInfoClassInfo(CMwClassInfo* ClassInfo);
 	void RenderNodInfoMemberInfo();
 	void RenderProcCall(CMwNod* Nod, CMwMemberInfoProc* Proc, const std::vector<CMwMemberInfoProc::Param>& Params);
