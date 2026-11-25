@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "CtxSet.h"
 #include "Awaitable.h"
+#include "PluginManifest.h"
 
 namespace Gecko
 {
@@ -18,13 +19,18 @@ namespace Gecko
 		std::filesystem::path ScriptPath = "";
 		std::u8string Id = u8"";
 		std::u8string Name = u8"";
+		std::u8string DisplayName = u8"";
+		PluginManifest Manifest;
+		std::string LoadError;
 		std::vector<std::u8string> SourceCodes;
 		// Section name of each source code, used in compiler messages
 		std::vector<std::u8string> SourceNames;
-		/* TODO: Logging */
+		std::vector<std::u8string> ExportCodes;
+		std::vector<std::u8string> ExportNames;
 		CtxSet Ctxs{};
 		WaitState MainWait;
 		std::vector<Coroutine*> Coroutines;
 		bool Enabled = true;
+		bool Favorite = false;
 	};
 }

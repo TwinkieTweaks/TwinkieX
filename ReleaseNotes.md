@@ -1,5 +1,6 @@
-# This release is untested on TM1.0! Use at your own risk
-
-- Added very basic support for Angelscript modules (WIP)
-- Added logging
-- Fixed some instability issues
+- Improved compatibility with Openplanet (see https://twinkietweaks.github.io/TwinkieX/)
+- Removed support for raw .as files
+- Added .op, folder support
+- Added more types for nod explorer
+- Added stable approach for hooking
+- Fixed several instability issues

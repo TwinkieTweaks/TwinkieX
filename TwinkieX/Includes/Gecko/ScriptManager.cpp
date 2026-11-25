@@ -5,6 +5,7 @@
 #include <ccpp.h>
 
 #include <fstream>
+#include <unordered_set>
 
 #include "Exports/Global/Global.h"
 #include "Exports/Math/Math.h"
@@ -19,6 +20,7 @@
 #include "Exports/Reflection/Reflection.h"
 #include "Exports/Net/Net.h"
 #include "Exports/Dev/Dev.h"
+#include "Exports/Meta/Meta.h"
 
 namespace Gecko
 {
@@ -94,13 +96,52 @@ namespace Gecko
 		LoggertAngelscript.error(FromStr(std::format("[{}] Exception '{}' in {} ({}, line {})", (const char*)Script.Id.c_str(), Ctx->GetExceptionString(), Function ? Function->GetDeclaration() : "?", Section ? Section : "?", Line)));
 	}
 
+	static std::u8string ToU8(std::string_view Str)
+	{
+		return std::u8string((const char8_t*)Str.data(), Str.size());
+	}
+
+	static bool IsSameIdentifier(std::u8string_view Identifier, std::string_view Other)
+	{
+		if (Identifier.size() != Other.size()) return false;
+		for (size_t Idx = 0; Idx < Identifier.size(); Idx++)
+		{
+			if (std::tolower((uint8_t)Identifier[Idx]) != std::tolower((uint8_t)Other[Idx])) return false;
+		}
+		return true;
+	}
+
+	static std::u8string NormalizeScriptPath(std::string_view Path)
+	{
+		std::u8string Normal = ToU8(Path);
+		std::replace(Normal.begin(), Normal.end(), u8'\\', u8'/');
+		while (Normal.starts_with(u8"./")) Normal.erase(0, 2);
+		return Normal;
+	}
+
+	static std::string DependencyDefine(std::u8string_view Identifier)
+	{
+		std::string Define = "DEPENDENCY_";
+		for (char8_t Char : Identifier)
+		{
+			Define += std::isalnum((uint8_t)Char) ? (char)std::toupper((uint8_t)Char) : '_';
+		}
+		return Define;
+	}
+
+	static std::chrono::milliseconds ScriptTimeout(const Script& Script, std::chrono::milliseconds Default)
+	{
+		return Script.Manifest.TimeoutMs ? std::chrono::milliseconds(*Script.Manifest.TimeoutMs) : Default;
+	}
+
 	static int ExecuteContext(Script& Script, asIScriptContext* Ctx, [[maybe_unused]] std::chrono::milliseconds Timeout)
 	{
 #ifndef _DEBUG
 		static std::chrono::time_point<std::chrono::system_clock> When;
 		When = std::chrono::system_clock::now() + Timeout;
 
-		Ctx->SetLineCallback(asFUNCTION(ScriptCtxLineCallback), &When, asCALL_CDECL);
+		if (Timeout.count() > 0) Ctx->SetLineCallback(asFUNCTION(ScriptCtxLineCallback), &When, asCALL_CDECL);
+		else Ctx->ClearLineCallback();
 #endif
 		int r = Ctx->Execute();
 		if (r == asEXECUTION_EXCEPTION) LogException(Script, Ctx);
@@ -130,6 +171,7 @@ namespace Gecko
 		Exports::Net::Registrar(Engine);
 		Exports::Reflection::Registrar(Engine);
 		Exports::Dev::Registrar(Engine);
+		Exports::Meta::Registrar(Engine);
 	}
 
 	ScriptManager::~ScriptManager()
@@ -224,7 +266,7 @@ namespace Gecko
 		asIScriptContext*& Main = Script.Ctxs[(size_t)CallbackType::Main];
 		if (Main && Script.MainWait.Ready())
 		{
-			if (ExecuteContext(Script, Main, TimeoutDurationMs) != asEXECUTION_SUSPENDED)
+			if (ExecuteContext(Script, Main, ScriptTimeout(Script, TimeoutDurationMs)) != asEXECUTION_SUSPENDED)
 			{
 				Main->Release();
 				Main = nullptr;
@@ -236,7 +278,7 @@ namespace Gecko
 		{
 			Coroutine* Co = Script.Coroutines[Idx];
 			if (!Co->Ctx || !Co->Wait.Ready()) continue;
-			if (ExecuteContext(Script, Co->Ctx, TimeoutDurationMs) != asEXECUTION_SUSPENDED) Co->Stop();
+			if (ExecuteContext(Script, Co->Ctx, ScriptTimeout(Script, TimeoutDurationMs)) != asEXECUTION_SUSPENDED) Co->Stop();
 		}
 
 		std::erase_if(Script.Coroutines, [](Coroutine* Co)
@@ -247,9 +289,20 @@ namespace Gecko
 		});
 	}
 
+	Script* ScriptManager::FindScript(std::string_view Identifier)
+	{
+		for (auto& Script : Scripts)
+		{
+			if (IsSameIdentifier(Script.Id, Identifier)) return &Script;
+		}
+		return nullptr;
+	}
+
 	void ScriptManager::BuildScript(Script& Script)
 	{
-		LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)Script.Name.c_str())));
+		if (!Script.LoadError.empty()) return;
+
+		LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)Script.Id.c_str())));
 
 		if (&Script >= Scripts.data() && &Script < Scripts.data() + Scripts.size())
 		{
@@ -263,13 +316,52 @@ namespace Gecko
 			Engine->DiscardModule((const char*)Script.Name.c_str());
 		}
 
+		std::vector<std::string> Defines = Script.Manifest.Defines;
+		std::vector<::Gecko::Script*> ExportSources;
+		std::unordered_set<::Gecko::Script*> Visited;
+
+		std::function<void(::Gecko::Script*)> AddExports = [&](::Gecko::Script* Dependency)
+		{
+			if (!Dependency or !Dependency->LoadError.empty() or Visited.contains(Dependency)) return;
+			Visited.insert(Dependency);
+			ExportSources.push_back(Dependency);
+			for (const std::string& Exported : Dependency->Manifest.ExportDependencies) AddExports(FindScript(Exported));
+		};
+
+		for (const std::vector<std::string>* List : { &Script.Manifest.Dependencies, &Script.Manifest.OptionalDependencies })
+		{
+			for (const std::string& Identifier : *List)
+			{
+				::Gecko::Script* Dependency = FindScript(Identifier);
+				if (!Dependency or !Dependency->LoadError.empty()) continue;
+
+				Defines.push_back(DependencyDefine(Dependency->Id));
+				AddExports(Dependency);
+			}
+		}
+
 		ScriptBuilder.StartNewModule(Engine, (const char*)Script.Name.c_str());
 		for (size_t SourceIdx = 0; SourceIdx < Script.SourceCodes.size(); SourceIdx++)
 		{
 			// The builder skips sections whose name was already added, so every source needs its own name
 			const std::u8string& SectionName = SourceIdx < Script.SourceNames.size() ? Script.SourceNames[SourceIdx] : Script.Name;
 			LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)SectionName.c_str())));
-			ScriptBuilder.AddSectionFromMemory((const char*)SectionName.c_str(), (const char*)Script.SourceCodes[SourceIdx].c_str());
+
+			std::u8string SourceCode = Script.SourceCodes[SourceIdx];
+			Preprocess(SourceCode, Defines);
+			ScriptBuilder.AddSectionFromMemory((const char*)SectionName.c_str(), (const char*)SourceCode.c_str());
+		}
+		for (::Gecko::Script* Dependency : ExportSources)
+		{
+			for (size_t ExportIdx = 0; ExportIdx < Dependency->ExportCodes.size(); ExportIdx++)
+			{
+				std::u8string SectionName = Dependency->Id + u8"/" + Dependency->ExportNames[ExportIdx];
+				LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)SectionName.c_str())));
+
+				std::u8string SourceCode = Dependency->ExportCodes[ExportIdx];
+				Preprocess(SourceCode, Defines);
+				ScriptBuilder.AddSectionFromMemory((const char*)SectionName.c_str(), (const char*)SourceCode.c_str());
+			}
 		}
 		ScriptBuilder.BuildModule();
 
@@ -281,12 +373,137 @@ namespace Gecko
 		}
 	}
 
+	void ScriptManager::ResolvePlugins()
+	{
+		auto Fail = [](Script& Script, std::string Error)
+		{
+			if (!Script.LoadError.empty()) return;
+			LoggertAngelscript.error(FromStr(std::format("[{}] Not loaded: {}", (const char*)Script.Id.c_str(), Error)));
+			Script.LoadError = std::move(Error);
+			Script.Enabled = false;
+		};
+
+		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
+		{
+			for (size_t Other = 0; Other < Idx; Other++)
+			{
+				if (Scripts[Other].Id == Scripts[Idx].Id) Fail(Scripts[Idx], std::format("another plugin already uses the identifier {}", (const char*)Scripts[Idx].Id.c_str()));
+				else if (Scripts[Other].Name == Scripts[Idx].Name) Fail(Scripts[Idx], std::format("another plugin already uses the module name {}", (const char*)Scripts[Idx].Name.c_str()));
+			}
+		}
+
+		for (auto& Script : Scripts)
+		{
+			const std::vector<std::string>& Games = Script.Manifest.SupportedGames;
+			if (Games.empty()) continue;
+
+			bool Supported = std::any_of(Games.begin(), Games.end(), [](const std::string& Game)
+			{
+				return IsSameIdentifier(u8"" TWINKIEX_GAME, Game)
+#ifdef TMCN
+					or IsSameIdentifier(u8"TMNEXT", Game)
+#endif
+					;
+			});
+			if (!Supported) Fail(Script, std::format("{} isn't in its supported games", TWINKIEX_GAME));
+		}
+
+		for (auto& Script : Scripts)
+		{
+			if (!Script.LoadError.empty()) continue;
+			for (const std::string& Blocked : Script.Manifest.Blocks)
+			{
+				::Gecko::Script* Target = FindScript(Blocked);
+				if (Target and Target != &Script) Fail(*Target, std::format("blocked by {}", (const char*)Script.Id.c_str()));
+			}
+		}
+
+		auto FailMissingDependencies = [&]
+		{
+			for (bool Changed = true; Changed;)
+			{
+				Changed = false;
+				for (auto& Script : Scripts)
+				{
+					if (!Script.LoadError.empty()) continue;
+					for (const std::string& Identifier : Script.Manifest.Dependencies)
+					{
+						::Gecko::Script* Dependency = FindScript(Identifier);
+						if (Dependency and Dependency->LoadError.empty()) continue;
+
+						Fail(Script, Dependency ? std::format("its dependency {} isn't loaded", Identifier) : std::format("its dependency {} is missing", Identifier));
+						Changed = true;
+						break;
+					}
+				}
+			}
+		};
+		FailMissingDependencies();
+
+		std::vector<size_t> Order;
+		std::vector<uint8_t> State(Scripts.size(), 0);
+		std::function<bool(size_t)> Visit = [&](size_t Idx) -> bool
+		{
+			if (State[Idx] == 2) return true;
+			if (State[Idx] == 1) return false;
+			State[Idx] = 1;
+
+			bool Acyclic = true;
+			for (const std::vector<std::string>* List : { &Scripts[Idx].Manifest.Dependencies, &Scripts[Idx].Manifest.OptionalDependencies, &Scripts[Idx].Manifest.ExportDependencies })
+			{
+				for (const std::string& Identifier : *List)
+				{
+					::Gecko::Script* Dependency = FindScript(Identifier);
+					if (!Dependency or Dependency == &Scripts[Idx]) continue;
+					if (!Visit((size_t)(Dependency - Scripts.data()))) Acyclic = false;
+				}
+			}
+
+			State[Idx] = 2;
+			Order.push_back(Idx);
+			if (!Acyclic) Fail(Scripts[Idx], "its dependencies form a cycle");
+			return Acyclic;
+		};
+		for (size_t Idx = 0; Idx < Scripts.size(); Idx++) Visit(Idx);
+		FailMissingDependencies();
+
+		std::vector<Script> Sorted;
+		Sorted.reserve(Scripts.size());
+		for (size_t Idx : Order) Sorted.push_back(std::move(Scripts[Idx]));
+		Scripts = std::move(Sorted);
+	}
+
+	void ScriptManager::BindImports()
+	{
+		for (auto& Script : Scripts)
+		{
+			if (!Script.LoadError.empty()) continue;
+
+			asIScriptModule* Module = Engine->GetModule((const char*)Script.Name.c_str());
+			if (!Module) continue;
+
+			for (asUINT Idx = 0; Idx < Module->GetImportedFunctionCount(); Idx++)
+			{
+				const char* Source = Module->GetImportedFunctionSourceModule(Idx);
+				asIScriptModule* SourceModule = Source ? Engine->GetModule(Source) : nullptr;
+				asIScriptFunction* Function = SourceModule ? SourceModule->GetFunctionByDecl(Module->GetImportedFunctionDeclaration(Idx)) : nullptr;
+
+				if (!Function or Module->BindImportedFunction(Idx, Function) < 0)
+				{
+					LoggertAngelscript.error(FromStr(std::format("[{}] Couldn't import {} from {}", (const char*)Script.Id.c_str(), Module->GetImportedFunctionDeclaration(Idx), Source ? Source : "?")));
+				}
+			}
+		}
+	}
+
 	void ScriptManager::BuildAll()
 	{
+		ResolvePlugins();
 		for (auto& Script : Scripts)
 		{
 			BuildScript(Script);
 		}
+		BindImports();
 	}
 
 	static bool ReturnsInputBlocking(CallbackType CallbackType)
@@ -328,7 +545,7 @@ namespace Gecko
 			asIScriptContext*& Ctx = Script.Ctxs[(size_t)CallbackType];
 			if (SetArgs && Ctx->GetState() == asEXECUTION_PREPARED) SetArgs(Ctx);
 
-			int r = ExecuteContext(Script, Ctx, TimeoutDurationMs);
+			int r = ExecuteContext(Script, Ctx, ScriptTimeout(Script, TimeoutDurationMs));
 			if (r != asEXECUTION_SUSPENDED)
 			{
 				if (r == asEXECUTION_FINISHED && ReturnsInputBlocking(CallbackType)) Blocked = Ctx->GetReturnDWord() == 1;
@@ -352,6 +569,8 @@ namespace Gecko
 	void ScriptManager::SetEnabled(size_t ScriptIdx, bool Enabled)
 	{
 		if (ScriptIdx >= Scripts.size() || Scripts[ScriptIdx].Enabled == Enabled) return;
+		if (Enabled && !Scripts[ScriptIdx].LoadError.empty()) return;
+		if (!Enabled && Scripts[ScriptIdx].Manifest.Essential) return;
 
 		if (Enabled)
 		{
@@ -373,7 +592,7 @@ namespace Gecko
 			if (!Current.Enabled || !Current.Ctxs[(size_t)CallbackType::RenderSettings]) continue;
 
 			ImGui::PushID((int)Idx);
-			if (ImGui::CollapsingHeader((const char*)Current.Id.c_str())) RunCallback(Idx, CallbackType::RenderSettings);
+			if (ImGui::CollapsingHeader((const char*)Current.DisplayName.c_str())) RunCallback(Idx, CallbackType::RenderSettings);
 			ImGui::PopID();
 		}
 	}
@@ -395,9 +614,11 @@ namespace Gecko
 		return nullptr;
 	}
 
-	void ScriptManager::Preprocess(std::u8string& Src)
+	void ScriptManager::Preprocess(std::u8string& Src, const std::vector<std::string>& Defines)
 	{
 		ccpp::processor Preprocessor;
+
+		for (const std::string& Define : Defines) Preprocessor.add_define(Define.c_str());
 
 		{
 			Preprocessor.add_define("TWINKIEX");
@@ -444,57 +665,111 @@ namespace Gecko
 	{
 		Script.SourceCodes.clear();
 		Script.SourceNames.clear();
+		Script.ExportCodes.clear();
+		Script.ExportNames.clear();
+		Script.Manifest = {};
+		Script.LoadError.clear();
+
+		std::vector<std::pair<std::u8string, std::u8string>> Files;
+		std::optional<std::string> ManifestSource;
 
 		if (std::filesystem::is_directory(Script.ScriptPath))
 		{
-			std::vector<std::filesystem::path> Files;
 			try
 			{
 				for (auto& Entry : std::filesystem::recursive_directory_iterator(Script.ScriptPath, std::filesystem::directory_options::skip_permission_denied))
 				{
-					if (Entry.is_regular_file() and Entry.path().extension() == ".as") Files.push_back(Entry.path());
+					if (!Entry.is_regular_file()) continue;
+
+					std::u8string Relative = std::filesystem::relative(Entry.path(), Script.ScriptPath).generic_u8string();
+					if (Relative == u8"info.toml")
+					{
+						std::u8string Contents = ReadWholeFile(Entry.path());
+						ManifestSource = std::string((const char*)Contents.data(), Contents.size());
+					}
+					else if (Entry.path().extension() == ".as")
+					{
+						Files.emplace_back(Relative, ReadWholeFile(Entry.path()));
+					}
 				}
 			}
 			catch (const std::filesystem::filesystem_error& Error)
 			{
-				LoggertAngelscript.error(FromStr(std::format("Couldn't read the folder of {}: {}", (const char*)Script.Name.c_str(), Error.what())));
+				LoggertAngelscript.error(FromStr(std::format("Couldn't read the folder of {}: {}", (const char*)Script.Id.c_str(), Error.what())));
 			}
-
-			// Sorted so the build doesn't depend on the order the file system lists files in
-			std::sort(Files.begin(), Files.end());
-
-			for (auto& File : Files)
-			{
-				std::u8string SourceCode = ReadWholeFile(File);
-				Preprocess(SourceCode);
-
-				Script.SourceCodes.push_back(SourceCode);
-				Script.SourceNames.push_back(std::filesystem::relative(File, Script.ScriptPath).generic_u8string());
-			}
-			return;
 		}
-
-		ZipArchive Archive(Script.ScriptPath);
-
-		for (auto& File : Archive)
+		else
 		{
-			// Archives also contain files like info.toml
-			if (std::filesystem::path(File.Filename).extension() != ".as") continue;
+			ZipArchive Archive(Script.ScriptPath);
+			for (auto& File : Archive)
+			{
+				std::u8string Name = File.Filename;
+				std::replace(Name.begin(), Name.end(), u8'\\', u8'/');
 
-			std::u8string SourceCode(File.Data.begin(), File.Data.end());
-			Preprocess(SourceCode);
-
-			Script.SourceCodes.push_back(SourceCode);
-			Script.SourceNames.push_back(File.Filename);
+				if (Name == u8"info.toml") ManifestSource = std::string((const char*)File.Data.data(), File.Data.size());
+				else if (std::filesystem::path(Name).extension() == ".as") Files.emplace_back(Name, std::u8string(File.Data.begin(), File.Data.end()));
+			}
 		}
+
+		// Sorted so the build doesn't depend on the order the file system or archive lists files in
+		std::sort(Files.begin(), Files.end());
+
+		if (ManifestSource)
+		{
+			std::string Error;
+			if (!ParsePluginManifest(*ManifestSource, Script.Manifest, Error))
+			{
+				Script.LoadError = "invalid info.toml: " + Error;
+				LoggertAngelscript.error(FromStr(std::format("[{}] Not loaded: {}", (const char*)Script.Id.c_str(), Script.LoadError)));
+			}
+		}
+
+		auto IsListed = [](const std::vector<std::string>& List, const std::u8string& Name)
+		{
+			return std::any_of(List.begin(), List.end(), [&Name](const std::string& Entry) { return NormalizeScriptPath(Entry) == Name; });
+		};
+
+		for (auto& [Name, Code] : Files)
+		{
+			bool Exported = IsListed(Script.Manifest.Exports, Name);
+			if (Exported or IsListed(Script.Manifest.SharedExports, Name))
+			{
+				Script.ExportNames.push_back(Name);
+				Script.ExportCodes.push_back(Code);
+			}
+			if (Exported) continue;
+
+			Script.SourceNames.push_back(Name);
+			Script.SourceCodes.push_back(Code);
+		}
+
+		for (const std::string& Import : Script.Manifest.Imports)
+		{
+			std::u8string Normal = NormalizeScriptPath(Import);
+			std::filesystem::path Path = ImportsPath / std::filesystem::path(Normal);
+			if (!std::filesystem::is_regular_file(Path))
+			{
+				LoggertAngelscript.error(FromStr(std::format("[{}] Import {} wasn't found in {}", (const char*)Script.Id.c_str(), Import, (const char*)ImportsPath.u8string().c_str())));
+				continue;
+			}
+
+			Script.SourceNames.push_back(u8"Imports/" + Normal);
+			Script.SourceCodes.push_back(ReadWholeFile(Path));
+		}
+
+		if (!Script.Manifest.Module.empty()) Script.Name = ToU8(Script.Manifest.Module);
+		else if (Script.Name.empty()) Script.Name = Script.Id;
+
+		Script.DisplayName = Script.Manifest.Name.empty() ? Script.Id : ToU8(Script.Manifest.Name);
+		if (!Script.LoadError.empty()) Script.Enabled = false;
 	}
 
 	void ScriptManager::AddFromFile(const std::filesystem::path& FilePath, const std::u8string& ScriptName)
 	{
 		Script NewScript;
 		NewScript.ScriptPath = FilePath;
-		NewScript.Name = ScriptName.empty() ? FilePath.u8string() : ScriptName;
-		NewScript.Id = FilePath.filename().u8string();
+		NewScript.Name = ScriptName;
+		NewScript.Id = std::filesystem::is_directory(FilePath) ? FilePath.filename().u8string() : FilePath.stem().u8string();
 
 		LoadSources(NewScript);
 
@@ -516,10 +791,11 @@ namespace Gecko
 			{
 				for (auto& Module : Scripts)
 				{
-					if (MenuItem((const char*)Module.Id.c_str()))
+					if (MenuItem((const char*)Module.DisplayName.c_str()))
 					{
 						ReloadScript(Module);
 						BuildScript(Module);
+						BindImports();
 					}
 				}
 
@@ -529,7 +805,7 @@ namespace Gecko
 			{
 				for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
 				{
-					if (MenuItem((const char*)Scripts[Idx].Id.c_str(), nullptr, Scripts[Idx].Enabled))
+					if (MenuItem((const char*)Scripts[Idx].DisplayName.c_str(), nullptr, Scripts[Idx].Enabled, Scripts[Idx].LoadError.empty() && !Scripts[Idx].Manifest.Essential))
 					{
 						SetEnabled(Idx, !Scripts[Idx].Enabled);
 					}

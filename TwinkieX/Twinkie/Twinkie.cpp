@@ -94,6 +94,7 @@ Twinkie::~Twinkie()
 void Twinkie::Update()
 {
 	Gecko::TheScriptManager = new Gecko::ScriptManager();
+	Gecko::TheScriptManager->ImportsPath = DocumentsFolderPath / "TwinkieX\\Imports";
 
 	for (const auto& File : std::filesystem::directory_iterator(DocumentsFolderPath / "TwinkieX\\Scripts"))
 	{

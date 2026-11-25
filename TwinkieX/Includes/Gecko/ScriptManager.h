@@ -75,6 +75,7 @@ namespace Gecko
 		intmax_t ActiveScriptIdx = -1;
 		CallbackType ActiveCallbackType = CallbackType::Main;
 		std::chrono::milliseconds TimeoutDurationMs = 1000ms;
+		std::filesystem::path ImportsPath;
 		bool Running = false;
 
 		ScriptManager();
@@ -92,6 +93,9 @@ namespace Gecko
 		void RenderSettings();
 		void SetEnabled(size_t ScriptIdx, bool Enabled);
 		void BuildAll();
+		void ResolvePlugins();
+		void BindImports();
+		Script* FindScript(std::string_view Identifier);
 		void BuildScript(Script&);
 		void BuildScriptByCallback(Script&, CallbackType);
 		bool RunAll(CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs = {});
@@ -101,7 +105,7 @@ namespace Gecko
 		void ReloadScript(Script&);
 		// Reads and preprocesses the script's source codes from its ScriptPath
 		void LoadSources(Script&);
-		void Preprocess(std::u8string& Src);
+		void Preprocess(std::u8string& Src, const std::vector<std::string>& Defines = {});
 	};
 
 	extern ScriptManager* TheScriptManager;
