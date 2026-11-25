@@ -45,7 +45,6 @@ public:
 	// Getters
 
 	// Scans for a specific signature (sigscan) in the .exe.
-	// The signature MUST have at least 4 bytes, and the first 4 bytes must NOT be a wildcard.
 	TWINKIEX_API uintptr_t SigScan(const char* Sig);
 
 	// Gets the main app object, usually defined as (CTrackMania*).
@@ -151,6 +150,68 @@ public:
 	// Gets the game's DirectX swap chain, only for TMCN/D3D11
 	TWINKIEX_API __declspec(noinline) uintptr_t GetDirectXSwapChain();
 #endif
+
+private:
+#ifdef GAMEBOX
+	struct SigOperand
+	{
+		const char* Sig;
+		size_t Offset;
+	};
+
+	uintptr_t ReadSigOperand(std::initializer_list<SigOperand> Sigs);
+	uintptr_t FindAppGlobal();
+	static CMwNod* GetNodMemberById(CMwNod* Nod, uint32_t MemberId);
+	static bool IsInDirect3D9Module(uintptr_t Address);
+	static bool IsDirectXDevice(uintptr_t Device);
+#endif
+
+#ifdef TMCN
+	struct MwIdNameChunk
+	{
+		const uint32_t* Offsets;
+		uint32_t Count;
+	};
+
+	struct MwIdNameTable
+	{
+		const char* const* Pool = nullptr;
+		const uint32_t* PoolSize = nullptr;
+		const MwIdNameChunk* Chunks = nullptr;
+		const uint32_t* ChunkCount = nullptr;
+	};
+
+	struct MwIdNameView
+	{
+		const char* Ptr;
+		uint32_t Length;
+	};
+#elif defined(TM1)
+	struct MwIdNameTable
+	{
+		uint32_t Count;
+		const CFastString* Names;
+		uint32_t Capacity;
+	};
+#else
+	struct MwIdNameChunk
+	{
+		uint32_t Unknown;
+		uint32_t Count;
+		const uint32_t* Offsets;
+	};
+
+	struct MwIdNameTable
+	{
+		uint32_t PoolSize;
+		const char* Pool;
+		uint32_t PoolCapacity;
+		MwIdNameChunk Chunks[O_MWID_MAXCHUNKS];
+		uint32_t ChunkCount;
+	};
+#endif
+
+	static bool IsNamedMwId(uint32_t Id);
 };
 
 template<typename ReturnT>

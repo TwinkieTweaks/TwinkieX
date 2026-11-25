@@ -32,7 +32,7 @@ static DWORD WINAPI InitializerThread([[maybe_unused]] LPVOID lpParameter)
 #else
     while (!gTwinkie.TrackmaniaMgr.GetDirectXDevice())
     {
-        WaitUntilPause();
+            WaitUntilPause();
     }
 #endif
 #ifdef GAMEBOX

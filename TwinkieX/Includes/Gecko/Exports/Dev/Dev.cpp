@@ -134,57 +134,7 @@ namespace Gecko::Exports::Dev
 	{
 		std::vector<int16_t> Bytes;
 		if (!ParsePattern(Pattern, Bytes)) return 0;
-
-		size_t Anchor = 0;
-		while (Anchor < Bytes.size() and Bytes[Anchor] < 0) Anchor++;
-
-		auto Matches = [&](const uint8_t* At)
-		{
-			for (size_t Idx = 0; Idx < Bytes.size(); Idx++)
-			{
-				if (Bytes[Idx] >= 0 and At[Idx] != (uint8_t)Bytes[Idx]) return false;
-			}
-			return true;
-		};
-
-		auto ScanSpan = [&](uintptr_t Begin, uintptr_t End) -> uintptr_t
-		{
-			if (End - Begin < Bytes.size()) return 0;
-			auto Cur = (const uint8_t*)Begin;
-			auto Last = (const uint8_t*)(End - Bytes.size());
-			while (Cur <= Last)
-			{
-				if (Anchor < Bytes.size())
-				{
-					auto Found = (const uint8_t*)memchr(Cur + Anchor, (uint8_t)Bytes[Anchor], (size_t)(Last - Cur) + 1);
-					if (!Found) return 0;
-					Cur = Found - Anchor;
-				}
-				if (Matches(Cur)) return (uintptr_t)Cur;
-				Cur++;
-			}
-			return 0;
-		};
-
-		uintptr_t End = ImageEnd();
-		uintptr_t Addr = gTwinkie.TrackmaniaMgr.ExeBaseAddr;
-		uintptr_t SpanBegin = 0;
-		while (Addr < End)
-		{
-			MEMORY_BASIC_INFORMATION Mbi{};
-			if (!VirtualQuery((const void*)Addr, &Mbi, sizeof(Mbi))) break;
-
-			uintptr_t RegionEnd = (std::min)((uintptr_t)Mbi.BaseAddress + (uintptr_t)Mbi.RegionSize, End);
-			bool Readable = Mbi.State == MEM_COMMIT and !(Mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD));
-			if (Readable and !SpanBegin) SpanBegin = Addr;
-			if (!Readable and SpanBegin)
-			{
-				if (uintptr_t Found = ScanSpan(SpanBegin, Addr)) return Found;
-				SpanBegin = 0;
-			}
-			Addr = RegionEnd;
-		}
-		return SpanBegin ? ScanSpan(SpanBegin, Addr) : 0;
+		return gTwinkie.TrackmaniaMgr.SigScan(Pattern.c_str());
 	}
 
 	static std::string Patch(uint64_t Ptr, const std::string& Pattern)

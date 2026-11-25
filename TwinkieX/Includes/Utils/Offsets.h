@@ -71,6 +71,9 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 // Exclusive to TMCN, the other games have the device as a global
 #define O_M_CDX11VIEWPORT_D3DSWAPCHAIN 8808
 
+// MwId name table
+#define O_MWID_MAXCHUNKS 32
+
 // Vtable indices
 #define O_V_PRESENT 8
 #define O_V_RESIZEBUFFERS 13
@@ -109,6 +112,10 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0 
 
+// Member IDs
+#define O_MEMBERID_CGAMEAPP_VIEWPORT 0x03005002
+#define O_MEMBERID_CGAMEAPP_INPUTPORT 0x03005004
+
 // Vtable indices
 #define O_V_RESET 16
 #define O_V_PRESENT 17
@@ -129,6 +136,13 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
+// Member IDs
+#define O_MEMBERID_CGAMEAPP_VIEWPORT 0x03005002
+#define O_MEMBERID_CGAMEAPP_INPUTPORT 0x03005004
+
+// MwId name table
+#define O_MWID_MAXCHUNKS 32
+
 // Vtable indices
 #define O_V_PRESENT 0
 
@@ -148,6 +162,13 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
+
+// Member IDs
+#define O_MEMBERID_CGAMEAPP_VIEWPORT 0x03005002
+#define O_MEMBERID_CGAMEAPP_INPUTPORT 0x03005004
+
+// MwId name table
+#define O_MWID_MAXCHUNKS 32
 
 // Vtable indices
 #define O_V_RESET 16
@@ -170,6 +191,13 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
 
+// Member IDs
+#define O_MEMBERID_CGAMEAPP_VIEWPORT 0x03005002
+#define O_MEMBERID_CGAMEAPP_INPUTPORT 0x03005004
+
+// MwId name table
+#define O_MWID_MAXCHUNKS 32
+
 // Vtable indices
 #define O_V_RESET 16
 #define O_V_PRESENT 17
@@ -190,6 +218,13 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
+
+// Member IDs
+#define O_MEMBERID_CGAMEAPP_VIEWPORT 0x03005002
+#define O_MEMBERID_CGAMEAPP_INPUTPORT 0x03005004
+
+// MwId name table
+#define O_MWID_MAXCHUNKS 32
 
 // Vtable indices
 #define O_V_RESET 16
@@ -212,6 +247,13 @@ __declspec(noinline) bool IsAddrSafeSlow(uintptr_t Addr);
 #define O_M_CINPUTPORT_ISFOCUSED 0x28 + 16
 
 #define O_M_CINPUTDEVICE_ISDISABLED 0x0
+
+// Member IDs
+#define O_MEMBERID_CGAMEAPP_VIEWPORT 0x03005002
+#define O_MEMBERID_CGAMEAPP_INPUTPORT 0x03005004
+
+// MwId name table
+#define O_MWID_MAXCHUNKS 32
 
 // Vtable indices
 #define O_V_RESET 16

@@ -29,164 +29,249 @@ TwinkTrackmania::~TwinkTrackmania()
 
 uintptr_t TwinkTrackmania::SigScan(const char* Sig)
 {
-	__pragma(pack(push, 1))
-	struct OptionU8
+	std::vector<int16_t> Bytes;
+	for (const char* Cursor = Sig; *Cursor;)
 	{
-		bool IsWildcard;
-		uint8_t Byte;
-		
-		bool operator==(uint8_t Rhs)
+		if (std::isspace((uint8_t)*Cursor))
 		{
-			if (IsWildcard) return true;
-			return Rhs == Byte;
+			Cursor++;
+			continue;
 		}
+
+		const char* TokenEnd = Cursor;
+		while (*TokenEnd and not std::isspace((uint8_t)*TokenEnd)) TokenEnd++;
+		std::string Token(Cursor, (size_t)(TokenEnd - Cursor));
+		Cursor = TokenEnd;
+
+		if (Token == "?" or Token == "??")
+		{
+			Bytes.push_back(-1);
+			continue;
+		}
+		if (Token.size() != 2 or not std::isxdigit((uint8_t)Token[0]) or not std::isxdigit((uint8_t)Token[1])) return 0;
+		Bytes.push_back((int16_t)std::strtol(Token.c_str(), nullptr, 16));
+	}
+	if (Bytes.empty()) return 0;
+
+	size_t Anchor = 0;
+	while (Anchor < Bytes.size() and Bytes[Anchor] < 0) Anchor++;
+
+	auto Matches = [&](const uint8_t* At)
+	{
+		for (size_t Idx = 0; Idx < Bytes.size(); Idx++)
+		{
+			if (Bytes[Idx] >= 0 and At[Idx] != (uint8_t)Bytes[Idx]) return false;
+		}
+		return true;
 	};
-	__pragma(pack(pop))
 
-	std::vector<OptionU8> SigBytes;
-	std::string SigStr = Sig;
-	std::string Byte;
-
-	for (auto& Char : SigStr)
+	auto ScanSpan = [&](uintptr_t Begin, uintptr_t End) -> uintptr_t
 	{
-		if (Char == ' ')
+		if (End - Begin < Bytes.size()) return 0;
+		auto Current = (const uint8_t*)Begin;
+		auto Last = (const uint8_t*)(End - Bytes.size());
+		while (Current <= Last)
 		{
-			if (Byte[0] == '?')
+			if (Anchor < Bytes.size())
 			{
-				SigBytes.push_back({ true, 0 });
+				auto Found = (const uint8_t*)memchr(Current + Anchor, (uint8_t)Bytes[Anchor], (size_t)(Last - Current) + 1);
+				if (!Found) return 0;
+				Current = Found - Anchor;
 			}
-			else
-			{
-				SigBytes.push_back({ false, (uint8_t)std::stoi(Byte, nullptr, 16) });
-			}
-			Byte = "";
-		}
-		else
-		{
-			Byte += Char;
-		}
-	}
-
-	if (Byte[0] == '?')
-	{
-		SigBytes.push_back({ true, 0 });
-	}
-	else
-	{
-		SigBytes.push_back({ false, (uint8_t)std::stoi(Byte, nullptr, 16) });
-	}
-
-	uintptr_t Start = this->ExeBaseAddr;
-
-	// https://wiki.alliedmods.net/Signature_Scanning
-	MEMORY_BASIC_INFORMATION Mbi;
-
-	if (!VirtualQuery((const void*)Start, &Mbi, sizeof(Mbi)))
-		return 0;
-
-	IMAGE_DOS_HEADER* DosHeader = (IMAGE_DOS_HEADER*)Mbi.AllocationBase;
-
-#ifdef X64
-#define NtHeadersStruct IMAGE_NT_HEADERS64
-#else
-#define NtHeadersStruct IMAGE_NT_HEADERS
-#endif
-
-	NtHeadersStruct* PeHeader = (NtHeadersStruct*)((uintptr_t)DosHeader + (uintptr_t)DosHeader->e_lfanew);
-
-	uintptr_t ImageSize = (uintptr_t)PeHeader->OptionalHeader.SizeOfImage;
-	uintptr_t End = Start + ImageSize;
-	
-	uintptr_t Current = Start;
-
-	uint32_t FirstFourBytesOfSig =
-		((uint32_t)SigBytes[0].Byte << 0 ) |
-		((uint32_t)SigBytes[1].Byte << 8 ) |
-		((uint32_t)SigBytes[2].Byte << 16) |
-		((uint32_t)SigBytes[3].Byte << 24) ;
-
-	bool MatchedFirstFourBytes = false;
-
-	while (Current + SigBytes.size() <= End)
-	{
-		while (Current + SigBytes.size() <= End)
-		{
-			if (ReadAddr(uint32_t, Current) == FirstFourBytesOfSig)
-			{
-				MatchedFirstFourBytes = true;
-				break;
-			}
+			if (Matches(Current)) return (uintptr_t)Current;
 			Current++;
 		}
+		return 0;
+	};
 
-		if (MatchedFirstFourBytes)
-		{
-			uintptr_t CurrentForSearch = Current + sizeof(uint32_t);
-			while (CurrentForSearch - Current < SigBytes.size())
-			{
-				size_t Idx = CurrentForSearch - Current;
-				if (ReadAddr(uint8_t, CurrentForSearch) != SigBytes[Idx])
-				{
-					Current++;
-					MatchedFirstFourBytes = false;
-					break;
-				}
-				CurrentForSearch++;
-			}
+	auto DosHeader = (const IMAGE_DOS_HEADER*)this->ExeBaseAddr;
+	auto NtHeaders = (const IMAGE_NT_HEADERS*)(this->ExeBaseAddr + DosHeader->e_lfanew);
+	uintptr_t ImageEnd = this->ExeBaseAddr + NtHeaders->OptionalHeader.SizeOfImage;
 
-		}
-		
-		if (MatchedFirstFourBytes)
+	uintptr_t Address = this->ExeBaseAddr;
+	uintptr_t SpanBegin = 0;
+	while (Address < ImageEnd)
+	{
+		MEMORY_BASIC_INFORMATION Mbi{};
+		if (!VirtualQuery((const void*)Address, &Mbi, sizeof(Mbi))) break;
+
+		uintptr_t RegionEnd = (std::min)((uintptr_t)Mbi.BaseAddress + (uintptr_t)Mbi.RegionSize, ImageEnd);
+		bool Readable = Mbi.State == MEM_COMMIT and not (Mbi.Protect & (PAGE_NOACCESS | PAGE_GUARD));
+		if (Readable and not SpanBegin) SpanBegin = Address;
+		if (not Readable and SpanBegin)
 		{
-			return Current;
+			if (uintptr_t Found = ScanSpan(SpanBegin, Address)) return Found;
+			SpanBegin = 0;
 		}
+		Address = RegionEnd;
 	}
+	return SpanBegin ? ScanSpan(SpanBegin, Address) : 0;
+}
 
+#ifdef GAMEBOX
+uintptr_t TwinkTrackmania::ReadSigOperand(std::initializer_list<SigOperand> Sigs)
+{
+	for (const SigOperand& Entry : Sigs)
+	{
+		if (uintptr_t Found = SigScan(Entry.Sig)) return ReadAddr(uint32_t, Found + Entry.Offset);
+	}
 	return 0;
 }
 
+CMwNod* TwinkTrackmania::GetNodMemberById(CMwNod* Nod, uint32_t MemberId)
+{
+	if (!Nod) return nullptr;
+	for (CMwClassInfo* Class = Nod->MwGetClassInfo(); Class; Class = Class->ParentClassInfo)
+	{
+		for (CMwMemberInfo* Member : *Class)
+		{
+			if (Member and Member->MemberID == MemberId and Member->MemberOffset != 0xFFFFFFFFU)
+			{
+				return ReadAddr(CMwNod*, (uintptr_t)Nod + Member->MemberOffset);
+			}
+		}
+	}
+	return nullptr;
+}
+
+bool TwinkTrackmania::IsInDirect3D9Module(uintptr_t Address)
+{
+	HMODULE Owner = nullptr;
+	if (!GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, (LPCSTR)Address, &Owner)) return false;
+	return Owner and GetProcAddress(Owner, "Direct3DCreate9");
+}
+
+bool TwinkTrackmania::IsDirectXDevice(uintptr_t Device)
+{
+	if (!Device or not IsAddrSafeSlow(Device)) return false;
+	uintptr_t Vtable = ReadAddr(uintptr_t, Device);
+	if (!Vtable or not IsAddrSafeSlow(Vtable) or not IsAddrSafeSlow(Vtable + O_V_PRESENT * sizeof(uintptr_t))) return false;
+	if (IsInDirect3D9Module(Vtable)) return true;
+
+	// Check if more than 50% of the vtable is d3d9-owned from 0 to Present
+	uint32_t Owned = 0;
+	for (uint32_t Idx = 0; Idx <= O_V_PRESENT; Idx++)
+	{
+		if (IsInDirect3D9Module(ReadAddr(uintptr_t, Vtable + Idx * sizeof(uintptr_t)))) Owned++;
+	}
+	return Owned * 2 > O_V_PRESENT + 1;
+}
+
+uintptr_t TwinkTrackmania::FindAppGlobal()
+{
+	static const uintptr_t AppGlobal = [this]
+	{
+		uintptr_t Found = ReadSigOperand({
+#ifdef TM1
+			{ "B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 B9 ?? ?? ?? ?? 75", 1 },
+#else
+			{ "C7 06 ?? ?? ?? ?? 89 35 ?? ?? ?? ?? 6A 34 C6 44 24", 8 },
+			{ "89 35 ?? ?? ?? ?? D9 9E ?? ?? ?? ?? 6A 34", 2 },
+#endif
+		});
+#ifdef TM1
+		return Found ? Found : (uintptr_t)O_APP;
+#else
+		return Found ? Found : this->ExeBaseAddr + O_APP;
+#endif
+	}();
+	return AppGlobal;
+}
+#endif
+
 CMwNod* TwinkTrackmania::GetApp()
 {
-#ifndef TM1
-	return ReadAddr(CMwNod*, this->ExeBaseAddr + O_APP);
+#if defined(TM1)
+	return ReadAddr(CMwNod*, FindAppGlobal() + O_M_CMWNODMAIN_APP);
+#elif defined(GAMEBOX)
+	return ReadAddr(CMwNod*, FindAppGlobal());
 #else
-	return ReadAddr(CMwNod*, O_M_CMWNODMAIN_APP + O_APP);
+	return ReadAddr(CMwNod*, this->ExeBaseAddr + O_APP);
 #endif
 }
 
 CMwNod* TwinkTrackmania::GetViewport()
 {
-#ifndef TM1
-	return ReadAddr(CMwNod*, (uintptr_t)GetApp() + O_M_CTRACKMANIA_VIEWPORT);
+#if defined(TM1)
+	return ReadAddr(CMwNod*, FindAppGlobal() + O_M_CMWNODMAIN_VIEWPORT);
+#elif defined(GAMEBOX)
+	return GetNodMemberById(GetApp(), O_MEMBERID_CGAMEAPP_VIEWPORT);
 #else
-	return ReadAddr(CMwNod*, O_M_CMWNODMAIN_VIEWPORT + O_APP);
+	return ReadAddr(CMwNod*, (uintptr_t)GetApp() + O_M_CTRACKMANIA_VIEWPORT);
 #endif
 }
 
 uintptr_t TwinkTrackmania::GetDirectXDevice()
 {
-#ifndef TM1
-	return ReadAddr(uintptr_t, this->ExeBaseAddr + O_D3DDEVICE);
+#ifdef GAMEBOX
+	static const uintptr_t DeviceOffset = ReadSigOperand({
+		{ "75 18 8B ?? ?? ?? 00 00 8B ?? ?? ?? 00 00 ?? ?? B9", 10 },
+	});
+
+	CMwNod* Viewport = GetViewport();
+	if (Viewport and DeviceOffset)
+	{
+		uintptr_t Device = ReadAddr(uintptr_t, (uintptr_t)Viewport + DeviceOffset);
+		if (IsDirectXDevice(Device)) return Device;
+	}
+
+#ifdef TM1
+	if (!Viewport) return 0;
+	uintptr_t Fallback = ReadAddr(uintptr_t, (uintptr_t)Viewport + O_M_CVISIONVIEWPORTDX9_DEVICE);
 #else
-	return ReadAddr(uintptr_t, O_M_CVISIONVIEWPORTDX9_DEVICE + (uintptr_t)GetViewport());
+	uintptr_t Fallback = ReadAddr(uintptr_t, this->ExeBaseAddr + O_D3DDEVICE);
+#endif
+	return IsDirectXDevice(Fallback) ? Fallback : 0;
+#else
+	return ReadAddr(uintptr_t, this->ExeBaseAddr + O_D3DDEVICE);
 #endif
 }
 
 CInputPort* TwinkTrackmania::GetInputPort()
 {
+#ifdef GAMEBOX
+	return (CInputPort*)GetNodMemberById(GetApp(), O_MEMBERID_CGAMEAPP_INPUTPORT);
+#else
 	return ReadAddr(CInputPort*, (uintptr_t)GetApp() + O_M_CTRACKMANIA_INPUTPORT);
+#endif
 }
 
 CMwEngineManager* TwinkTrackmania::GetEngineManager()
 {
+#ifdef GAMEBOX
+	static const uintptr_t EngineManager = [this]
+	{
+		uintptr_t Found = ReadSigOperand({
+			{ "8B C6 25 00 F0 FF FF 50 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 74 ?? 8B 48", 9 },
+		});
+		return Found ? Found : this->ExeBaseAddr + O_ENGINEMGR;
+	}();
+	return (CMwEngineManager*)EngineManager;
+#else
 	return (CMwEngineManager*)(this->ExeBaseAddr + O_ENGINEMGR);
+#endif
 }
 
 #ifdef GAMEBOX
 bool TwinkTrackmania::GetIsIntroOver()
 {
 #ifndef TMU
-	return ReadAddr(bool, this->ExeBaseAddr + O_ISINTROOVER);
+	static const uintptr_t IntroOver = [this]
+	{
+		uintptr_t Found = ReadSigOperand({
+#if defined(TM1)
+			{ "6A 03 E8 ?? ?? ?? ?? C7 05 ?? ?? ?? ?? 01 00 00 00 5E C3", 9 },
+#elif defined(ESWC)
+			{ "A0 ?? ?? ?? ?? A8 01 89 5C 24 1C 75 2A 8A D0 80 CA 01 68", 1 },
+#elif defined(TMSX)
+			{ "8B E9 33 F6 89 35 ?? ?? ?? ?? 8B 45 00 FF 90", 6 },
+#elif defined(TMO)
+			{ "D9 5C 88 FC 72 ?? A0 ?? ?? ?? ?? A8 02 75", 7 },
+#endif
+		});
+		return Found ? Found : this->ExeBaseAddr + O_ISINTROOVER;
+	}();
+	return ReadAddr(bool, IntroOver);
 #else
 	return true;
 #endif
@@ -357,67 +442,14 @@ __declspec(noinline) EGame TwinkTrackmania::GetGame()
 
 // END Getters
 
-namespace
+bool TwinkTrackmania::IsNamedMwId(uint32_t Id)
 {
+	uint32_t Top = Id & 0xC0000000;
 #ifdef TMCN
-	struct MwIdNameChunk
-	{
-		const uint32_t* Offsets;
-		uint32_t Count;
-	};
-
-	struct MwIdNameTable
-	{
-		const char* const* Pool = nullptr;
-		const uint32_t* PoolSize = nullptr;
-		const MwIdNameChunk* Chunks = nullptr;
-		const uint32_t* ChunkCount = nullptr;
-	};
-
-	struct MwIdNameView
-	{
-		const char* Ptr;
-		uint32_t Length;
-	};
-
-	constexpr uint32_t MaxMwIdNameChunks = 32;
-#elif defined(TM1)
-	struct MwIdNameTable
-	{
-		uint32_t Count;
-		const CFastString* Names;
-		uint32_t Capacity;
-	};
+	return Top == 0x40000000;
 #else
-	constexpr uint32_t MaxMwIdNameChunks = 32;
-
-	struct MwIdNameChunk
-	{
-		uint32_t Unknown;
-		uint32_t Count;
-		const uint32_t* Offsets;
-	};
-
-	struct MwIdNameTable
-	{
-		uint32_t PoolSize;
-		const char* Pool;
-		uint32_t PoolCapacity;
-		MwIdNameChunk Chunks[MaxMwIdNameChunks];
-		uint32_t ChunkCount;
-	};
-	static_assert(offsetof(MwIdNameTable, ChunkCount) == 0x18C);
+	return Top == 0x40000000 or Top == 0x80000000;
 #endif
-
-	bool IsNamedMwId(uint32_t Id)
-	{
-		uint32_t Top = Id & 0xC0000000;
-#ifdef TMCN
-		return Top == 0x40000000;
-#else
-		return Top == 0x40000000 or Top == 0x80000000;
-#endif
-	}
 }
 
 const char* TwinkTrackmania::LookupMwIdName(uint32_t Id)
@@ -434,7 +466,7 @@ const char* TwinkTrackmania::LookupMwIdName(uint32_t Id)
 		Found.Pool = (const char* const*)Pool;
 		Found.PoolSize = (const uint32_t*)(Pool + sizeof(void*));
 		Found.Chunks = (const MwIdNameChunk*)Chunks;
-		Found.ChunkCount = (const uint32_t*)(Chunks + MaxMwIdNameChunks * sizeof(MwIdNameChunk));
+		Found.ChunkCount = (const uint32_t*)(Chunks + O_MWID_MAXCHUNKS * sizeof(MwIdNameChunk));
 		return Found;
 	}();
 
@@ -443,7 +475,7 @@ const char* TwinkTrackmania::LookupMwIdName(uint32_t Id)
 	uint32_t Index = Id & 0x3FFFFFFF;
 	uint32_t ChunkIdx = Index >> 16;
 	uint32_t Slot = Index & 0xFFFF;
-	if (ChunkIdx >= MaxMwIdNameChunks or ChunkIdx >= *Table.ChunkCount) return nullptr;
+	if (ChunkIdx >= O_MWID_MAXCHUNKS or ChunkIdx >= *Table.ChunkCount) return nullptr;
 
 	const MwIdNameChunk& Chunk = Table.Chunks[ChunkIdx];
 	if (!Chunk.Offsets or Slot >= Chunk.Count) return nullptr;
@@ -466,6 +498,8 @@ const char* TwinkTrackmania::LookupMwIdName(uint32_t Id)
 	if (!Table->Names or Index >= Table->Count) return nullptr;
 	return Table->Names[Index].CStr;
 #else
+	static_assert(offsetof(MwIdNameTable, ChunkCount) == 0x18C);
+
 	static auto TablePtr = [this]() -> MwIdNameTable* const*
 	{
 		auto Lookup = (const uint8_t*)SigScan("8B 01 8B C8 81 E1 00 00 00 C0 81 F9 00 00 00 40 74 0B 81 F9 00 00 00 80 74 03 33 C0 C3 25 FF FF FF 3F");
@@ -485,7 +519,7 @@ const char* TwinkTrackmania::LookupMwIdName(uint32_t Id)
 	uint32_t Index = Id & 0x3FFFFFFF;
 	uint32_t ChunkIdx = Index >> 16;
 	uint32_t Slot = Index & 0xFFFF;
-	if (ChunkIdx >= MaxMwIdNameChunks or ChunkIdx >= Table->ChunkCount) return nullptr;
+	if (ChunkIdx >= O_MWID_MAXCHUNKS or ChunkIdx >= Table->ChunkCount) return nullptr;
 
 	const MwIdNameChunk& Chunk = Table->Chunks[ChunkIdx];
 	if (!Chunk.Offsets or Slot >= Chunk.Count) return nullptr;
