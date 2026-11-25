@@ -157,7 +157,7 @@ namespace Gecko::Exports::Reflection
 		uint32_t Idx = 0;
 		for (auto& Member : *ClassInfo)
 		{
-			Array->SetValue(Idx, &Member);
+			Array->SetValue(Idx++, &Member);
 		}
 
 		Script->SetReturnObject(Array);
