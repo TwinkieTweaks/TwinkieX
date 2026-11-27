@@ -1424,6 +1424,18 @@ namespace Gecko::Exports::ImGui
 		*/
 		bool IsGameUIVisibleAs() { return true; }
 		UI_EXPORT("bool IsGameUIVisible()", IsGameUIVisibleAs);
+
+		/*
+		!CompatMeta
+		for     UI
+		with    bool IsDockingEnabled()
+		being   function
+		declare full
+		since   v0.2.0
+		!CompatMeta
+		*/
+		bool IsDockingEnabledAs() { return GetCurrentContext() && (GetIO().ConfigFlags & ImGuiConfigFlags_DockingEnable); }
+		UI_EXPORT("bool IsDockingEnabled()", IsDockingEnabledAs);
 	}
 
 	// UI::DrawList
@@ -1729,5 +1741,6 @@ namespace Gecko::Exports::ImGui
 		Engine->SetDefaultNamespace("");
 
 		RegisterAll(Engine, s_Exports);
+		RegisterPlot(Engine);
 	}
 }

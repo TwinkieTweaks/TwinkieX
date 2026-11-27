@@ -7,4 +7,6 @@ namespace Gecko::Exports::ImGui
 
 	// The UI:: enums (in ExportImguiEnums.cpp)
 	void RegisterEnums(asIScriptEngine* Engine);
+
+	void RegisterPlot(asIScriptEngine* Engine);
 }

@@ -40,8 +40,7 @@ namespace Gecko::Exports::ImGui
 		with    WindowFlags
 		as      WindowFlags
 		being   enum
-		declare partial
-		reason  NoDocking is 0, since this Dear ImGui has no docking
+		declare full
 		since   v0.2.0
 		!CompatMeta
 		*/
@@ -66,7 +65,7 @@ namespace Gecko::Exports::ImGui
 			{ "NoNavInputs", ImGuiWindowFlags_NoNavInputs },
 			{ "NoNavFocus", ImGuiWindowFlags_NoNavFocus },
 			{ "UnsavedDocument", ImGuiWindowFlags_UnsavedDocument },
-			{ "NoDocking", 0 },
+			{ "NoDocking", ImGuiWindowFlags_NoDocking },
 			{ "NoNav", ImGuiWindowFlags_NoNav },
 			{ "NoDecoration", ImGuiWindowFlags_NoDecoration },
 			{ "NoInputs", ImGuiWindowFlags_NoInputs },
@@ -120,7 +119,7 @@ namespace Gecko::Exports::ImGui
 		as      Col
 		being   enum
 		declare partial
-		reason  DockingPreview and DockingEmptyBg are left out, since this Dear ImGui has no docking, and so is DragDropTargetBg, which is newer than it
+		reason  DragDropTargetBg is left out, since it's newer than this Dear ImGui
 		since   v0.2.0
 		!CompatMeta
 		*/
@@ -177,6 +176,8 @@ namespace Gecko::Exports::ImGui
 			{ "TableBorderLight", ImGuiCol_TableBorderLight },
 			{ "TableRowBg", ImGuiCol_TableRowBg },
 			{ "TableRowBgAlt", ImGuiCol_TableRowBgAlt },
+			{ "DockingPreview", ImGuiCol_DockingPreview },
+			{ "DockingEmptyBg", ImGuiCol_DockingEmptyBg },
 			{ "TextLink", ImGuiCol_TextLink },
 			{ "TextSelectedBg", ImGuiCol_TextSelectedBg },
 			{ "DragDropTarget", ImGuiCol_DragDropTarget },
@@ -194,8 +195,7 @@ namespace Gecko::Exports::ImGui
 		with    StyleVar
 		as      StyleVar
 		being   enum
-		declare partial
-		reason  DockingSeparatorSize is left out, since this Dear ImGui has no docking
+		declare full
 		since   v0.2.0
 		!CompatMeta
 		*/
@@ -226,6 +226,7 @@ namespace Gecko::Exports::ImGui
 			{ "TabBorderSize", ImGuiStyleVar_TabBorderSize },
 			{ "TabBarBorderSize", ImGuiStyleVar_TabBarBorderSize },
 			{ "TabBarOverlineSize", ImGuiStyleVar_TabBarOverlineSize },
+			{ "DockingSeparatorSize", ImGuiStyleVar_DockingSeparatorSize },
 			{ "TableAngledHeadersAngle", ImGuiStyleVar_TableAngledHeadersAngle },
 			{ "TableAngledHeadersTextAlign", ImGuiStyleVar_TableAngledHeadersTextAlign },
 			{ "ButtonTextAlign", ImGuiStyleVar_ButtonTextAlign },
@@ -816,8 +817,7 @@ namespace Gecko::Exports::ImGui
 		with    HoveredFlags
 		as      HoveredFlags
 		being   enum
-		declare partial
-		reason  DockHierarchy is 0, since this Dear ImGui has no docking
+		declare full
 		since   v0.2.0
 		!CompatMeta
 		*/
@@ -827,7 +827,7 @@ namespace Gecko::Exports::ImGui
 			{ "RootWindow", ImGuiHoveredFlags_RootWindow },
 			{ "AnyWindow", ImGuiHoveredFlags_AnyWindow },
 			{ "NoPopupHierarchy", ImGuiHoveredFlags_NoPopupHierarchy },
-			{ "DockHierarchy", 0 },
+			{ "DockHierarchy", ImGuiHoveredFlags_DockHierarchy },
 			{ "AllowWhenBlockedByPopup", ImGuiHoveredFlags_AllowWhenBlockedByPopup },
 			{ "AllowWhenBlockedByActiveItem", ImGuiHoveredFlags_AllowWhenBlockedByActiveItem },
 			{ "AllowWhenOverlappedByItem", ImGuiHoveredFlags_AllowWhenOverlappedByItem },

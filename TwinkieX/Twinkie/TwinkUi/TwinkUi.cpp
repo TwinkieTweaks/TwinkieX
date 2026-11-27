@@ -120,6 +120,11 @@ void TwinkUi::Render()
 {
 	using namespace ImGui;
 
+	ImGuiIO& Io = GetIO();
+	if (EnableWindowDocking) Io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+	else Io.ConfigFlags &= ~ImGuiConfigFlags_DockingEnable;
+	Io.ConfigDockingWithShift = EnableWindowDockingWithShift;
+
 	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Main);
 	Gecko::TheScriptManager->RunAll(Gecko::CallbackType::Update, [](asIScriptContext* Ctx)
 	{
@@ -580,6 +585,7 @@ void InitImGui(DirectXDevice* Device)
 	static std::string ImGuiIniFilePath = (TwinkUiState::UiMgr->DocumentsFolderPath / L"TwinkieX\\imgui.ini").string();
 
 	ImGui::CreateContext();
+	ImPlot::CreateContext();
 
 	ImGuiIO& ImGuiIo = ImGui::GetIO();
 
@@ -706,6 +712,7 @@ static long __stdcall hkReset(LPDIRECT3DDEVICE9 pDevice, D3DPRESENT_PARAMETERS* 
 void InitImGui(DirectXContext* Context, DirectXDevice* Device)
 {
 	ImGui::CreateContext();
+	ImPlot::CreateContext();
 
 	// The default font, with the icons merged into it
 	ImGui::GetIO().Fonts->AddFontDefault();

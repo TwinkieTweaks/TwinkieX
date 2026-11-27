@@ -73,6 +73,7 @@ Twinkie::~Twinkie()
 	delete Gecko::TheScriptManager;
 	
 	MH_Uninitialize();
+	ImPlot::DestroyContext();
 #ifdef MANIAPLANET
 	ImGui_ImplDX11_Shutdown();
 	ImGui_ImplWin32_Shutdown();

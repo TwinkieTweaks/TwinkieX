@@ -58,6 +58,7 @@
 // No idea why this define is needed
 #define IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_API __declspec(dllexport)
+#define IMPLOT_API __declspec(dllexport)
 
 // Disable all warnings emmitted by dear ImGui
 #pragma warning(disable : 4191 4582 4774 5219)
@@ -73,6 +74,7 @@
 
 #include <imgui/imgui_impl_win32.h>
 #include <imgui/imgui_internal.h>
+#include <implot/implot.h>
 #include <stb/stb_image.h>
 
 #pragma warning(pop)

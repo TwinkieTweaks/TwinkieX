@@ -66,6 +66,12 @@
     <ClInclude Include="Includes\imgui\imstb_truetype.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Includes\implot\implot.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Includes\implot\implot_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Includes\imgui\imgui_impl_dx11.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -578,6 +584,15 @@
     <ClCompile Include="Includes\imgui\imgui_widgets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Includes\implot\implot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\implot\implot_demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Includes\implot\implot_items.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Includes\imgui\imgui_impl_dx11.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -848,6 +863,9 @@
     <ClCompile Include="Includes\Gecko\Exports\imgui\ExportImgui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Includes\Gecko\Exports\imgui\ExportImplot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="Includes\Gecko\Exports\Reflection\Reflection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -952,6 +970,7 @@
     <None Include="Includes\DiscordGameSDK\x64\discord_game_sdk.dll" />
     <None Include="Includes\DiscordGameSDK\x86\discord_game_sdk.dll" />
     <None Include="Includes\imgui\PATCHES.md" />
+    <None Include="Includes\implot\PATCHES.md" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
