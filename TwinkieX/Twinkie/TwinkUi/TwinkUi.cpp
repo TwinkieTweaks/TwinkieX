@@ -228,15 +228,24 @@ void TwinkUi::Render()
 		}
 	}
 
+	if (Gecko::TheScriptManager->SettingsOpenRequested)
+	{
+		Gecko::TheScriptManager->SettingsOpenRequested = false;
+		ShowSettings = true;
+		SetNextWindowFocus();
+	}
+
 	if (ShowSettings)
 	{
 		if (Begin("Settings##Twinkie", &ShowSettings, TwinkUiState::DefaultWindowFlags()))
 		{
 			Veridian::RenderAll("Twinkie");
-			Gecko::TheScriptManager->RenderSettings();
 		}
 		End();
 	}
+
+	if (SettingsWereShown && !ShowSettings) Gecko::TheScriptManager->SaveSettings();
+	SettingsWereShown = ShowSettings;
 
 	for (auto& Module : this->Modules)
 	{

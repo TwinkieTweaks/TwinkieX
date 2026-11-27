@@ -146,6 +146,7 @@ namespace Veridian
         VVec3,
         VVec4,
         VBool,
+        VCustom,
     };
 
     extern std::unordered_map<VSettingType, size_t> TypeToSize;
@@ -271,6 +272,13 @@ namespace Veridian
     class VSetting;
     using VSettingRenderFn = std::function<bool(VSetting*)>;
 
+    struct VCustomFns
+    {
+        std::function<std::string()> ToString = nullptr;
+        std::function<bool(const std::string&)> FromString = nullptr;
+        std::function<bool()> IsDefault = nullptr;
+    };
+
     struct VSettingRenderFnStruct
     {
         VSettingRenderFn BeforeRender = nullptr;
@@ -312,6 +320,12 @@ namespace Veridian
         std::string Section;
         VValue* Value = nullptr;
         VSettingRenderFnStruct ExtraRenderFn{};
+        VCustomFns Custom{};
+
+        bool IsCustomDefault()
+        {
+            return Registered and Type == VSettingType::VCustom and Custom.IsDefault and Custom.IsDefault();
+        }
 
         template <typename T> T Get()
         {
@@ -449,6 +463,11 @@ namespace Veridian
                 return Value->Bool ? "true" : "false";
                 break;
             }
+            case VSettingType::VCustom:
+            {
+                return Custom.ToString ? Custom.ToString() : SettingStr;
+                break;
+            }
             default:
             {
                 throw std::exception("unknown type");
@@ -539,13 +558,25 @@ namespace Veridian
         {
             std::unordered_map<std::string, VSetting> Values;
             std::vector<std::string> Order;
+            std::string FacingName;
+            std::function<void()> Render = nullptr;
+            std::function<bool()> Visible = nullptr;
         };
 
         std::unordered_map<std::string, Inner> SettingValues;
         std::vector<std::string> SettingOrder;
         std::filesystem::path Filepath;
 
-        VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {});
+        VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {}, VCustomFns Custom = {});
+        void Unregister(const std::string& Section, const std::string& Name);
+        void UnregisterSection(const std::string& Section);
+        void RegisterSection(const std::string& Section, std::string FacingName, std::function<void()> Render, std::function<bool()> Visible = nullptr);
+
+        bool Read(const std::string& Section, const std::string& Name, std::string& Out);
+        void Write(const std::string& Section, const std::string& Name, const std::string& Value);
+        void Remove(const std::string& Section, const std::string& Name);
+        void ClearUnregistered(const std::string& Section);
+        std::vector<std::string> Keys(const std::string& Section);
 
         // Writes the settings to disk, only if they changed since the last save
         void Save();
@@ -554,6 +585,7 @@ namespace Veridian
         std::string LastSaved;
 
         void PrepareForDestruction();
+        void ReleaseSetting(Inner& Section, std::string Name);
     };
 
     // The vast (global) veridian settings manager
@@ -562,7 +594,11 @@ namespace Veridian
 
     void InitContext(std::filesystem::path Filepath);
 
-    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {});
+    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden = false, VSettingRenderFnStruct ExtraRenderFn = {}, VCustomFns Custom = {});
+    void Unregister(const std::string& Section, const std::string& Name);
+    void UnregisterSection(const std::string& Section);
+    void RegisterSection(const std::string& Section, std::string FacingName, std::function<void()> Render, std::function<bool()> Visible = nullptr);
+    void SetActiveSection(std::string Section);
 
     void RenderSetting(VSetting& Setting);
     void RenderSetting(std::string Section, std::string Name);

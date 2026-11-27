@@ -125,6 +125,7 @@ public:
 
 	// Settings window
 	bool ShowSettings = false;
+	bool SettingsWereShown = false;
 
 	// True if the current font is set to be destroyed/removed.
 	bool DestroyCurrentFont = false;

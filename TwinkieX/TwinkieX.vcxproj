@@ -1088,6 +1088,7 @@
     <ClInclude Include="Includes\Gecko\Gecko.h" />
     <ClInclude Include="Includes\Gecko\Script.h" />
     <ClInclude Include="Includes\Gecko\PluginManifest.h" />
+    <ClInclude Include="Includes\Gecko\PluginSettings.h" />
     <ClInclude Include="Includes\tomlplusplus\toml.hpp" />
     <ClInclude Include="Includes\Gecko\ScriptManager.h" />
     <ClInclude Include="Includes\GlyphTable\IconsForkAwesome.h" />
@@ -1138,6 +1139,7 @@
     <ClInclude Include="Includes\Gecko\Exports\IO\ExportIO.h" />
     <ClInclude Include="Includes\Gecko\Exports\Dev\Dev.h" />
     <ClInclude Include="Includes\Gecko\Exports\Meta\Meta.h" />
+    <ClInclude Include="Includes\Gecko\Exports\Settings\ExportSettings.h" />
     <ClInclude Include="Includes\Gecko\Exports\Nvg\ExportNvg.h" />
     <ClInclude Include="Includes\TMText\ImGuiTMText.h" />
     <ClInclude Include="Includes\TMText\TMText.h" />
@@ -1248,6 +1250,7 @@
     <ClCompile Include="Includes\Gecko\Gecko.cpp" />
     <ClCompile Include="Includes\Gecko\Script.cpp" />
     <ClCompile Include="Includes\Gecko\PluginManifest.cpp" />
+    <ClCompile Include="Includes\Gecko\PluginSettings.cpp" />
     <ClCompile Include="Includes\Gecko\ScriptManager.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Net\Http\HttpReq.cpp" />
     <ClCompile Include="Includes\imgui\imgui.cpp" />
@@ -1483,6 +1486,7 @@
     <ClCompile Include="Includes\Gecko\Exports\IO\ExportIO.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Dev\Dev.cpp" />
     <ClCompile Include="Includes\Gecko\Exports\Meta\Meta.cpp" />
+    <ClCompile Include="Includes\Gecko\Exports\Settings\ExportSettings.cpp" />
     <ClCompile Include="Includes\TMText\ImGuiTMText.cpp" />
     <ClCompile Include="Includes\TMText\TMText.cpp" />
     <ClCompile Include="Includes\Twinkie\TwinkLogs\AngelscriptLoggert\AngelscriptLoggert.cpp" />

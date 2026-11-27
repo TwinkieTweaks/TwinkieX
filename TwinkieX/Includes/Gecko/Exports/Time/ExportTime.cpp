@@ -96,18 +96,19 @@ namespace Gecko::Exports::Time
 
 	static std::string FormatSigned(int64_t Time, bool Fractions, bool ForceMinutes, bool ForceHours, bool Short)
 	{
-		(void)Short;
-
 		std::string Out = Time < 0 ? "-" : "";
 		uint64_t Abs = Time < 0 ? (uint64_t)0 - (uint64_t)Time : (uint64_t)Time;
 
 		uint64_t Hours = Abs / 3600000, Minutes = Abs / 60000 % 60, Seconds = Abs / 1000 % 60, Millis = Abs % 1000;
 
-		if (Hours > 0 or ForceHours)
+		bool ShowHours = Hours > 0 or (ForceHours and (Minutes > 0 or ForceMinutes));
+		bool ShowMinutes = ShowHours or Minutes > 0 or ForceMinutes or ForceHours;
+
+		if (ShowHours)
 		{
 			Out += std::format("{}:{:02}:{:02}", Hours, Minutes, Seconds);
 		}
-		else if (Minutes > 0 or ForceMinutes)
+		else if (ShowMinutes)
 		{
 			Out += std::format("{}:{:02}", Minutes, Seconds);
 		}
@@ -116,7 +117,7 @@ namespace Gecko::Exports::Time
 			Out += std::format("{}", Seconds);
 		}
 
-		if (Fractions) Out += std::format(".{:03}", Millis);
+		if (Fractions) Out += Short ? std::format(".{:02}", Millis / 10) : std::format(".{:03}", Millis);
 		return Out;
 	}
 
@@ -219,8 +220,7 @@ namespace Gecko::Exports::Time
 	with    string Format(uint64 time, bool fractions = true, bool forceMinutes = true, bool forceHours = false, bool short = false)
 	with    string Format(int64 time, bool fractions = true, bool forceMinutes = true, bool forceHours = false, bool short = false)
 	being   function
-	declare partial
-	reason  short is ignored
+	declare full
 	since   v0.2.0
 	!CompatMeta
 	*/

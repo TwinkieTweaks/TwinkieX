@@ -384,7 +384,7 @@ namespace Gecko::Exports::Math
 	// Right-handed, with depth from -1 to 1 (glm's default)
 	static mat4 Mat4Perspective(float YFov, float Aspect, float NearZ, float FarZ)
 	{
-		float TanHalfFov = std::tan(YFov / 2.0f);
+		float TanHalfFov = std::tan(YFov * (3.14159265358979f / 180.0f) / 2.0f);
 
 		mat4 M = {};
 		M.x.x = 1.0f / (Aspect * TanHalfFov);
@@ -428,8 +428,7 @@ namespace Gecko::Exports::Math
 
 	static void QuatConstructAxisAngle(const vec3& Axis, float Angle, quat* Self)
 	{
-		float S = std::sin(Angle * 0.5f);
-		*Self = { Axis.x * S, Axis.y * S, Axis.z * S, std::cos(Angle * 0.5f) };
+		*Self = { Axis.x, Axis.y, Axis.z, Angle };
 	}
 
 	static void QuatConstructMat3(const mat3& M, quat* Self)
@@ -1510,8 +1509,7 @@ namespace Gecko::Exports::Math
 	with    mat4 Perspective(float yFov, float aspect, float nearZ, float farZ)
 	as      mat4 Perspective(float yFov, float aspect, float nearZ, float farZ)
 	being   function
-	declare partial
-	reason  Uses glm's right-handed convention with depth from -1 to 1, which may differ from Openplanet's
+	declare full
 	since   v0.2.0
 	!CompatMeta
 	*/
@@ -1521,8 +1519,7 @@ namespace Gecko::Exports::Math
 	with    mat4 LookAt(const vec3&in eye, const vec3&in center, const vec3&in up)
 	as      mat4 LookAt(const vec3&in eye, const vec3&in center, const vec3&in up)
 	being   function
-	declare partial
-	reason  Uses glm's right-handed convention, which may differ from Openplanet's
+	declare full
 	since   v0.2.0
 	!CompatMeta
 	*/

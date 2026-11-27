@@ -21,6 +21,7 @@
 #include "Exports/Net/Net.h"
 #include "Exports/Dev/Dev.h"
 #include "Exports/Meta/Meta.h"
+#include "Exports/Settings/ExportSettings.h"
 
 namespace Gecko
 {
@@ -171,13 +172,17 @@ namespace Gecko
 		Exports::Net::Registrar(Engine);
 		Exports::Reflection::Registrar(Engine);
 		Exports::Dev::Registrar(Engine);
+		Exports::Settings::Registrar(Engine);
 		Exports::Meta::Registrar(Engine);
 	}
 
 	ScriptManager::~ScriptManager()
 	{
+		UnregisterPluginStates();
+
 		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
 		{
+			UnloadScriptSettings(Scripts[Idx]);
 			RunCallback(Idx, CallbackType::OnDestroyed);
 			StopCoroutines(Scripts[Idx]);
 			Scripts[Idx].Ctxs.ReleaseAll();
@@ -300,6 +305,9 @@ namespace Gecko
 
 	void ScriptManager::BuildScript(Script& Script)
 	{
+		UnloadScriptSettings(Script);
+		Script.Settings.clear();
+		Script.SettingsTabs.clear();
 		if (!Script.LoadError.empty()) return;
 
 		LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)Script.Id.c_str())));
@@ -364,6 +372,7 @@ namespace Gecko
 			}
 		}
 		ScriptBuilder.BuildModule();
+		CollectSettings(Script, Engine->GetModule((const char*)Script.Name.c_str()), ScriptBuilder);
 
 		CallbackType CallbackType = CallbackType::Main;
 		for ([[maybe_unused]] auto& _ : CallbackTypeSignatures)
@@ -504,6 +513,148 @@ namespace Gecko
 			BuildScript(Script);
 		}
 		BindImports();
+
+		for (auto& Script : Scripts)
+		{
+			LoadScriptSettings(Script);
+		}
+		RegisterPluginStates();
+	}
+
+	static std::string PluginSectionName(const Script& Script)
+	{
+		return "Plugin_" + std::string((const char*)Script.Id.c_str());
+	}
+
+	void ScriptManager::LoadScriptSettings(Script& Script)
+	{
+		if (!Script.LoadError.empty()) return;
+
+		Script.SettingsStore.Name = PluginSectionName(Script);
+		RegisterSettings(Script, Script.SettingsStore);
+
+		size_t ScriptIdx = (size_t)(&Script - Scripts.data());
+		Veridian::RegisterSection(Script.SettingsStore.Name, (const char*)Script.DisplayName.c_str(),
+			[this, ScriptIdx] { RenderScriptSettings(ScriptIdx); },
+			[this, ScriptIdx] { return ScriptIdx < Scripts.size() && HasSettingsUi(Scripts[ScriptIdx]); });
+
+		asIScriptModule* Module = Engine->GetModule((const char*)Script.Name.c_str());
+		asIScriptFunction* Load = Module ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType::OnSettingsLoad]) : nullptr;
+		SettingsSection* Section = &Script.SettingsStore;
+		if (Load) CallFunction(Script, Load, CallbackType::OnSettingsLoad, [Section](asIScriptContext* Ctx) { Ctx->SetArgAddress(0, Section); });
+	}
+
+	void ScriptManager::UnloadScriptSettings(Script& Script)
+	{
+		if (Script.SettingsStore.Name.empty()) return;
+		UnregisterSettings(Script.SettingsStore);
+	}
+
+	void ScriptManager::SaveScriptSettings(Script& Script)
+	{
+		if (!Script.LoadError.empty() || Script.SettingsStore.Name.empty()) return;
+
+		asIScriptModule* Module = Engine->GetModule((const char*)Script.Name.c_str());
+		asIScriptFunction* Save = Module ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType::OnSettingsSave]) : nullptr;
+		if (!Save || !Script.Enabled) return;
+
+		SettingsSection* Section = &Script.SettingsStore;
+		Section->Clear();
+		CallFunction(Script, Save, CallbackType::OnSettingsSave, [Section](asIScriptContext* Ctx) { Ctx->SetArgAddress(0, Section); });
+	}
+
+	void ScriptManager::SaveSettings()
+	{
+		for (auto& Script : Scripts)
+		{
+			SaveScriptSettings(Script);
+		}
+
+		if (Veridian::VastVeridian) Veridian::VastVeridian->Save();
+	}
+
+	void ScriptManager::RegisterPluginStates()
+	{
+		if (!Veridian::VastVeridian) return;
+
+		for (auto& Script : Scripts)
+		{
+			std::string Id((const char*)Script.Id.c_str());
+			std::string Name((const char*)Script.DisplayName.c_str());
+
+			Veridian::Register("PluginsFavorited", Id, Name, Veridian::VSettingType::VBool, &Script.Favorite, true);
+
+			if (!Script.LoadError.empty()) continue;
+
+			Veridian::Register("PluginsEnabled", Id, Name, Veridian::VSettingType::VBool, &Script.Enabled, true);
+			if (Script.Manifest.Essential) Script.Enabled = true;
+		}
+	}
+
+	void ScriptManager::UnregisterPluginStates()
+	{
+		for (auto& Script : Scripts)
+		{
+			std::string Id((const char*)Script.Id.c_str());
+			Veridian::Unregister("PluginsFavorited", Id);
+			Veridian::Unregister("PluginsEnabled", Id);
+		}
+	}
+
+	void ScriptManager::OpenSettings(const Script* Target)
+	{
+		SettingsOpenRequested = true;
+		if (Target) Veridian::SetActiveSection(PluginSectionName(*Target));
+	}
+
+	void ScriptManager::SetFavorite(Script& Target, bool Favorite)
+	{
+		Target.Favorite = Favorite;
+	}
+
+	bool ScriptManager::CallFunction(Script& Target, asIScriptFunction* Function, CallbackType Type, const std::function<void(asIScriptContext*)>& SetArgs, bool* Result)
+	{
+		if (!Function || !Target.Enabled) return false;
+		if (&Target < Scripts.data() || &Target >= Scripts.data() + Scripts.size()) return false;
+
+		asIScriptContext* Active = asGetActiveContext();
+		bool Nested = Active && Active->GetEngine() == Engine && Active->PushState() >= 0;
+		asIScriptContext* Ctx = Nested ? Active : Engine->RequestContext();
+		if (!Ctx) return false;
+
+		intmax_t PreviousScriptIdx = ActiveScriptIdx;
+		CallbackType PreviousCallbackType = ActiveCallbackType;
+		bool PreviousRunning = Running;
+
+		ActiveScriptIdx = (intmax_t)(&Target - Scripts.data());
+		ActiveCallbackType = Type;
+		Running = true;
+
+		int r = Ctx->Prepare(Function);
+		if (r >= 0)
+		{
+			if (SetArgs) SetArgs(Ctx);
+			r = Nested ? Ctx->Execute() : ExecuteContext(Target, Ctx, ScriptTimeout(Target, TimeoutDurationMs));
+			if (Nested && r == asEXECUTION_EXCEPTION) LogException(Target, Ctx);
+		}
+
+		bool Finished = r == asEXECUTION_FINISHED;
+		if (Finished && Result) *Result = Ctx->GetReturnByte() != 0;
+
+		ActiveScriptIdx = PreviousScriptIdx;
+		ActiveCallbackType = PreviousCallbackType;
+		Running = PreviousRunning;
+
+		if (Nested)
+		{
+			Ctx->PopState();
+		}
+		else
+		{
+			Ctx->ClearLineCallback();
+			Engine->ReturnContext(Ctx);
+		}
+		return Finished;
 	}
 
 	static bool ReturnsInputBlocking(CallbackType CallbackType)
@@ -584,17 +735,111 @@ namespace Gecko
 		}
 	}
 
-	void ScriptManager::RenderSettings()
+	bool ScriptManager::HasSettingsUi(const Script& Current)
 	{
-		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
-		{
-			Script& Current = Scripts[Idx];
-			if (!Current.Enabled || !Current.Ctxs[(size_t)CallbackType::RenderSettings]) continue;
+		if (!Current.Enabled || !Current.LoadError.empty()) return false;
 
-			ImGui::PushID((int)Idx);
-			if (ImGui::CollapsingHeader((const char*)Current.DisplayName.c_str())) RunCallback(Idx, CallbackType::RenderSettings);
-			ImGui::PopID();
+		bool HasVisibleSettings = std::any_of(Current.Settings.begin(), Current.Settings.end(), [](const std::shared_ptr<PluginSetting>& Setting) { return !Setting->Hidden; });
+		return HasVisibleSettings || !Current.SettingsTabs.empty() || Current.Ctxs[(size_t)CallbackType::RenderSettings];
+	}
+
+	static std::string SettingCategory(const PluginSetting& Setting)
+	{
+		return Setting.Category.empty() ? "General" : Setting.Category;
+	}
+
+	void ScriptManager::RenderScriptSettings(size_t ScriptIdx)
+	{
+		if (ScriptIdx >= Scripts.size() || !HasSettingsUi(Scripts[ScriptIdx])) return;
+
+		Script& Current = Scripts[ScriptIdx];
+
+		std::vector<std::string> Categories;
+		for (const auto& Setting : Current.Settings)
+		{
+			if (Setting->Hidden) continue;
+			std::string Category = SettingCategory(*Setting);
+			if (std::find(Categories.begin(), Categories.end(), Category) == Categories.end()) Categories.push_back(std::move(Category));
 		}
+
+		asIScriptModule* Module = Engine->GetModule((const char*)Current.Name.c_str());
+		asIScriptFunction* Callback = Module && Current.Ctxs[(size_t)CallbackType::RenderSettings] ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType::RenderSettings]) : nullptr;
+		if (std::any_of(Current.SettingsTabs.begin(), Current.SettingsTabs.end(), [Callback](const SettingsTab& Tab) { return Tab.Function == Callback; })) Callback = nullptr;
+
+		size_t PageCount = Categories.size() + Current.SettingsTabs.size() + (Callback ? 1 : 0);
+		if (PageCount == 0) return;
+
+		auto RenderCategory = [&](const std::string& Category)
+		{
+			std::vector<std::shared_ptr<PluginSetting>> Settings = Current.Settings;
+			for (const auto& Setting : Settings)
+			{
+				if (!Setting->Hidden && SettingCategory(*Setting) == Category) RenderSetting(*Setting);
+			}
+
+			ImGui::Separator();
+			if (!ImGui::Button("Reset to default")) return;
+
+			for (const auto& Setting : Settings)
+			{
+				if (Setting->Hidden || SettingCategory(*Setting) != Category || Setting->IsDefault()) continue;
+				Setting->Reset();
+				NotifySettingChanged(*Setting);
+			}
+		};
+		auto RenderTab = [&](size_t TabIdx)
+		{
+			CallFunction(Current, Current.SettingsTabs[TabIdx].Function, CallbackType::RenderSettings);
+		};
+		auto RenderCallback = [&]
+		{
+			RunCallback(ScriptIdx, CallbackType::RenderSettings);
+		};
+
+		if (PageCount == 1)
+		{
+			if (!Categories.empty()) RenderCategory(Categories.front());
+			else if (!Current.SettingsTabs.empty()) RenderTab(0);
+			else RenderCallback();
+			return;
+		}
+
+		if (!ImGui::BeginTabBar("##SettingsTabs")) return;
+
+		for (const std::string& Category : Categories)
+		{
+			if (!ImGui::BeginTabItem(Category.c_str())) continue;
+			RenderCategory(Category);
+			ImGui::EndTabItem();
+		}
+
+		for (size_t TabIdx = 0; TabIdx < Current.SettingsTabs.size(); TabIdx++)
+		{
+			const SettingsTab& Tab = Current.SettingsTabs[TabIdx];
+
+			std::string Label = Tab.Name;
+			int IconIdx = Tab.Icon.empty() ? -1 : Engine->GetGlobalPropertyIndexByName(("Icons::" + Tab.Icon).c_str());
+			int IconTypeId = 0;
+			void* IconAddress = nullptr;
+			if (IconIdx >= 0 && Engine->GetGlobalPropertyByIndex((asUINT)IconIdx, nullptr, nullptr, &IconTypeId, nullptr, nullptr, &IconAddress) >= 0
+				&& IconAddress && IconTypeId == Engine->GetTypeIdByDecl("string"))
+			{
+				Label = *(const std::string*)IconAddress + " " + Label;
+			}
+			Label += "###Tab" + std::to_string(TabIdx);
+
+			if (!ImGui::BeginTabItem(Label.c_str())) continue;
+			RenderTab(TabIdx);
+			ImGui::EndTabItem();
+		}
+
+		if (Callback && ImGui::BeginTabItem("Script###Callback"))
+		{
+			RenderCallback();
+			ImGui::EndTabItem();
+		}
+
+		ImGui::EndTabBar();
 	}
 
 	Script* ScriptManager::GetScriptFromCtx(asIScriptContext* Ctx)
@@ -781,6 +1026,16 @@ namespace Gecko
 		LoadSources(Script);
 	}
 
+	void ScriptManager::RebuildScript(Script& Script)
+	{
+		SaveScriptSettings(Script);
+
+		ReloadScript(Script);
+		BuildScript(Script);
+		BindImports();
+		LoadScriptSettings(Script);
+	}
+
 	void ScriptManager::RenderDevMenu()
 	{
 		using namespace ImGui;
@@ -793,9 +1048,7 @@ namespace Gecko
 				{
 					if (MenuItem((const char*)Module.DisplayName.c_str()))
 					{
-						ReloadScript(Module);
-						BuildScript(Module);
-						BindImports();
+						RebuildScript(Module);
 					}
 				}
 

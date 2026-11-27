@@ -76,21 +76,29 @@ namespace Veridian
         {
             auto& Section = SettingValues[SectionName];
 
-            Contents += std::format("[{}]\n", SectionName);
+            std::string Lines;
 
             for (auto& SettingName : Section.Order)
             {
-                Contents += std::format("{}={}\n", SettingName, Section.Values[SettingName].GetAsString());
+                VSetting& Setting = Section.Values[SettingName];
+                if (Setting.IsCustomDefault()) continue;
+
+                Lines += std::format("{}={}\n", SettingName, Setting.GetAsString());
             }
 
             // Keep settings that were loaded but not registered this session
             for (auto& [SettingName, Setting] : Section.Values)
             {
                 if (std::find(Section.Order.begin(), Section.Order.end(), SettingName) != Section.Order.end()) continue;
+                if (Setting.IsCustomDefault()) continue;
 
-                Contents += std::format("{}={}\n", SettingName, Setting.GetAsString());
+                Lines += std::format("{}={}\n", SettingName, Setting.GetAsString());
             }
 
+            if (Lines.empty()) return;
+
+            Contents += std::format("[{}]\n", SectionName);
+            Contents += Lines;
             Contents += "\n";
         };
 
@@ -126,26 +134,34 @@ namespace Veridian
         if (not Error) LastSaved = Contents;
     }
 
-    VSetting& VSetCtx::Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden, VSettingRenderFnStruct ExtraRenderFn)
+    VSetting& VSetCtx::Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden, VSettingRenderFnStruct ExtraRenderFn, VCustomFns Custom)
     {
         if (this->SettingValues.contains(Section))
         {
             if (this->SettingValues[Section].Values.contains(Name))
             {
                 VSetting& ExistingSetting = this->SettingValues[Section].Values[Name];
-                ExistingSetting.Type = Type;
-                ExistingSetting.SetFromString();
 
-                if (Value and ExistingSetting.Value)
+                if (Type == VSettingType::VCustom)
                 {
-                    if (Type == VSettingType::VString)
-                        *reinterpret_cast<std::string*>(Value) = ExistingSetting.SettingStr;
-                    else
-                        memcpy_s(Value, TypeToSize[Type], ExistingSetting.Value, TypeToSize[Type]);
+                    if (Custom.FromString) Custom.FromString(ExistingSetting.SettingStr);
                 }
+                else
+                {
+                    ExistingSetting.Type = Type;
+                    ExistingSetting.SetFromString();
 
-                if (Type != VSettingType::VString) delete ExistingSetting.Value;
-                ExistingSetting.Value = nullptr;
+                    if (Value and ExistingSetting.Value)
+                    {
+                        if (Type == VSettingType::VString)
+                            *reinterpret_cast<std::string*>(Value) = ExistingSetting.SettingStr;
+                        else
+                            memcpy_s(Value, TypeToSize[Type], ExistingSetting.Value, TypeToSize[Type]);
+                    }
+
+                    if (Type != VSettingType::VString) delete ExistingSetting.Value;
+                    ExistingSetting.Value = nullptr;
+                }
             }
         }
 
@@ -162,9 +178,135 @@ namespace Veridian
         NewSettingRef.Registered = true;
         NewSettingRef.Hidden = Hidden;
         NewSettingRef.ExtraRenderFn = ExtraRenderFn;
+        NewSettingRef.Custom = Custom;
         NewSettingRef.Value = reinterpret_cast<VValue*>(Value);
 
         return this->SettingValues[Section].Values[Name];
+    }
+
+    void VSetCtx::ReleaseSetting(Inner& Section, std::string Name)
+    {
+        auto Found = Section.Values.find(Name);
+        if (Found == Section.Values.end() or not Found->second.Registered) return;
+
+        VSetting& Setting = Found->second;
+        if (Setting.IsCustomDefault())
+        {
+            Section.Values.erase(Found);
+            std::erase(Section.Order, Name);
+            return;
+        }
+
+        if (Setting.Value) Setting.SettingStr = Setting.GetAsString();
+        Setting.Value = nullptr;
+        Setting.Registered = false;
+        Setting.ExtraRenderFn = {};
+        Setting.Custom = {};
+    }
+
+    void VSetCtx::Unregister(const std::string& Section, const std::string& Name)
+    {
+        auto Found = SettingValues.find(Section);
+        if (Found != SettingValues.end()) ReleaseSetting(Found->second, Name);
+    }
+
+    void VSetCtx::UnregisterSection(const std::string& Section)
+    {
+        auto Found = SettingValues.find(Section);
+        if (Found == SettingValues.end()) return;
+
+        std::vector<std::string> Names;
+        for (auto& [SettingName, Setting] : Found->second.Values)
+        {
+            if (Setting.Registered) Names.push_back(SettingName);
+        }
+        for (auto& SettingName : Names)
+        {
+            ReleaseSetting(Found->second, SettingName);
+        }
+
+        Found->second.FacingName.clear();
+        Found->second.Render = nullptr;
+        Found->second.Visible = nullptr;
+    }
+
+    void VSetCtx::RegisterSection(const std::string& Section, std::string FacingName, std::function<void()> Render, std::function<bool()> Visible)
+    {
+        if (std::find(SettingOrder.begin(), SettingOrder.end(), Section) == SettingOrder.end()) SettingOrder.push_back(Section);
+
+        Inner& Target = SettingValues[Section];
+        Target.FacingName = std::move(FacingName);
+        Target.Render = std::move(Render);
+        Target.Visible = std::move(Visible);
+    }
+
+    bool VSetCtx::Read(const std::string& Section, const std::string& Name, std::string& Out)
+    {
+        auto FoundSection = SettingValues.find(Section);
+        if (FoundSection == SettingValues.end()) return false;
+
+        auto Found = FoundSection->second.Values.find(Name);
+        if (Found == FoundSection->second.Values.end() or Found->second.IsCustomDefault()) return false;
+
+        Out = Found->second.GetAsString();
+        return true;
+    }
+
+    void VSetCtx::Write(const std::string& Section, const std::string& Name, const std::string& Value)
+    {
+        Inner& Target = SettingValues[Section];
+        VSetting& Setting = Target.Values[Name];
+
+        if (Setting.Registered)
+        {
+            if (Setting.Type == VSettingType::VCustom and Setting.Custom.FromString) Setting.Custom.FromString(Value);
+            return;
+        }
+
+        Setting.Name = Name;
+        Setting.SettingStr = Value;
+        if (std::find(Target.Order.begin(), Target.Order.end(), Name) == Target.Order.end()) Target.Order.push_back(Name);
+    }
+
+    void VSetCtx::Remove(const std::string& Section, const std::string& Name)
+    {
+        auto FoundSection = SettingValues.find(Section);
+        if (FoundSection == SettingValues.end()) return;
+
+        auto Found = FoundSection->second.Values.find(Name);
+        if (Found == FoundSection->second.Values.end() or Found->second.Registered) return;
+
+        FoundSection->second.Values.erase(Found);
+        std::erase(FoundSection->second.Order, Name);
+    }
+
+    void VSetCtx::ClearUnregistered(const std::string& Section)
+    {
+        for (auto& Name : Keys(Section))
+        {
+            Remove(Section, Name);
+        }
+    }
+
+    std::vector<std::string> VSetCtx::Keys(const std::string& Section)
+    {
+        std::vector<std::string> Result;
+
+        auto FoundSection = SettingValues.find(Section);
+        if (FoundSection == SettingValues.end()) return Result;
+
+        for (auto& Name : FoundSection->second.Order)
+        {
+            auto Found = FoundSection->second.Values.find(Name);
+            if (Found != FoundSection->second.Values.end() and not Found->second.IsCustomDefault()) Result.push_back(Name);
+        }
+        for (auto& [Name, Setting] : FoundSection->second.Values)
+        {
+            if (Setting.IsCustomDefault()) continue;
+            if (std::find(Result.begin(), Result.end(), Name) == Result.end()) Result.push_back(Name);
+        }
+
+        return Result;
     }
 
     void VSetCtx::PrepareForDestruction()
@@ -314,15 +456,36 @@ namespace Veridian
     {
         if (not VastVeridian->SettingValues.contains(Section)) return;
 
+        if (VastVeridian->SettingValues.at(Section).Render)
+        {
+            VastVeridian->SettingValues.at(Section).Render();
+            return;
+        }
+
         for (auto& SetPair : VastVeridian->SettingValues.at(Section).Order)
         {
             if (VastVeridian->SettingValues[Section].Values[SetPair].Registered) RenderSetting(VastVeridian->SettingValues[Section].Values[SetPair]);
         }
     }
 
+    static std::string ActiveSection;
+
+    void SetActiveSection(std::string Section)
+    {
+        ActiveSection = std::move(Section);
+    }
+
+    static bool IsSectionVisible(const std::string& SectionName, size_t RegisteredSettings)
+    {
+        auto& Section = VastVeridian->SettingValues[SectionName];
+        if (Section.Render) return not Section.Visible or Section.Visible();
+
+        return RegisteredSettings != 0;
+    }
+
     void RenderAll(std::string DefaultSectionName)
     {
-        static std::string ActiveSection = DefaultSectionName;
+        if (ActiveSection.empty()) ActiveSection = DefaultSectionName;
 
         std::map<std::string, size_t> RegisteredSettingsPerSection = {};
 
@@ -337,6 +500,11 @@ namespace Veridian
             }
         }
 
+        if (ActiveSection != DefaultSectionName and not IsSectionVisible(ActiveSection, RegisteredSettingsPerSection[ActiveSection]))
+        {
+            ActiveSection = DefaultSectionName;
+        }
+
         if (ImGui::BeginChild("##SettingsSidebar", { 150.f, 0.f }, ImGuiChildFlags_Borders | ImGuiChildFlags_ResizeX))
         {
             if (ImGui::Selectable(DefaultSectionName.c_str(), DefaultSectionName == ActiveSection))
@@ -346,11 +514,14 @@ namespace Veridian
 
             for (auto& Section : VastVeridian->SettingOrder)
             {
-                if (RegisteredSettingsPerSection[Section] == 0) continue;
-
                 if (Section == DefaultSectionName) continue;
 
-                if (ImGui::Selectable(Section.c_str(), Section == ActiveSection))
+                if (not IsSectionVisible(Section, RegisteredSettingsPerSection[Section])) continue;
+
+                const std::string& FacingName = VastVeridian->SettingValues[Section].FacingName;
+                std::string Label = (FacingName.empty() ? Section : FacingName) + "##" + Section;
+
+                if (ImGui::Selectable(Label.c_str(), Section == ActiveSection))
                 {
                     ActiveSection = Section;
                 }
@@ -367,8 +538,23 @@ namespace Veridian
         ImGui::EndGroup();
     }
 
-    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden, VSettingRenderFnStruct ExtraRenderFn)
+    VSetting& Register(std::string Section, std::string Name, std::string FacingName, VSettingType Type, void* Value, bool Hidden, VSettingRenderFnStruct ExtraRenderFn, VCustomFns Custom)
     {
-        return VastVeridian->Register(Section, Name, FacingName, Type, Value, Hidden, ExtraRenderFn);
+        return VastVeridian->Register(Section, Name, FacingName, Type, Value, Hidden, ExtraRenderFn, Custom);
+    }
+
+    void Unregister(const std::string& Section, const std::string& Name)
+    {
+        if (VastVeridian) VastVeridian->Unregister(Section, Name);
+    }
+
+    void UnregisterSection(const std::string& Section)
+    {
+        if (VastVeridian) VastVeridian->UnregisterSection(Section);
+    }
+
+    void RegisterSection(const std::string& Section, std::string FacingName, std::function<void()> Render, std::function<bool()> Visible)
+    {
+        if (VastVeridian) VastVeridian->RegisterSection(Section, std::move(FacingName), std::move(Render), std::move(Visible));
     }
 }

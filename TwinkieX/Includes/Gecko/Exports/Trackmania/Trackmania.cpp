@@ -327,8 +327,7 @@ namespace Gecko::Exports::Trackmania
 	with    CGameCtnApp@ GetApp()
 	as      CGameApp@ GetApp()
 	being   function
-	declare partial
-	reason  These games have no CGameCtnApp, so it returns the app as a CGameApp
+	declare full
 	games   TMU, ESWC, TMSX, TMO, TMS, TM1
 	since   v0.1.0
 	!CompatMeta

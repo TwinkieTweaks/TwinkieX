@@ -312,6 +312,24 @@ namespace Gecko::Exports::Text
 
 	// Format
 
+	static long long CastSigned(const std::string& Length, long long Value)
+	{
+		if (Length == "hh") return (signed char)Value;
+		if (Length == "h") return (short)Value;
+		if (Length == "ll" or Length == "L" or Length == "j" or Length == "q" or Length == "I64") return Value;
+		if (Length == "z" or Length == "t" or Length == "I") return (intptr_t)Value;
+		return (int)Value;
+	}
+
+	static unsigned long long CastUnsigned(const std::string& Length, unsigned long long Value)
+	{
+		if (Length == "hh") return (unsigned char)Value;
+		if (Length == "h") return (unsigned short)Value;
+		if (Length == "ll" or Length == "L" or Length == "j" or Length == "q" or Length == "I64") return Value;
+		if (Length == "z" or Length == "t" or Length == "I") return (uintptr_t)Value;
+		return (unsigned int)Value;
+	}
+
 	template<typename T>
 	static std::string Format(const std::string& Fmt, T Value)
 	{
@@ -350,20 +368,27 @@ namespace Gecko::Exports::Text
 				SaneSize = TakeDigits() and SaneSize;
 			}
 
-			while (j < Fmt.size() and Fmt[j] != '\0' and std::strchr("hlLqjzt", Fmt[j])) j++;
+			size_t LengthStart = j;
+			if (j < Fmt.size() and Fmt[j] == 'I')
+			{
+				j++;
+				if (j + 1 < Fmt.size() and ((Fmt[j] == '6' and Fmt[j + 1] == '4') or (Fmt[j] == '3' and Fmt[j + 1] == '2'))) j += 2;
+			}
+			else
+			{
+				while (j < Fmt.size() and Fmt[j] != '\0' and std::strchr("hlLqjzt", Fmt[j])) j++;
+			}
+			std::string Length = Fmt.substr(LengthStart, j - LengthStart);
 
 			if (j >= Fmt.size() or not SaneSize)
 			{
 				SetScriptException("Invalid format");
 				return {};
 			}
-			if (Converted)
-			{
-				SetScriptException("Format can only have one value in it, such as %d or %.2f");
-				return {};
-			}
 
 			char Conversion = Fmt[j];
+			bool HasInteger = not Converted and std::is_integral_v<T>;
+			bool HasFloating = not Converted and std::is_floating_point_v<T>;
 			int Len = -1;
 			std::string Buffer(64, '\0');
 			auto Print = [&](auto Arg)
@@ -380,23 +405,23 @@ namespace Gecko::Exports::Text
 			{
 				Spec += "ll";
 				Spec += Conversion;
-				Print((long long)Value);
+				Print(HasInteger ? CastSigned(Length, (long long)Value) : 0LL);
 			}
 			else if (Conversion and std::strchr("ouxX", Conversion))
 			{
 				Spec += "ll";
 				Spec += Conversion;
-				Print(std::is_signed_v<T> ? (unsigned long long)(long long)Value : (unsigned long long)Value);
+				Print(HasInteger ? CastUnsigned(Length, std::is_signed_v<T> ? (unsigned long long)(long long)Value : (unsigned long long)Value) : 0ULL);
 			}
 			else if (Conversion == 'c')
 			{
 				Spec += 'c';
-				Print((int)Value);
+				Print(HasInteger ? (int)Value : 0);
 			}
 			else if (Conversion and std::strchr("fFeEgGaA", Conversion))
 			{
 				Spec += Conversion;
-				Print((double)Value);
+				Print(HasFloating ? (double)Value : 0.0);
 			}
 			else
 			{

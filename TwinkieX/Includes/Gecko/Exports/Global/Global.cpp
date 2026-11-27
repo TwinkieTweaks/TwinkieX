@@ -104,6 +104,23 @@ namespace Gecko::Exports::Global
 	}
 	GLOBAL_EXPORT("void error(const string &in)", error);
 
+	/*
+	!CompatMeta
+	for     Global
+	with    bool OpenplanetHasFullPermissions()
+	with    bool OpenplanetHasPaidPermissions()
+	being   function
+	declare full
+	since   v0.2.0
+	!CompatMeta
+	*/
+	static bool OpenplanetHasPermissions()
+	{
+		return true;
+	}
+	GLOBAL_EXPORT("bool OpenplanetHasFullPermissions()", OpenplanetHasPermissions);
+	GLOBAL_EXPORT("bool OpenplanetHasPaidPermissions()", OpenplanetHasPermissions);
+
 	static bool CallToString(asIScriptEngine* Engine, asIScriptFunction* Method, void* Object, std::string& Out)
 	{
 		asIScriptContext* Ctx = asGetActiveContext();

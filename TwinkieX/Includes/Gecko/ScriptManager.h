@@ -76,6 +76,7 @@ namespace Gecko
 		CallbackType ActiveCallbackType = CallbackType::Main;
 		std::chrono::milliseconds TimeoutDurationMs = 1000ms;
 		std::filesystem::path ImportsPath;
+		bool SettingsOpenRequested = false;
 		bool Running = false;
 
 		ScriptManager();
@@ -90,8 +91,18 @@ namespace Gecko
 		void RunMainTick(Script&);
 
 		void RenderDevMenu();
-		void RenderSettings();
+		bool HasSettingsUi(const Script&);
+		void RenderScriptSettings(size_t ScriptIdx);
 		void SetEnabled(size_t ScriptIdx, bool Enabled);
+		void SetFavorite(Script&, bool Favorite);
+		void LoadScriptSettings(Script&);
+		void UnloadScriptSettings(Script&);
+		void SaveScriptSettings(Script&);
+		void SaveSettings();
+		void RegisterPluginStates();
+		void UnregisterPluginStates();
+		void OpenSettings(const Script*);
+		bool CallFunction(Script&, asIScriptFunction*, CallbackType, const std::function<void(asIScriptContext*)>& SetArgs = {}, bool* Result = nullptr);
 		void BuildAll();
 		void ResolvePlugins();
 		void BindImports();
@@ -103,6 +114,7 @@ namespace Gecko
 		// Adds a script from an .op archive, or from a folder whose .as files (subfolders included) are built as one script
 		void AddFromFile(const std::filesystem::path&, const std::u8string&);
 		void ReloadScript(Script&);
+		void RebuildScript(Script&);
 		// Reads and preprocesses the script's source codes from its ScriptPath
 		void LoadSources(Script&);
 		void Preprocess(std::u8string& Src, const std::vector<std::string>& Defines = {});

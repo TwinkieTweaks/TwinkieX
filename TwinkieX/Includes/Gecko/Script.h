@@ -3,6 +3,7 @@
 #include "CtxSet.h"
 #include "Awaitable.h"
 #include "PluginManifest.h"
+#include "PluginSettings.h"
 
 namespace Gecko
 {
@@ -30,6 +31,9 @@ namespace Gecko
 		CtxSet Ctxs{};
 		WaitState MainWait;
 		std::vector<Coroutine*> Coroutines;
+		std::vector<std::shared_ptr<PluginSetting>> Settings;
+		std::vector<SettingsTab> SettingsTabs;
+		SettingsSection SettingsStore;
 		bool Enabled = true;
 		bool Favorite = false;
 	};
