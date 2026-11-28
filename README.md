@@ -27,8 +27,8 @@ A work-in-progress cross-game fork of Twinkie for TM1.0, TMS, TMSX, TMO, TMNESWC
 - A **nod explorer** for viewing game classes
 - Support for **Trackmania coloring syntax in ImGui**
 - **Discord Rich Presence** integration
-- On-the-fly **module import** for C++ modules (WIP)
-- Basic **Angelscript scripting** support for modules (WIP)
+- On-the-fly **module import** for C++ modules
+- Basic **Angelscript scripting** support for modules
 
 ## Special thanks
 - [GreffMASTER](https://github.com/GreffMASTER), and his [TMStuff](https://github.com/GreffMASTER/TMStuff) project for providing insight into TM1.0 and general GameBox technical details
@@ -41,7 +41,6 @@ You are welcome to contribute to this project.
 
 ## Notes
 1. **TMS** is still **not supported**.
-2. **Do not launch in fullscreen** if you're not playing TMCN.
 
 ## Screenshots
 ![](Media/Screenshots/TMCN.png)
