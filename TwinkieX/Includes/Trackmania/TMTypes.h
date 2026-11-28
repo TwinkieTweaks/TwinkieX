@@ -1083,15 +1083,6 @@ struct CMwMemberInfoAction : CMwMemberInfo
 	ActionFn Action;
 };
 
-// The class used by the app's input port (CTrackMania.InputPort)
-struct CInputPort
-{
-	uint8_t Padding[O_M_CINPUTPORT_CONNECTEDDEVICES];
-	CFastArray<CMwNod*> ConnectedDevices;
-	uint8_t Padding2[O_M_CINPUTPORT_ISFOCUSED - O_M_CINPUTPORT_CONNECTEDDEVICES - sizeof(CFastArray<uintptr_t>)];
-	uint32_t IsFocused;
-};
-
 class CMwValueStd
 {
 public:

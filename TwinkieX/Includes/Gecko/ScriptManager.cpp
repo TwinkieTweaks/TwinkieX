@@ -28,6 +28,63 @@ namespace Gecko
 {
 	ScriptManager* TheScriptManager = nullptr;
 
+	/*
+	!CompatMeta
+	for     Global
+	with    void Main()
+	with    void Render()
+	with    void RenderInterface()
+	with    void RenderMenu()
+	with    void RenderMenuMain()
+	with    void RenderSettings()
+	with    void RenderEarly()
+	being   callback
+	declare full
+	since   v0.1.0
+	!CompatMeta
+	*/
+	/*
+	!CompatMeta
+	for     Global
+	with    void Update(float dt)
+	with    void OnDisabled()
+	with    void OnEnabled()
+	with    void OnDestroyed()
+	with    void OnSettingsChanged()
+	with    void OnSettingsSave(Settings::Section& section)
+	with    void OnSettingsLoad(Settings::Section& section)
+	with    void OnKeyPress(bool down, VirtualKey key)
+	with    UI::InputBlocking OnKeyPress(bool down, VirtualKey key)
+	with    void OnMouseButton(bool down, int button, int x, int y)
+	with    UI::InputBlocking OnMouseButton(bool down, int button, int x, int y)
+	with    void OnMouseMove(int x, int y)
+	with    void OnMouseWheel(int x, int y)
+	with    UI::InputBlocking OnMouseWheel(int x, int y)
+	being   callback
+	declare full
+	since   v0.2.0
+	!CompatMeta
+	*/
+	/*
+	!CompatMeta
+	for     Global
+	with    void OnLoadCallback(CMwNod@ nod)
+	being   callback
+	declare full
+	games   TMCN, TMU, ESWC, TMO, TMS, TMSX, TM1
+	since   v0.2.0
+	!CompatMeta
+	*/
+	/*
+	!CompatMeta
+	for     Global
+	with    void SimulationStep()
+	being   callback
+	declare added
+	games   TMCN, TMU, ESWC, TMO, TMS, TMSX, TM1
+	since   v0.2.0
+	!CompatMeta
+	*/
 	// Must be synced with CallbackType
 	const char* CallbackTypeSignatures[] =
 	{

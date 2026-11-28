@@ -227,15 +227,6 @@ uintptr_t TwinkTrackmania::GetDirectXDevice()
 #endif
 }
 
-CInputPort* TwinkTrackmania::GetInputPort()
-{
-#ifdef GAMEBOX
-	return (CInputPort*)GetNodMemberById(GetApp(), O_MEMBERID_CGAMEAPP_INPUTPORT);
-#else
-	return ReadAddr(CInputPort*, (uintptr_t)GetApp() + O_M_CTRACKMANIA_INPUTPORT);
-#endif
-}
-
 CMwEngineManager* TwinkTrackmania::GetEngineManager()
 {
 #ifdef GAMEBOX

@@ -7,4 +7,5 @@ namespace Gecko
 	void InstallGameCallbacks();
 	void UninstallGameCallbacks();
 	bool IsRunContextActive(RunContext);
+	void SaveSettingsOnExit(const char* Reason);
 }

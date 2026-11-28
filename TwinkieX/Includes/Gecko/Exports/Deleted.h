@@ -65,3 +65,13 @@ declare deleted
 since   v0.2.0
 !CompatMeta
 */
+
+/*
+!CompatMeta
+for     Global
+with    void OnProtocolUrl(const string &in path)
+being   callback
+declare deleted
+since   v0.2.0
+!CompatMeta
+*/

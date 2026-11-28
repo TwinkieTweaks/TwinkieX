@@ -46160,5 +46160,123 @@
             "desc": "Negative infinity as a double.",
             "flags": []
         }
+    ],
+    "callbacks": [
+        {
+            "name": "Main",
+            "decl": "void Main()",
+            "desc": "Main entry point. Yieldable."
+        },
+        {
+            "name": "Render",
+            "decl": "void Render()",
+            "desc": "Render function called every frame."
+        },
+        {
+            "name": "RenderInterface",
+            "decl": "void RenderInterface()",
+            "desc": "Render function called every frame intended for UI."
+        },
+        {
+            "name": "RenderMenu",
+            "decl": "void RenderMenu()",
+            "desc": "Render function called every frame intended only for menu items in UI."
+        },
+        {
+            "name": "RenderMenuMain",
+            "decl": "void RenderMenuMain()",
+            "desc": "Render function called every frame intended only for menu items in the main menu of the UI."
+        },
+        {
+            "name": "RenderSettings",
+            "decl": "void RenderSettings()",
+            "desc": ""
+        },
+        {
+            "name": "RenderEarly",
+            "decl": "void RenderEarly()",
+            "desc": "Same as Render(), but called before every other plugin's (regular) rendering functions. It's unlikely you will ever need to use this callback. This is primarily used by the Camera dependency to ensure a proper state before every other plugin uses its data."
+        },
+        {
+            "name": "Update",
+            "decl": "void Update(float dt)",
+            "desc": "Called every frame. `dt` is the delta time (milliseconds since last frame)."
+        },
+        {
+            "name": "OnDisabled",
+            "decl": "void OnDisabled()",
+            "desc": "Called when the plugin is disabled from the settings, the menu or programatically via the MetaAPI."
+        },
+        {
+            "name": "OnEnabled",
+            "decl": "void OnEnabled()",
+            "desc": "Called when the plugin is enabled from the settings, the menu or programatically via the MetaAPI."
+        },
+        {
+            "name": "OnDestroyed",
+            "decl": "void OnDestroyed()",
+            "desc": "Called when the plugin is unloaded and completely removed from memory."
+        },
+        {
+            "name": "OnSettingsChanged",
+            "decl": "void OnSettingsChanged()",
+            "desc": "Called when a setting in the settings panel was changed."
+        },
+        {
+            "name": "OnSettingsSave",
+            "decl": "void OnSettingsSave(Settings::Section& section)",
+            "desc": "Called when the settings for the plugin are being saved. This usually happens when the plugin gets reloaded (which includes shutting down the game or Openplanet as well as plugin reloading), when the user saves the Openplanet settings manually by closing the settings window, or when another plugin calls Meta::SaveSettings()."
+        },
+        {
+            "name": "OnSettingsLoad",
+            "decl": "void OnSettingsLoad(Settings::Section& section)",
+            "desc": "Called when the settings for the plugin are being loaded."
+        },
+        {
+            "name": "OnKeyPress",
+            "decl": "void OnKeyPress(bool down, VirtualKey key)",
+            "desc": "Called whenever a key is pressed on the keyboard. See the documentation for the VirtualKey enum."
+        },
+        {
+            "name": "OnKeyPress",
+            "decl": "UI::InputBlocking OnKeyPress(bool down, VirtualKey key)",
+            "desc": "Called whenever a key is pressed on the keyboard. See the documentation for the VirtualKey enum."
+        },
+        {
+            "name": "OnMouseButton",
+            "decl": "void OnMouseButton(bool down, int button, int x, int y)",
+            "desc": "Called whenever a mouse button is pressed. `x` and `y` are the viewport coordinates."
+        },
+        {
+            "name": "OnMouseButton",
+            "decl": "UI::InputBlocking OnMouseButton(bool down, int button, int x, int y)",
+            "desc": "Called whenever a mouse button is pressed. `x` and `y` are the viewport coordinates."
+        },
+        {
+            "name": "OnMouseMove",
+            "decl": "void OnMouseMove(int x, int y)",
+            "desc": "Called whenever the mouse moves. `x` and `y` are the viewport coordinates."
+        },
+        {
+            "name": "OnMouseWheel",
+            "decl": "void OnMouseWheel(int x, int y)",
+            "desc": "Called whenever the mouse wheel is scrolled. `x` and `y` are the scroll delta values."
+        },
+        {
+            "name": "OnMouseWheel",
+            "decl": "UI::InputBlocking OnMouseWheel(int x, int y)",
+            "desc": "Called whenever the mouse wheel is scrolled. `x` and `y` are the scroll delta values."
+        },
+        {
+            "name": "OnLoadCallback",
+            "decl": "void OnLoadCallback(CMwNod@ nod)",
+            "desc": "Called when a Nod is loaded from a file. You have to call RegisterLoadCallback first before this is called. This callback is meant as an early callback for a loaded nod. If you're not sure whether you need an early callback and you can avoid using this callback, then avoid using this function."
+        },
+        {
+            "name": "OnProtocolUrl",
+            "decl": "void OnProtocolUrl(const string &in path)",
+            "desc": "",
+            "note": "Not on the plugin callbacks page. TwinkieX keeps it declared but doesn't call it."
+        }
     ]
 }

@@ -262,25 +262,7 @@ namespace Gecko::Exports::Global
 		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataString@ func, const string&in userdata)
 		being   function
 		declare full
-		games   TMCN, TMU, ESWC, TMO, TMSX, TM1
-		since   v0.2.0
-		!CompatMeta
-		*/
-		/*
-		!CompatMeta
-		for     Meta
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFunc@ func)
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdata@ func, ref userdata)
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@ func, const int userdata)
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@ func, const int64 userdata)
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@ func, const uint userdata)
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@ func, const uint64 userdata)
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataDouble@ func, const double userdata)
-		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataString@ func, const string&in userdata)
-		being   function
-		declare partial
-		reason  Run contexts other than Main aren't hooked yet, so those coroutines run in the main loop
-		games   TMS
+		games   TMCN, TMU, ESWC, TMO, TMS, TMSX, TM1
 		since   v0.2.0
 		!CompatMeta
 		*/
@@ -363,20 +345,7 @@ namespace Gecko::Exports::Global
 		being   method
 		of      awaitable
 		declare full
-		games   TMCN, TMU, ESWC, TMO, TMSX, TM1
-		since   v0.2.0
-		!CompatMeta
-		*/
-		/*
-		!CompatMeta
-		for     Global
-		with    awaitable@ WithRunContext(int)
-		as      awaitable@ WithRunContext(int)
-		being   method
-		of      awaitable
-		declare partial
-		reason  Run contexts other than Main aren't hooked yet, so the coroutine keeps running in the main loop
-		games   TMS
+		games   TMCN, TMU, ESWC, TMO, TMS, TMSX, TM1
 		since   v0.2.0
 		!CompatMeta
 		*/

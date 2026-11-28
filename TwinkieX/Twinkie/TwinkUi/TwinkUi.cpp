@@ -17,6 +17,7 @@ extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg
 
 // Gecko, the angelscript scripting engine
 #include <Gecko/Gecko.h>
+#include <Gecko/GameCallbacks.h>
 
 #include <Twinkie/TwinkNvg/TwinkNvg.h>
 #include <Gecko/Exports/imgui/Texture/Texture.h>
@@ -522,6 +523,8 @@ static bool RunInputCallbacks(UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 static LRESULT __stdcall WndProc(const HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+	if (uMsg == WM_ENDSESSION and wParam) Gecko::SaveSettingsOnExit("Windows is ending the session");
+
 	if (!TwinkUiState::ImGuiInit)
 	{
 		return CallWindowProc(TwinkUiState::oWndProc, hWnd, uMsg, wParam, lParam);

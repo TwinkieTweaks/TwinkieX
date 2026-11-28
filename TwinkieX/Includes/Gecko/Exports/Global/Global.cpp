@@ -129,19 +129,7 @@ namespace Gecko::Exports::Global
 	with    void UnregisterLoadCallback(uint id)
 	being   function
 	declare full
-	games   TMCN, TMU, ESWC, TMO, TMSX, TM1
-	since   v0.2.0
-	!CompatMeta
-	*/
-	/*
-	!CompatMeta
-	for     Global
-	with    void RegisterLoadCallback(uint id)
-	with    void UnregisterLoadCallback(uint id)
-	being   function
-	declare partial
-	reason  Loading isn't hooked yet, so OnLoadCallback is never called
-	games   TMS
+	games   TMCN, TMU, ESWC, TMO, TMS, TMSX, TM1
 	since   v0.2.0
 	!CompatMeta
 	*/

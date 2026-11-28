@@ -56,9 +56,6 @@ public:
 	// Gets the game's DirectX device, as LPDIRECT3DDEVICE9 for GAMEBOX, and ID3D11Device for MANIAPLANET
 	TWINKIEX_API __declspec(noinline) uintptr_t GetDirectXDevice();
 
-	// Gets the game's input port, for mouse and keyboard events (always CDx8InputPort or similar)
-	TWINKIEX_API __declspec(noinline) CInputPort* GetInputPort();
-
 	// Gets the engine manager that contains all classes
 	TWINKIEX_API __declspec(noinline) CMwEngineManager* GetEngineManager();
 

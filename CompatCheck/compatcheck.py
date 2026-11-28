@@ -26,6 +26,7 @@ class BeingInfo(Enum):
     Enum = "enum"
     Funcdef = "funcdef"
     Global = "global"
+    Callback = "callback"
 
 class DeclInfo(Enum):
     Full = "full"
@@ -209,6 +210,7 @@ def do():
 
     with open(args.against, "r") as core:
         core_contents = json.load(core)
+        core_contents.setdefault("callbacks", [])
         matches_being = 0
         for i, c in enumerate(core_contents["classes"]):
             class_name_to_idx[c["name"]] = i
