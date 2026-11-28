@@ -1,8 +1,0 @@
-[meta]
-name = "Run Context Probe"
-author = "jailman."
-category = "Developer"
-version = "1.0.0"
-
-[script]
-timeout = 0
