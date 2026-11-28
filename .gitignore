@@ -375,3 +375,4 @@ FodyWeavers.xsd
 /docs
 /vcpkg_installed/
 /Tools
+/Intermediates/**
