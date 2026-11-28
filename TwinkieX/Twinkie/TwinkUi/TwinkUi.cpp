@@ -359,6 +359,7 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 	}
 
 	CreateAndExportModules(this->Modules, *this->TrackmaniaMgr, &LoggertCpp);
+	LoggertTwink.verbose(LogFormat("Created {} modules", this->Modules.size()));
 
 	// TMCN
 #ifdef MANIAPLANET
@@ -377,6 +378,9 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 	// Hook ResizeBuffers
 	TwinkUiState::oResizeBuffers = reinterpret_cast<ResizeBuffersFn>(VirtualWrite(O_V_RESIZEBUFFERS, (uintptr_t)this->TrackmaniaMgr->GetDirectXSwapChain(), (uintptr_t)hkResizeBuffers));
 
+	LoggertTwink.print(LogFormat("Hooked Present and ResizeBuffers on the swap chain {:#x}", this->TrackmaniaMgr->GetDirectXSwapChain()));
+	LoggertTwink.verbose(LogFormat("Original Present {:#x}, original ResizeBuffers {:#x}, device {:#x}", (uintptr_t)TwinkUiState::oPresent, (uintptr_t)TwinkUiState::oResizeBuffers, (uintptr_t)TwinkUiState::Device));
+
 	// Everything else
 #else
 
@@ -390,12 +394,15 @@ __declspec(noinline) void TwinkUi::Update(std::filesystem::path pDocumentsFolder
 
 	// Hook Present
 	TwinkUiState::oPresent = reinterpret_cast<PresentFn>(VirtualWrite(O_V_PRESENT, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkPresent));
+	LoggertTwink.print(LogFormat("Hooked Present on the D3D9 device {:#x}", (uintptr_t)TwinkUiState::Device));
+	LoggertTwink.verbose(LogFormat("Original Present {:#x}", (uintptr_t)TwinkUiState::oPresent));
 
 #ifdef O_V_RESET
 	Unprotect(VirtualPtr(O_V_RESET, (uintptr_t)TwinkUiState::Device), sizeof(uintptr_t));
 
 	// Hook Reset
 	TwinkUiState::oReset = reinterpret_cast<ResetFn>(VirtualWrite(O_V_RESET, (uintptr_t)TwinkUiState::Device, (uintptr_t)hkReset));
+	LoggertTwink.verbose(LogFormat("Hooked Reset, original {:#x}", (uintptr_t)TwinkUiState::oReset));
 #endif
 #endif
 }
@@ -624,10 +631,12 @@ static long __stdcall hkPresent(LPDIRECT3DDEVICE9 pDevice, LPVOID A, LPVOID B, H
 		if (GetPresentParameters(pDevice, PresentParams) and PresentParams.Windowed) MakeWindowResizable();
 #endif
 
+		LoggertTwink.verbose(LogFormat("First Present on thread {}, window {:#x}", GetCurrentThreadId(), (uintptr_t)TwinkUiState::Window));
 		InitImGui(pDevice);
 		TwinkNvg::Init();
 		TwinkUiState::ImGuiInit = true;
 		MustUpdateFont = true;
+		LoggertTwink.print(u8"Overlay initialized");
 	}
 
 	if (pDevice->TestCooperativeLevel() != D3D_OK) return TwinkUiState::oPresent(pDevice, A, B, C, D);
@@ -779,14 +788,23 @@ HRESULT __stdcall hkPresent(IDXGISwapChain* pSwapChain, UINT SyncInterval, UINT 
 			// Hook the window process
 			TwinkUiState::oWndProc = (WNDPROC)SetWindowLongPtr(TwinkUiState::Window, GWLP_WNDPROC, (LONG_PTR)WndProc);
 
+			LoggertTwink.verbose(LogFormat("First Present on thread {}, window {:#x}, device {:#x}", GetCurrentThreadId(), (uintptr_t)TwinkUiState::Window, (uintptr_t)TwinkUiState::Device));
+
 			// Initialize ImGui
 			InitImGui(TwinkUiState::Context, TwinkUiState::Device);
 			TwinkNvg::Init();
+			LoggertTwink.print(u8"Overlay initialized");
 		}
 
 		// If we couldn't get the device, then fallback to original behavior
 		else
 		{
+			static bool Warned = false;
+			if (!Warned)
+			{
+				Warned = true;
+				LoggertTwink.warn(u8"Couldn't get the D3D11 device from the swap chain, retrying every frame");
+			}
 			return TwinkUiState::oPresent(pSwapChain, SyncInterval, Flags);
 		}
 	}

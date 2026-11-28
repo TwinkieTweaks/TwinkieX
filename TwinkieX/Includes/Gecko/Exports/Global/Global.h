@@ -12,6 +12,7 @@ namespace Gecko::Exports::Global
 
 	WaitState* SuspendCurrentContext();
 	void RegisterCoroutines(asIScriptEngine*);
+	void RegisterRunContexts(asIScriptEngine*);
 
 	void RegisterBaseTypes(asIScriptEngine*);
 

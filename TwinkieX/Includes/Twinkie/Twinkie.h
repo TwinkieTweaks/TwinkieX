@@ -34,6 +34,8 @@ public:
 	// Self-explanatory
 	std::filesystem::path DocumentsFolderPath;
 
+	MH_STATUS MinHookStatus = MH_UNKNOWN;
+
 	// Behaviors
 
 	// Ctor

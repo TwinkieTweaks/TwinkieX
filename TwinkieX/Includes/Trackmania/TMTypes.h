@@ -1114,7 +1114,7 @@ public:
 	virtual ~CMwNod(void) {}
 	virtual void VTablePadding1(void) {}
 	virtual CMwClassInfo* MwGetClassInfo(void) { return nullptr; }
-	virtual unsigned long MwGetMwClassId(void) { return 0L; }
+	virtual uint32_t* MwGetMwClassId(uint32_t* pClassId) { return pClassId; }
 	virtual bool MwIsKindOf(unsigned long classID) { return false; }
 	virtual uint64_t* MwGetId(void) { return nullptr; }
 	virtual void MwSetIdName(char const* psz) {}

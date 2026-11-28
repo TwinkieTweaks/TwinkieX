@@ -22,6 +22,7 @@
 #include "Exports/Dev/Dev.h"
 #include "Exports/Meta/Meta.h"
 #include "Exports/Settings/ExportSettings.h"
+#include "GameCallbacks.h"
 
 namespace Gecko
 {
@@ -155,29 +156,41 @@ namespace Gecko
 		Engine->SetEngineProperty(asEP_DISALLOW_EMPTY_LIST_ELEMENTS, true);
 		Engine->SetMessageCallback(asFUNCTION(MessageCallback), nullptr, asCALL_CDECL);
 
+		auto Register = [this](const char* Name, void (*Registrar)(asIScriptEngine*))
+		{
+			auto Start = std::chrono::steady_clock::now();
+			asUINT Functions = Engine->GetGlobalFunctionCount();
+			asUINT Types = Engine->GetObjectTypeCount();
+			Registrar(Engine);
+			LoggertAngelscript.verbose(LogFormat("Registered {} in {} ms: {} functions, {} types", Name, LogMsSince(Start), Engine->GetGlobalFunctionCount() - Functions, Engine->GetObjectTypeCount() - Types));
+		};
+
 		// The math types come first, since the game's classes have members of those types
-		Exports::Math::RegisterTypes(Engine);
-		Exports::Global::RegisterBaseTypes(Engine);
-		Exports::String::RegisterWString(Engine);
-		Exports::Trackmania::Registrar(Engine);
-		Exports::Global::Registrar(Engine);
-		Exports::String::Registrar(Engine);
-		Exports::Time::Registrar(Engine);
-		Exports::IO::Registrar(Engine);
-		Exports::Math::Registrar(Engine);
-		Exports::Text::Registrar(Engine);
-		Exports::Icons::Registrar(Engine);
-		Exports::ImGui::Registrar(Engine);
-		Exports::Nvg::Registrar(Engine);
-		Exports::Net::Registrar(Engine);
-		Exports::Reflection::Registrar(Engine);
-		Exports::Dev::Registrar(Engine);
-		Exports::Settings::Registrar(Engine);
-		Exports::Meta::Registrar(Engine);
+		Register("math types", Exports::Math::RegisterTypes);
+		Register("base types", Exports::Global::RegisterBaseTypes);
+		Register("wstring", Exports::String::RegisterWString);
+		Register("game classes", Exports::Trackmania::Registrar);
+		Register("globals", Exports::Global::Registrar);
+		Register("string", Exports::String::Registrar);
+		Register("Time", Exports::Time::Registrar);
+		Register("IO", Exports::IO::Registrar);
+		Register("Math", Exports::Math::Registrar);
+		Register("Text", Exports::Text::Registrar);
+		Register("Icons", Exports::Icons::Registrar);
+		Register("UI", Exports::ImGui::Registrar);
+		Register("nvg", Exports::Nvg::Registrar);
+		Register("Net", Exports::Net::Registrar);
+		Register("Reflection", Exports::Reflection::Registrar);
+		Register("Dev", Exports::Dev::Registrar);
+		Register("Settings", Exports::Settings::Registrar);
+		Register("Meta", Exports::Meta::Registrar);
+
+		LoggertAngelscript.print(LogFormat("Registered {} functions, {} types, {} enums and {} funcdefs", Engine->GetGlobalFunctionCount(), Engine->GetObjectTypeCount(), Engine->GetEnumCount(), Engine->GetFuncdefCount()));
 	}
 
 	ScriptManager::~ScriptManager()
 	{
+		UninstallGameCallbacks();
 		UnregisterPluginStates();
 
 		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
@@ -264,6 +277,7 @@ namespace Gecko
 		}
 		Script.Coroutines.clear();
 		Script.MainWait.Clear();
+		Script.LoadCallbackIds.clear();
 	}
 
 	void ScriptManager::RunMainTick(Script& Script)
@@ -279,10 +293,16 @@ namespace Gecko
 			}
 		}
 
+		RunCoroutines(Script, true, RunContext::Main);
+	}
+
+	void ScriptManager::RunCoroutines(Script& Script, bool MainTick, RunContext Context)
+	{
 		for (size_t Idx = 0; Idx < Script.Coroutines.size() && Script.Enabled; Idx++)
 		{
 			Coroutine* Co = Script.Coroutines[Idx];
-			if (!Co->Ctx || !Co->Wait.Ready()) continue;
+			bool InContext = MainTick ? !IsRunContextActive(Co->Context) : Co->Context == Context;
+			if (!InContext || !Co->Ctx || !Co->Wait.Ready()) continue;
 			if (ExecuteContext(Script, Co->Ctx, ScriptTimeout(Script, TimeoutDurationMs)) != asEXECUTION_SUSPENDED) Co->Stop();
 		}
 
@@ -294,6 +314,39 @@ namespace Gecko
 		});
 	}
 
+	void ScriptManager::RunContextTick(RunContext Context)
+	{
+		if (Running) return;
+
+		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
+		{
+			Script& Script = Scripts[Idx];
+			if (!Script.Enabled || Script.Coroutines.empty()) continue;
+
+			Running = true;
+			ActiveScriptIdx = (intmax_t)Idx;
+			ActiveCallbackType = CallbackType::Main;
+
+			RunCoroutines(Script, false, Context);
+
+			ActiveScriptIdx = -1;
+			Running = false;
+		}
+	}
+
+	void ScriptManager::InvokeLoadCallbacks(CMwNod* Nod, uint32_t ClassId)
+	{
+		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
+		{
+			Script& Target = Scripts[Idx];
+			if (!Target.Enabled || std::find(Target.LoadCallbackIds.begin(), Target.LoadCallbackIds.end(), ClassId) == Target.LoadCallbackIds.end()) continue;
+
+			asIScriptModule* Module = Engine->GetModule((const char*)Target.Name.c_str());
+			asIScriptFunction* Callback = Module ? Module->GetFunctionByDecl(CallbackTypeSignatures[(size_t)CallbackType::OnLoadCallback]) : nullptr;
+			CallFunction(Target, Callback, CallbackType::OnLoadCallback, [Nod](asIScriptContext* Ctx) { Ctx->SetArgObject(0, Nod); });
+		}
+	}
+
 	Script* ScriptManager::FindScript(std::string_view Identifier)
 	{
 		for (auto& Script : Scripts)
@@ -303,12 +356,18 @@ namespace Gecko
 		return nullptr;
 	}
 
-	void ScriptManager::BuildScript(Script& Script)
+	bool ScriptManager::BuildScript(Script& Script)
 	{
 		UnloadScriptSettings(Script);
 		Script.Settings.clear();
 		Script.SettingsTabs.clear();
-		if (!Script.LoadError.empty()) return;
+		if (!Script.LoadError.empty())
+		{
+			LoggertAngelscript.verbose(LogFormat("[{}] Not building it: {}", (const char*)Script.Id.c_str(), Script.LoadError));
+			return false;
+		}
+
+		auto Start = std::chrono::steady_clock::now();
 
 		LoggertAngelscript.trace(FromStr(std::format("Compiling {}", (const char*)Script.Id.c_str())));
 
@@ -371,7 +430,7 @@ namespace Gecko
 				ScriptBuilder.AddSectionFromMemory((const char*)SectionName.c_str(), (const char*)SourceCode.c_str());
 			}
 		}
-		ScriptBuilder.BuildModule();
+		int BuildResult = ScriptBuilder.BuildModule();
 		CollectSettings(Script, Engine->GetModule((const char*)Script.Name.c_str()), ScriptBuilder);
 
 		CallbackType CallbackType = CallbackType::Main;
@@ -380,6 +439,27 @@ namespace Gecko
 			BuildScriptByCallback(Script, CallbackType);
 			(*(uint32_t*)&CallbackType)++;
 		}
+
+		if (BuildResult < 0)
+		{
+			LoggertAngelscript.error(LogFormat("[{}] Build failed after {} ms", (const char*)Script.Id.c_str(), LogMsSince(Start)));
+			return false;
+		}
+
+		if constexpr (ILoggert::VerboseEnabled)
+		{
+			std::string Callbacks;
+			for (size_t Idx = 0; Idx < std::size(CallbackTypeSignatures); Idx++)
+			{
+				if (!Script.Ctxs[Idx]) continue;
+				if (!Callbacks.empty()) Callbacks += ", ";
+				Callbacks += CallbackTypeSignatures[Idx];
+			}
+			LoggertAngelscript.verbose(LogFormat("[{}] Callbacks: {}", (const char*)Script.Id.c_str(), Callbacks.empty() ? "none" : Callbacks));
+			LoggertAngelscript.verbose(LogFormat("[{}] {} defines, {} exports from dependencies, {} settings", (const char*)Script.Id.c_str(), Defines.size(), ExportSources.size(), Script.Settings.size()));
+		}
+		LoggertAngelscript.print(LogFormat("[{}] Built {} sources in {} ms", (const char*)Script.Id.c_str(), Script.SourceCodes.size(), LogMsSince(Start)));
+		return true;
 	}
 
 	void ScriptManager::ResolvePlugins()
@@ -507,11 +587,27 @@ namespace Gecko
 
 	void ScriptManager::BuildAll()
 	{
+		auto Start = std::chrono::steady_clock::now();
 		ResolvePlugins();
+
+		if constexpr (ILoggert::VerboseEnabled)
+		{
+			std::string Order;
+			for (auto& Script : Scripts)
+			{
+				if (!Order.empty()) Order += ", ";
+				Order += (const char*)Script.Id.c_str();
+			}
+			LoggertAngelscript.verbose(LogFormat("Build order: {}", Order.empty() ? "no plugins" : Order));
+		}
+
+		size_t Built = 0;
 		for (auto& Script : Scripts)
 		{
-			BuildScript(Script);
+			if (BuildScript(Script)) Built++;
 		}
+
+		LoggertAngelscript.verbose(u8"Binding imports between plugins");
 		BindImports();
 
 		for (auto& Script : Scripts)
@@ -519,6 +615,8 @@ namespace Gecko
 			LoadScriptSettings(Script);
 		}
 		RegisterPluginStates();
+
+		LoggertAngelscript.print(LogFormat("Built {} of {} plugins in {} ms", Built, Scripts.size(), LogMsSince(Start)));
 	}
 
 	static std::string PluginSectionName(const Script& Script)
@@ -666,6 +764,17 @@ namespace Gecko
 
 	bool ScriptManager::RunAll(CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs)
 	{
+		if (CallbackType == CallbackType::Main)
+		{
+			MainThreadId = GetCurrentThreadId();
+			if (!GameCallbacksInstalled)
+			{
+				LoggertAngelscript.print(LogFormat("First Main tick, on thread {}", MainThreadId));
+				InstallGameCallbacks();
+				GameCallbacksInstalled = true;
+			}
+		}
+
 		bool Blocked = false;
 		for (size_t Idx = 0; Idx < Scripts.size(); Idx++)
 		{

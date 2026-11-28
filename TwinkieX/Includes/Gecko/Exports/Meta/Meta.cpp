@@ -3,6 +3,7 @@
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include <Gecko/ScriptFiles.h>
 #include <Gecko/Exports/Math/Math.h>
+#include <Gecko/Exports/Global/Global.h>
 
 namespace Gecko::Exports::Meta
 {
@@ -553,6 +554,8 @@ namespace Gecko::Exports::Meta
 		s_Engine = Engine;
 
 		Engine->SetDefaultNamespace("Meta");
+
+		Global::RegisterRunContexts(Engine);
 
 		/*
 		!CompatMeta

@@ -3,6 +3,7 @@
 #include "Global.h"
 #include <Gecko/Exports/GeckoAutoExport.h>
 #include "MemoryBuffer/MemoryBuffer.h"
+#include <angelscript/sdk/add_on/scripthelper/scripthelper.h>
 
 namespace Gecko::Exports::Global
 {
@@ -120,6 +121,44 @@ namespace Gecko::Exports::Global
 	}
 	GLOBAL_EXPORT("bool OpenplanetHasFullPermissions()", OpenplanetHasPermissions);
 	GLOBAL_EXPORT("bool OpenplanetHasPaidPermissions()", OpenplanetHasPermissions);
+
+	/*
+	!CompatMeta
+	for     Global
+	with    void RegisterLoadCallback(uint id)
+	with    void UnregisterLoadCallback(uint id)
+	being   function
+	declare full
+	games   TMCN, TMU, ESWC, TMO, TMSX, TM1
+	since   v0.2.0
+	!CompatMeta
+	*/
+	/*
+	!CompatMeta
+	for     Global
+	with    void RegisterLoadCallback(uint id)
+	with    void UnregisterLoadCallback(uint id)
+	being   function
+	declare partial
+	reason  Loading isn't hooked yet, so OnLoadCallback is never called
+	games   TMS
+	since   v0.2.0
+	!CompatMeta
+	*/
+	static void RegisterLoadCallback(uint32_t Id)
+	{
+		if (TheScriptManager->ActiveScriptIdx < 0) return;
+		std::vector<uint32_t>& Ids = TheScriptManager->GetActiveScript()->LoadCallbackIds;
+		if (std::find(Ids.begin(), Ids.end(), Id) == Ids.end()) Ids.push_back(Id);
+	}
+	GLOBAL_EXPORT("void RegisterLoadCallback(uint id)", RegisterLoadCallback);
+
+	static void UnregisterLoadCallback(uint32_t Id)
+	{
+		if (TheScriptManager->ActiveScriptIdx < 0) return;
+		std::erase(TheScriptManager->GetActiveScript()->LoadCallbackIds, Id);
+	}
+	GLOBAL_EXPORT("void UnregisterLoadCallback(uint id)", UnregisterLoadCallback);
 
 	static bool CallToString(asIScriptEngine* Engine, asIScriptFunction* Method, void* Object, std::string& Out)
 	{
@@ -852,6 +891,18 @@ namespace Gecko::Exports::Global
 		RegisterStdString(Engine);
 		RegisterScriptArray(Engine, true);
 		RegisterCoroutines(Engine);
+
+		/*
+		!CompatMeta
+		for     Global
+		with    void throw(const string&in)
+		with    string getExceptionInfo()
+		being   function
+		declare full
+		since   v0.2.0
+		!CompatMeta
+		*/
+		RegisterExceptionRoutines(Engine);
 	}
 
 	static void RegisterVirtualKey(asIScriptEngine* Engine)

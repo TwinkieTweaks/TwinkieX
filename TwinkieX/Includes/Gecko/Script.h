@@ -31,6 +31,7 @@ namespace Gecko
 		CtxSet Ctxs{};
 		WaitState MainWait;
 		std::vector<Coroutine*> Coroutines;
+		std::vector<uint32_t> LoadCallbackIds;
 		std::vector<std::shared_ptr<PluginSetting>> Settings;
 		std::vector<SettingsTab> SettingsTabs;
 		SettingsSection SettingsStore;

@@ -1,10 +1,13 @@
 #pragma once
 #include "pch.h"
 #include "Script.h"
+#include "Awaitable.h"
 #include <functional>
 
 #include <ZipArchive/ZipArchive.h>
 #include <Twinkie/TwinkLogs/AngelscriptLoggert/AngelscriptLoggert.h>
+
+class CMwNod;
 
 namespace Gecko
 {
@@ -78,6 +81,8 @@ namespace Gecko
 		std::filesystem::path ImportsPath;
 		bool SettingsOpenRequested = false;
 		bool Running = false;
+		uint32_t MainThreadId = 0;
+		bool GameCallbacksInstalled = false;
 
 		ScriptManager();
 		~ScriptManager();
@@ -89,6 +94,9 @@ namespace Gecko
 		WaitState* CurrentWaitState();
 		void StopCoroutines(Script&);
 		void RunMainTick(Script&);
+		void RunCoroutines(Script&, bool MainTick, RunContext Context);
+		void RunContextTick(RunContext);
+		void InvokeLoadCallbacks(CMwNod* Nod, uint32_t ClassId);
 
 		void RenderDevMenu();
 		bool HasSettingsUi(const Script&);
@@ -107,7 +115,7 @@ namespace Gecko
 		void ResolvePlugins();
 		void BindImports();
 		Script* FindScript(std::string_view Identifier);
-		void BuildScript(Script&);
+		bool BuildScript(Script&);
 		void BuildScriptByCallback(Script&, CallbackType);
 		bool RunAll(CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs = {});
 		bool RunCallback(size_t ScriptIdx, CallbackType CallbackType, const std::function<void(asIScriptContext*)>& SetArgs = {});

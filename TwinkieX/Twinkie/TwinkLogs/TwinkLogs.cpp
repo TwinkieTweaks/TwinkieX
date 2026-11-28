@@ -11,6 +11,8 @@ TwinkLogs::TwinkLogs()
 
 TwinkLogs::~TwinkLogs()
 {
+	std::lock_guard Lock(ILoggert::Mutex());
+	ILoggert::FileSink = nullptr;
 	LogFile.flush();
 	LogFile.close();
 }
@@ -33,6 +35,7 @@ void TwinkLogs::Clear()
 
 void TwinkLogs::PullFromLoggerts()
 {
+	std::lock_guard Lock(ILoggert::Mutex());
 	for (auto& Loggert : Loggerts)
 	{
 		Loggert->LoggertStreamForPreview.seekg(0);
@@ -105,4 +108,14 @@ void TwinkLogs::UpdateLogFileLoc(std::filesystem::path& DocumentsFolderLoc)
 	}
 
 	LogFile.open(LogFileLoc, std::ios::out);
+
+	std::lock_guard Lock(ILoggert::Mutex());
+	for (auto& Loggert : Loggerts)
+	{
+		LogFile << Loggert->LoggertStreamForFile.str();
+		Loggert->LoggertStreamForFile.str("");
+		Loggert->LoggertStreamForFile.clear();
+	}
+	LogFile.flush();
+	ILoggert::FileSink = &LogFile;
 }

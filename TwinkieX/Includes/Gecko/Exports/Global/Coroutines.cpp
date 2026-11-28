@@ -29,8 +29,19 @@ namespace Gecko::Exports::Global
 		return Self->IsRunning();
 	}
 
-	static Awaitable* Awaitable_WithRunContext(int, Awaitable* Self)
+	static bool IsValidRunContext(int32_t Context)
 	{
+		return Context >= 0 and Context < (int32_t)RunContext::Count;
+	}
+
+	static Awaitable* Awaitable_WithRunContext(int Context, Awaitable* Self)
+	{
+		if (!IsValidRunContext(Context))
+		{
+			Throw("Invalid run context");
+			return nullptr;
+		}
+		Self->SetRunContext((RunContext)Context);
 		Self->AddRef();
 		return Self;
 	}
@@ -109,9 +120,21 @@ namespace Gecko::Exports::Global
 		return TheScriptManager->ActiveScriptIdx >= 0 ? TheScriptManager->GetActiveScript() : nullptr;
 	}
 
-	static Coroutine* CreateCoroutine(asIScriptGeneric* Gen)
+	static Coroutine* CreateCoroutine(asIScriptGeneric* Gen, asUINT FuncArg)
 	{
-		auto Func = (asIScriptFunction*)Gen->GetArgAddress(0);
+		RunContext Context = RunContext::Main;
+		if (FuncArg > 0)
+		{
+			auto Requested = (int32_t)Gen->GetArgDWord(0);
+			if (!IsValidRunContext(Requested))
+			{
+				Throw("Invalid run context");
+				return nullptr;
+			}
+			Context = (RunContext)Requested;
+		}
+
+		auto Func = (asIScriptFunction*)Gen->GetArgAddress(FuncArg);
 		if (!Func)
 		{
 			Throw("Null pointer access");
@@ -134,66 +157,141 @@ namespace Gecko::Exports::Global
 			return nullptr;
 		}
 
+		Co->Context = Context;
 		Owner->Coroutines.push_back(Co);
 		return Co;
 	}
 
+	template<asUINT FuncArg>
 	static void StartNew(asIScriptGeneric* Gen)
 	{
-		Gen->SetReturnObject(CreateCoroutine(Gen));
+		Gen->SetReturnObject(CreateCoroutine(Gen, FuncArg));
 	}
 
+	template<asUINT FuncArg>
 	static void StartNewRef(asIScriptGeneric* Gen)
 	{
-		Coroutine* Co = CreateCoroutine(Gen);
-		if (Co) Co->Ctx->SetArgObject(0, Gen->GetArgObject(1));
+		Coroutine* Co = CreateCoroutine(Gen, FuncArg);
+		if (Co) Co->Ctx->SetArgObject(0, Gen->GetArgObject(FuncArg + 1));
 		Gen->SetReturnObject(Co);
 	}
 
+	template<asUINT FuncArg>
 	static void StartNewInt(asIScriptGeneric* Gen)
 	{
-		Coroutine* Co = CreateCoroutine(Gen);
-		if (Co) Co->Ctx->SetArgQWord(0, (asQWORD)(int64_t)(int32_t)Gen->GetArgDWord(1));
+		Coroutine* Co = CreateCoroutine(Gen, FuncArg);
+		if (Co) Co->Ctx->SetArgQWord(0, (asQWORD)(int64_t)(int32_t)Gen->GetArgDWord(FuncArg + 1));
 		Gen->SetReturnObject(Co);
 	}
 
+	template<asUINT FuncArg>
 	static void StartNewUint(asIScriptGeneric* Gen)
 	{
-		Coroutine* Co = CreateCoroutine(Gen);
-		if (Co) Co->Ctx->SetArgQWord(0, (asQWORD)Gen->GetArgDWord(1));
+		Coroutine* Co = CreateCoroutine(Gen, FuncArg);
+		if (Co) Co->Ctx->SetArgQWord(0, (asQWORD)Gen->GetArgDWord(FuncArg + 1));
 		Gen->SetReturnObject(Co);
 	}
 
+	template<asUINT FuncArg>
 	static void StartNewQWord(asIScriptGeneric* Gen)
 	{
-		Coroutine* Co = CreateCoroutine(Gen);
-		if (Co) Co->Ctx->SetArgQWord(0, Gen->GetArgQWord(1));
+		Coroutine* Co = CreateCoroutine(Gen, FuncArg);
+		if (Co) Co->Ctx->SetArgQWord(0, Gen->GetArgQWord(FuncArg + 1));
 		Gen->SetReturnObject(Co);
 	}
 
+	template<asUINT FuncArg>
 	static void StartNewDouble(asIScriptGeneric* Gen)
 	{
-		Coroutine* Co = CreateCoroutine(Gen);
-		if (Co) Co->Ctx->SetArgDouble(0, Gen->GetArgDouble(1));
+		Coroutine* Co = CreateCoroutine(Gen, FuncArg);
+		if (Co) Co->Ctx->SetArgDouble(0, Gen->GetArgDouble(FuncArg + 1));
 		Gen->SetReturnObject(Co);
 	}
 
+	template<asUINT FuncArg>
 	static void StartNewBool(asIScriptGeneric* Gen)
 	{
-		Coroutine* Co = CreateCoroutine(Gen);
-		if (Co) Co->Ctx->SetArgByte(0, Gen->GetArgByte(1));
+		Coroutine* Co = CreateCoroutine(Gen, FuncArg);
+		if (Co) Co->Ctx->SetArgByte(0, Gen->GetArgByte(FuncArg + 1));
 		Gen->SetReturnObject(Co);
 	}
 
+	template<asUINT FuncArg>
 	static void StartNewString(asIScriptGeneric* Gen)
 	{
-		Coroutine* Co = CreateCoroutine(Gen);
+		Coroutine* Co = CreateCoroutine(Gen, FuncArg);
 		if (Co)
 		{
-			Co->StringArg = *(const std::string*)Gen->GetArgObject(1);
+			Co->StringArg = *(const std::string*)Gen->GetArgObject(FuncArg + 1);
 			Co->Ctx->SetArgAddress(0, &Co->StringArg);
 		}
 		Gen->SetReturnObject(Co);
+	}
+
+	void RegisterRunContexts(asIScriptEngine* Engine)
+	{
+		/*
+		!CompatMeta
+		for     Meta
+		with    RunContext
+		being   enum
+		declare full
+		since   v0.2.0
+		!CompatMeta
+		*/
+		Engine->RegisterEnum("RunContext");
+		Engine->RegisterEnumValue("RunContext", "Main", (int)RunContext::Main);
+		Engine->RegisterEnumValue("RunContext", "BeforeScripts", (int)RunContext::BeforeScripts);
+		Engine->RegisterEnumValue("RunContext", "MainLoop", (int)RunContext::MainLoop);
+		Engine->RegisterEnumValue("RunContext", "GameLoop", (int)RunContext::GameLoop);
+		Engine->RegisterEnumValue("RunContext", "AfterMainLoop", (int)RunContext::AfterMainLoop);
+		Engine->RegisterEnumValue("RunContext", "NetworkAfterMainLoop", (int)RunContext::NetworkAfterMainLoop);
+		Engine->RegisterEnumValue("RunContext", "AfterScripts", (int)RunContext::AfterScripts);
+		Engine->RegisterEnumValue("RunContext", "UpdateSceneEngine", (int)RunContext::UpdateSceneEngine);
+
+		/*
+		!CompatMeta
+		for     Meta
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFunc@ func)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdata@ func, ref userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@ func, const int userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@ func, const int64 userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@ func, const uint userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@ func, const uint64 userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataDouble@ func, const double userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataString@ func, const string&in userdata)
+		being   function
+		declare full
+		games   TMCN, TMU, ESWC, TMO, TMSX, TM1
+		since   v0.2.0
+		!CompatMeta
+		*/
+		/*
+		!CompatMeta
+		for     Meta
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFunc@ func)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdata@ func, ref userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@ func, const int userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@ func, const int64 userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@ func, const uint userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@ func, const uint64 userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataDouble@ func, const double userdata)
+		with    awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataString@ func, const string&in userdata)
+		being   function
+		declare partial
+		reason  Run contexts other than Main aren't hooked yet, so those coroutines run in the main loop
+		games   TMS
+		since   v0.2.0
+		!CompatMeta
+		*/
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFunc@+ func)", asFUNCTION(StartNew<1>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdata@+ func, ref userdata)", asFUNCTION(StartNewRef<1>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@+ func, const int userdata)", asFUNCTION(StartNewInt<1>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataInt64@+ func, const int64 userdata)", asFUNCTION(StartNewQWord<1>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@+ func, const uint userdata)", asFUNCTION(StartNewUint<1>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataUint64@+ func, const uint64 userdata)", asFUNCTION(StartNewQWord<1>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataDouble@+ func, const double userdata)", asFUNCTION(StartNewDouble<1>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ StartWithRunContext(RunContext runContext, CoroutineFuncUserdataString@+ func, const string&in userdata)", asFUNCTION(StartNewString<1>), asCALL_GENERIC);
 	}
 
 	void RegisterCoroutines(asIScriptEngine* Engine)
@@ -264,8 +362,21 @@ namespace Gecko::Exports::Global
 		as      awaitable@ WithRunContext(int)
 		being   method
 		of      awaitable
+		declare full
+		games   TMCN, TMU, ESWC, TMO, TMSX, TM1
+		since   v0.2.0
+		!CompatMeta
+		*/
+		/*
+		!CompatMeta
+		for     Global
+		with    awaitable@ WithRunContext(int)
+		as      awaitable@ WithRunContext(int)
+		being   method
+		of      awaitable
 		declare partial
-		reason  Coroutines only run in the main loop, so this returns the same awaitable
+		reason  Run contexts other than Main aren't hooked yet, so the coroutine keeps running in the main loop
+		games   TMS
 		since   v0.2.0
 		!CompatMeta
 		*/
@@ -311,15 +422,15 @@ namespace Gecko::Exports::Global
 		since   v0.2.0
 		!CompatMeta
 		*/
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFunc@+ func)", asFUNCTION(StartNew), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdata@+ func, ref userdata)", asFUNCTION(StartNewRef), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataInt64@+ func, const int userdata)", asFUNCTION(StartNewInt), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataInt64@+ func, const int64 userdata)", asFUNCTION(StartNewQWord), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataUint64@+ func, const uint userdata)", asFUNCTION(StartNewUint), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataUint64@+ func, const uint64 userdata)", asFUNCTION(StartNewQWord), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataDouble@+ func, const double userdata)", asFUNCTION(StartNewDouble), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataBool@+ func, const bool userdata)", asFUNCTION(StartNewBool), asCALL_GENERIC);
-		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataString@+ func, const string&in userdata)", asFUNCTION(StartNewString), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFunc@+ func)", asFUNCTION(StartNew<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdata@+ func, ref userdata)", asFUNCTION(StartNewRef<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataInt64@+ func, const int userdata)", asFUNCTION(StartNewInt<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataInt64@+ func, const int64 userdata)", asFUNCTION(StartNewQWord<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataUint64@+ func, const uint userdata)", asFUNCTION(StartNewUint<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataUint64@+ func, const uint64 userdata)", asFUNCTION(StartNewQWord<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataDouble@+ func, const double userdata)", asFUNCTION(StartNewDouble<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataBool@+ func, const bool userdata)", asFUNCTION(StartNewBool<0>), asCALL_GENERIC);
+		Engine->RegisterGlobalFunction("awaitable@ startnew(CoroutineFuncUserdataString@+ func, const string&in userdata)", asFUNCTION(StartNewString<0>), asCALL_GENERIC);
 
 		/*
 		!CompatMeta

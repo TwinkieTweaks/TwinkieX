@@ -14,7 +14,7 @@ Twinkie gTwinkie;
 // Ctor and initializer, also registers some settings for TwinkUi
 Twinkie::Twinkie()
 {
-	MH_Initialize();
+	MinHookStatus = MH_Initialize();
 
 #ifndef NDEBUG
 	AllocConsole();
@@ -94,26 +94,46 @@ Twinkie::~Twinkie()
 
 void Twinkie::Update()
 {
+	auto Start = std::chrono::steady_clock::now();
+	LoggertTwink.print(u8"Creating the script engine");
 	Gecko::TheScriptManager = new Gecko::ScriptManager();
 	Gecko::TheScriptManager->ImportsPath = DocumentsFolderPath / "TwinkieX\\Imports";
+	LoggertTwink.print(LogFormat("Script engine created in {} ms", LogMsSince(Start)));
 
-	for (const auto& File : std::filesystem::directory_iterator(DocumentsFolderPath / "TwinkieX\\Scripts"))
+	auto ScriptsFolder = DocumentsFolderPath / "TwinkieX\\Scripts";
+	std::error_code FolderError;
+	size_t PluginCount = 0;
+	for (const auto& File : std::filesystem::directory_iterator(ScriptsFolder, FolderError))
 	{
 		// .op archives, and folders of .as files
-		if (not File.is_directory() and File.path().extension() != ".op") continue;
+		if (not File.is_directory() and File.path().extension() != ".op")
+		{
+			LoggertTwink.verbose(LogFormat("Skipping {}, it isn't a plugin folder or an .op archive", File.path().filename().string()));
+			continue;
+		}
 
+		LoggertTwink.verbose(LogFormat("Adding plugin {}", File.path().string()));
 		Gecko::TheScriptManager->AddFromFile(File.path(), u8"");
+		PluginCount++;
 	}
+	if (FolderError) LoggertTwink.warn(LogFormat("Couldn't read the plugin folder {}: {}", ScriptsFolder.string(), FolderError.message()));
+	LoggertTwink.print(LogFormat("Found {} plugins in {}", PluginCount, ScriptsFolder.string()));
 
-	for (const auto& File : std::filesystem::directory_iterator(DocumentsFolderPath / "TwinkieX\\Modules"))
+	auto ModulesFolder = DocumentsFolderPath / "TwinkieX\\Modules";
+	for (const auto& File : std::filesystem::directory_iterator(ModulesFolder, FolderError))
 	{
 		if (File.path().extension() != ".dll") continue;
 
-		LoadLibraryW(File.path().wstring().c_str());
+		LoggertTwink.print(LogFormat("Loading module {}", File.path().filename().string()));
+		if (HMODULE Module = LoadLibraryW(File.path().wstring().c_str())) LoggertTwink.verbose(LogFormat("Loaded module {} at {:#x}", File.path().filename().string(), (uintptr_t)Module));
+		else LoggertTwink.error(LogFormat("Couldn't load module {}: error {}", File.path().filename().string(), GetLastError()));
 	}
+	if (FolderError == std::errc::no_such_file_or_directory) LoggertTwink.verbose(LogFormat("No modules folder at {}", ModulesFolder.string()));
+	else if (FolderError) LoggertTwink.warn(LogFormat("Couldn't read the modules folder {}: {}", ModulesFolder.string(), FolderError.message()));
 
 	Gecko::TheScriptManager->BuildAll();
 
+	LoggertTwink.print(u8"Setting up the overlay");
 	this->UiMgr.Update(DocumentsFolderPath);
 }
 

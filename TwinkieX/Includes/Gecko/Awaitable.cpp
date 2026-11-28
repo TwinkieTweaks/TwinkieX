@@ -56,6 +56,11 @@ namespace Gecko
 		return Running;
 	}
 
+	void Coroutine::SetRunContext(RunContext NewContext)
+	{
+		Context = NewContext;
+	}
+
 	void Coroutine::Stop()
 	{
 		if (Ctx)
